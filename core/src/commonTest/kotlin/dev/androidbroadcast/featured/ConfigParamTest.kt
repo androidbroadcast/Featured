@@ -9,14 +9,13 @@ import kotlin.test.assertTrue
 class ConfigParamTest {
 
     @Test
-    fun testSimpleConfigParamCreation() {
-        val param = SimpleConfigParam(
+    fun testConfigParamCreation() {
+        val param = ConfigParam(
             key = "test_key",
             defaultValue = "default",
-            valueType = String::class,
             description = "Test description",
             category = "Test category",
-            sinceVersion = "1.0.0"
+            since = "1.0.0"
         )
 
         assertEquals("test_key", param.key)
@@ -24,7 +23,7 @@ class ConfigParamTest {
         assertEquals(String::class, param.valueType)
         assertEquals("Test description", param.description)
         assertEquals("Test category", param.category)
-        assertEquals("1.0.0", param.sinceVersion)
+        assertEquals("1.0.0", param.since)
     }
 
     @Test
@@ -34,7 +33,7 @@ class ConfigParamTest {
             defaultValue = 42,
             description = "Test number",
             category = "Numbers",
-            sinceVersion = "1.1.0"
+            since = "1.1.0"
         )
 
         assertEquals("test_key", param.key)
@@ -42,7 +41,7 @@ class ConfigParamTest {
         assertEquals(Int::class, param.valueType)
         assertEquals("Test number", param.description)
         assertEquals("Numbers", param.category)
-        assertEquals("1.1.0", param.sinceVersion)
+        assertEquals("1.1.0", param.since)
     }
 
     @Test
@@ -57,7 +56,7 @@ class ConfigParamTest {
         assertEquals(Boolean::class, param.valueType)
         assertNull(param.description)
         assertNull(param.category)
-        assertNull(param.sinceVersion)
+        assertNull(param.since)
     }
 
     @Test
@@ -87,14 +86,14 @@ class ConfigParamTest {
             defaultValue = "value",
             description = "desc",
             category = "cat",
-            sinceVersion = "1.0"
+            since = "1.0"
         )
 
         val result = param.toString()
         assertTrue(result.contains("key='test_key'"))
-        assertTrue(result.contains("defaultValue=value"))
-        assertTrue(result.contains("category=cat"))
-        assertTrue(result.contains("sinceVersion=1.0"))
-        assertTrue(result.contains("description=desc"))
+        assertTrue(result.contains("defaultValue='value'"))
+        assertTrue(result.contains("category='cat'"))
+        assertTrue(result.contains("since='1.0'"))
+        assertTrue(result.contains("description='desc'"))
     }
 }
