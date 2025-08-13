@@ -61,3 +61,4 @@ public inline fun <T : Any> ConfigValue<T>.doIf(
 ) {
     return if (predicate(this)) action(this) else elseAction(this)
 }
+

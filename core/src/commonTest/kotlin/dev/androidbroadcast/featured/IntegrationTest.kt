@@ -16,15 +16,9 @@ class IntegrationTest {
         val configValues = ConfigValues(localProvider, remoteProvider)
 
         // Register some parameters
-        val stringParam = ConfigParamRegistry.register(
-            ConfigParam("app.feature.enabled", "default_string")
-        )
-        val intParam = ConfigParamRegistry.register(
-            ConfigParam("app.max.retries", 3)
-        )
-        val boolParam = ConfigParamRegistry.register(
-            ConfigParam("app.debug.mode", false)
-        )
+        val stringParam = ConfigParam("app.feature.enabled", "default_string")
+        val intParam = ConfigParam("app.max.retries", 3)
+        val boolParam = ConfigParam("app.debug.mode", false)
 
         // Test 1: Default values when no providers have values
         assertEquals("default_string", configValues.getValue(stringParam).value)
@@ -60,29 +54,17 @@ class IntegrationTest {
         // Test 4: Fetch from remote provider
         configValues.fetch()
         assertTrue(remoteProvider.fetchCalled)
-
-        // Cleanup
-        ConfigParamRegistry.clear()
     }
 
     @Test
     fun testParameterRegistryWithConfigValues() = runTest {
-        ConfigParamRegistry.clear()
-
         val localProvider = InMemoryConfigValueProvider()
         val configValues = ConfigValues(localProvider = localProvider)
 
         // Register parameters
-        val param1 = ConfigParamRegistry.register(ConfigParam("param1", "value1"))
-        val param2 = ConfigParamRegistry.register(ConfigParam("param2", 42))
-        val param3 = ConfigParamRegistry.register(ConfigParam("param3", true))
-
-        // Verify registry contains all parameters
-        val allParams = ConfigParamRegistry.getAll()
-        assertEquals(3, allParams.size)
-        assertTrue(allParams.contains(param1))
-        assertTrue(allParams.contains(param2))
-        assertTrue(allParams.contains(param3))
+        val param1 = ConfigParam("param1", "value1")
+        val param2 = ConfigParam("param2", 42)
+        val param3 = ConfigParam("param3", true)
 
         // Test that we can get values for all registered parameters
         assertEquals("value1", configValues.getValue(param1).value)
@@ -96,8 +78,6 @@ class IntegrationTest {
         assertEquals("overridden1", configValues.getValue(param1).value)
         assertEquals(100, configValues.getValue(param2).value)
         assertEquals(true, configValues.getValue(param3).value) // unchanged
-
-        ConfigParamRegistry.clear()
     }
 
     @Test

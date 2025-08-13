@@ -98,7 +98,6 @@ public inline fun <reified T : Any> ConfigParam(
     description: String? = null,
     category: String? = null,
     since: String? = null,
-    addToRegistry: Boolean = true,
 ): ConfigParam<T> {
     return ConfigParam(
         key = key,
@@ -107,9 +106,7 @@ public inline fun <reified T : Any> ConfigParam(
         description = description,
         category = category,
         since = since,
-    ).also { configParam ->
-        if (addToRegistry) {
-            ConfigParamRegistry.register(configParam)
-        }
-    }
+    )
 }
+
+
