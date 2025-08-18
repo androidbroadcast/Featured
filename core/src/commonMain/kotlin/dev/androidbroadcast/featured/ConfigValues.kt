@@ -13,10 +13,15 @@ import kotlinx.coroutines.flow.flow
  *
  * If both local and remote values are available, the local value will be returned.
  * If neither is available, the default value from the parameter will be returned.
+ *
+ * @param remoteProvider The provider for remote configuration values.
+ * @param localProvider The provider for local configuration values.
+ * @param preConfigured The pre-configured values to use instead of [ConfigParam.defaultValue].
  */
 public class ConfigValues(
-    private val localProvider: LocalConfigValueProvider? = null,
     private val remoteProvider: RemoteConfigValueProvider? = null,
+    private val localProvider: LocalConfigValueProvider? = null,
+    private val preConfigured: Configuration = EmptyConfiguration,
 ) {
     init {
         require(localProvider != null || remoteProvider != null) {
@@ -29,7 +34,7 @@ public class ConfigValues(
     ): ConfigValue<T> {
         return localProvider?.get(param)
             ?: remoteProvider?.get(param)
-            ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+            ?: ConfigValue(preConfigured.get(param), ConfigValue.Source.DEFAULT)
     }
 
     /**

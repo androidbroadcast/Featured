@@ -94,7 +94,7 @@ public class SharedPreferencesProviderConfig(
             emit(get(param)) // Emit the current value first
             emitAll( // Then emit changes
                 changedKeysFlow
-                    .filter { it == param.key }
+                    .filter { key -> key == param.key }
                     .map { get(param) }
             )
         }.filterNotNull()
