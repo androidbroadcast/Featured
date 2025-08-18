@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.flow
  * Local values are typically used for user-specific overrides and have higher priority,
  * while remote values are fetched from a remote configuration service.
  *
- * If both local and remote values are available, the local value will be returned.
- * If neither is available, the default value from the parameter will be returned.
+ * @param remoteProvider The provider for remote configuration values.
+ * @param localProvider The provider for local configuration values.
  */
 public class ConfigValues(
-    private val localProvider: LocalConfigValueProvider? = null,
     private val remoteProvider: RemoteConfigValueProvider? = null,
+    private val localProvider: LocalConfigValueProvider? = null,
 ) {
     init {
         require(localProvider != null || remoteProvider != null) {
@@ -24,12 +24,23 @@ public class ConfigValues(
         }
     }
 
+    /**
+     * Retrieves the configuration value for the given parameter.
+     * It first checks the local provider, and if not found, it checks the remote provider.
+     * If neither provider has a value, it returns the default value of the parameter.
+     *
+     * @param param The configuration parameter to retrieve.
+     * @param prefer The source preference for retrieving the value (local or remote).
+     * @return The configuration value for the specified parameter.
+     */
     public suspend fun <T : Any> getValue(
         param: ConfigParam<T>,
+        prefer: Source = Source.LOCAL,
     ): ConfigValue<T> {
-        return localProvider?.get(param)
-            ?: remoteProvider?.get(param)
-            ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+        return when(prefer) {
+            Source.LOCAL -> localProvider?.get(param) ?: remoteProvider?.get(param)
+            Source.REMOTE -> remoteProvider?.get(param) ?: localProvider?.get(param)
+        } ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
     }
 
     /**
@@ -62,10 +73,16 @@ public class ConfigValues(
      */
     public fun <T : Any> observe(
         param: ConfigParam<T>,
+        prefer: Source = Source.LOCAL,
     ): Flow<ConfigValue<T>> {
         return flow<ConfigValue<T>> {
-            emit(getValue(param)) // get latest value
+            emit(getValue(param, prefer)) // get latest value
             localProvider?.observe(param)?.collect { emit(it) } // observe changes
         }.distinctUntilChanged()
+    }
+
+    public enum class Source {
+        REMOTE,
+        LOCAL;
     }
 }
