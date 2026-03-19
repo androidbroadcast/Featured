@@ -1,14 +1,24 @@
-import FeaturedCore
+import Foundation
+import FeaturedSampleApp
 
-/// A type-safe wrapper around a KMP ConfigParam.
-/// iOS developers declare flags as static properties of this type.
+/// A type-safe wrapper around a KMP CoreConfigParam.
+///
+/// Declare flags on the Kotlin side (in your shared module), then wrap them here:
+///
+///     // Kotlin (shared module):
+///     object AppFlags {
+///         val darkMode = ConfigParam<Boolean>(key = "dark_mode", defaultValue = false)
+///     }
+///
+///     // Swift:
+///     let darkModeFlag = FeatureFlag(param: AppFlags.shared.darkMode, defaultValue: false)
 public struct FeatureFlag<T> {
-    let param: ConfigParam<AnyObject>
+    let param: CoreConfigParam<AnyObject>
     let defaultValue: T
     let cast: (Any) -> T
 
-    public init(key: String, defaultValue: T, cast: @escaping (Any) -> T) {
-        self.param = ConfigParam(key: key, defaultValue: defaultValue as Any)
+    public init(param: CoreConfigParam<AnyObject>, defaultValue: T, cast: @escaping (Any) -> T) {
+        self.param = param
         self.defaultValue = defaultValue
         self.cast = cast
     }
@@ -16,29 +26,29 @@ public struct FeatureFlag<T> {
 
 /// Convenience initializers for common types, handling KMP primitive boxing.
 extension FeatureFlag where T == Bool {
-    public init(key: String, defaultValue: Bool) {
-        self.init(key: key, defaultValue: defaultValue) { ($0 as! NSNumber).boolValue }
+    public init(param: CoreConfigParam<AnyObject>, defaultValue: Bool) {
+        self.init(param: param, defaultValue: defaultValue) { ($0 as! NSNumber).boolValue }
     }
 }
 
 extension FeatureFlag where T == String {
-    public init(key: String, defaultValue: String) {
-        self.init(key: key, defaultValue: defaultValue) { $0 as! String }
+    public init(param: CoreConfigParam<AnyObject>, defaultValue: String) {
+        self.init(param: param, defaultValue: defaultValue) { $0 as! String }
     }
 }
 
 extension FeatureFlag where T == Int {
-    public init(key: String, defaultValue: Int) {
-        self.init(key: key, defaultValue: defaultValue) { ($0 as! NSNumber).intValue }
+    public init(param: CoreConfigParam<AnyObject>, defaultValue: Int) {
+        self.init(param: param, defaultValue: defaultValue) { ($0 as! NSNumber).intValue }
     }
 }
 
 /// Main Swift entry point for feature flags.
-/// Wraps ConfigValues and provides type-safe, async-friendly access.
+/// Wraps CoreConfigValues and provides type-safe, async-friendly access.
 public final class FeatureFlags {
-    private let configValues: ConfigValues
+    private let configValues: CoreConfigValues
 
-    public init(_ configValues: ConfigValues) {
+    public init(_ configValues: CoreConfigValues) {
         self.configValues = configValues
     }
 
