@@ -1,11 +1,8 @@
 package dev.androidbroadcast.featured
 
 import app.cash.turbine.test
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -37,19 +34,31 @@ class ConfigValuesExtensionsTest {
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testAsStateFlow() = runTest {
         val provider = InMemoryConfigValueProvider()
         val configValues = ConfigValues(localProvider = provider)
-        val scope = CoroutineScope(coroutineContext + Job())
-        val state = configValues.asStateFlow(darkModeParam, scope, SharingStarted.Eagerly)
+        val state = configValues.asStateFlow(darkModeParam, backgroundScope, SharingStarted.Eagerly)
 
         assertEquals(false, state.value) // initialValue = defaultValue
 
         provider.set(darkModeParam, true)
-        advanceUntilIdle()
+        testScheduler.runCurrent()
 
         assertEquals(true, state.value)
-        scope.cancel()
+    }
+
+    @Test
+    fun testObserveValueUpdates() = runTest {
+        val provider = InMemoryConfigValueProvider()
+        val configValues = ConfigValues(localProvider = provider)
+
+        configValues.observeValue(darkModeParam).test {
+            assertEquals(false, awaitItem()) // default emitted immediately
+            provider.set(darkModeParam, true)
+            assertEquals(true, awaitItem())  // reactive update
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }
