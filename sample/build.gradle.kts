@@ -38,6 +38,7 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(project(":featured-compose"))
         }
         commonMain.dependencies {
             implementation(compose.runtime)
