@@ -68,7 +68,7 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Cache SwiftLint
         id: cache-swiftlint
