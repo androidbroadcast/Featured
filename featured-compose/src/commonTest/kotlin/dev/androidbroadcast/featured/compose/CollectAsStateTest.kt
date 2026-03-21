@@ -1,5 +1,6 @@
 package dev.androidbroadcast.featured.compose
 
+import app.cash.turbine.test
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValues
 import dev.androidbroadcast.featured.InMemoryConfigValueProvider
@@ -10,13 +11,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class CollectAsStateTest {
+    private val provider = InMemoryConfigValueProvider()
+    private val configValues = ConfigValues(localProvider = provider)
+    private val param = ConfigParam("feature_flag", "default_value")
+
     @Test
     fun observeValueFlowEmitsDefaultWhenNoValueSet() =
         runTest {
-            val provider = InMemoryConfigValueProvider()
-            val configValues = ConfigValues(localProvider = provider)
-            val param = ConfigParam("feature_flag", "default_value")
-
             val emitted = configValues.observeValue(param).first()
 
             assertEquals("default_value", emitted)
@@ -25,10 +26,6 @@ class CollectAsStateTest {
     @Test
     fun observeValueFlowEmitsCurrentValueWhenSet() =
         runTest {
-            val provider = InMemoryConfigValueProvider()
-            val configValues = ConfigValues(localProvider = provider)
-            val param = ConfigParam("feature_flag", "default_value")
-
             provider.set(param, "enabled")
 
             val emitted = configValues.observeValue(param).first()
@@ -37,18 +34,17 @@ class CollectAsStateTest {
         }
 
     @Test
-    fun observeValueFlowEmitsUpdatedValueAfterChange() =
+    fun observeValueFlowEmitsUpdatedValueToActiveSubscriber() =
         runTest {
-            val provider = InMemoryConfigValueProvider()
-            val configValues = ConfigValues(localProvider = provider)
-            val param = ConfigParam("feature_flag", "default_value")
-
             provider.set(param, "initial")
-            val first = configValues.observeValue(param).first()
-            assertEquals("initial", first)
 
-            provider.set(param, "updated")
-            val second = configValues.observeValue(param).first()
-            assertEquals("updated", second)
+            configValues.observeValue(param).test {
+                assertEquals("initial", awaitItem())
+
+                provider.set(param, "updated")
+                assertEquals("updated", awaitItem())
+
+                cancelAndIgnoreRemainingEvents()
+            }
         }
 }
