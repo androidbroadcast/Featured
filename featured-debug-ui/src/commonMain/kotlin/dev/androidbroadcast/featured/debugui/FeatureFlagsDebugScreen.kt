@@ -209,9 +209,10 @@ private fun FlagItemCard(
                 ScalarInputField(
                     item = item,
                     onScalarInput = onScalarInput,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
                 )
             }
 
@@ -251,11 +252,12 @@ private fun ScalarInputField(
     }
     var isError by remember(item.key, item.currentValue) { mutableStateOf(false) }
 
-    val keyboardType = when (item.defaultValue) {
-        is Int, is Long -> KeyboardType.Number
-        is Float, is Double -> KeyboardType.Decimal
-        else -> KeyboardType.Text
-    }
+    val keyboardType =
+        when (item.defaultValue) {
+            is Int, is Long -> KeyboardType.Number
+            is Float, is Double -> KeyboardType.Decimal
+            else -> KeyboardType.Text
+        }
 
     fun commit() {
         val parsed = parseInput(item.param, text)
@@ -276,16 +278,18 @@ private fun ScalarInputField(
         modifier = modifier,
         isError = isError,
         singleLine = true,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = keyboardType,
-            imeAction = ImeAction.Done,
-        ),
+        keyboardOptions =
+            KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = ImeAction.Done,
+            ),
         keyboardActions = KeyboardActions(onDone = { commit() }),
-        supportingText = if (isError) {
-            { Text("Invalid ${item.defaultValue::class.simpleName} value") }
-        } else {
-            null
-        },
+        supportingText =
+            if (isError) {
+                { Text("Invalid ${item.defaultValue::class.simpleName} value") }
+            } else {
+                null
+            },
     )
 }
 

@@ -8,7 +8,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class FlagInputParserTest {
-
     // --- String ---
 
     @Test
