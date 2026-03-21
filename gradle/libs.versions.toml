@@ -24,6 +24,8 @@ mockk = "1.14.5"
 preferenceKtx = "1.2.1"
 robolectric = "4.15.1"
 skie = "0.10.5"
+spotless = "8.3.0"
+bcv = "0.18.1"
 turbine = "1.2.1"
 
 [libraries]
@@ -67,3 +69,5 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+bcv = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "bcv" }
