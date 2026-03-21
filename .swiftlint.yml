@@ -1,0 +1,14 @@
+disabled_rules:
+  - trailing_whitespace
+
+opt_in_rules:
+  - empty_count
+  - empty_string
+
+included:
+  - iosApp/iosApp
+
+excluded:
+  - iosApp/iosApp.xcodeproj
+
+reporter: "xcode"
