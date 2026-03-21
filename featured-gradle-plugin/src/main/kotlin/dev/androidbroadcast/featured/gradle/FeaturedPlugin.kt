@@ -75,7 +75,6 @@ public class FeaturedPlugin : Plugin<Project> {
             task.commonMainOutputFile.set(
                 target.layout.buildDirectory.file("generated/featured/commonMain/FeatureFlagExpect.kt"),
             )
-            task.dependsOn(scanTask)
         }
     }
 

@@ -22,7 +22,6 @@ import org.gradle.api.tasks.TaskAction
  * registered as generated source directories in the corresponding KMP source sets.
  */
 public abstract class GenerateIosConstValTask : DefaultTask() {
-
     /**
      * The line-delimited flag report produced by [ScanLocalFlagsTask].
      * Each line has the format `key|defaultValue|type|moduleName`.
@@ -47,7 +46,7 @@ public abstract class GenerateIosConstValTask : DefaultTask() {
 
     @TaskAction
     public fun generate() {
-        val entries = parseScanResult()
+        val entries = scanResultFile.parseLocalFlagEntries()
 
         val iosContent = IosConstValGenerator.generate(entries)
         val iosOut = iosMainOutputFile.get().asFile
@@ -65,23 +64,5 @@ public abstract class GenerateIosConstValTask : DefaultTask() {
             logger.lifecycle("[featured] Generated iOS const val declarations for ${entries.size} flag(s) → ${iosOut.path}")
             logger.lifecycle("[featured] Generated commonMain expect declarations → ${commonOut.path}")
         }
-    }
-
-    private fun parseScanResult(): List<LocalFlagEntry> {
-        val file = scanResultFile.get().asFile
-        if (!file.exists() || file.readText().isBlank()) return emptyList()
-        return file
-            .readLines()
-            .filter { it.isNotBlank() }
-            .mapNotNull { line ->
-                val parts = line.split("|")
-                if (parts.size != 4) return@mapNotNull null
-                LocalFlagEntry(
-                    key = parts[0],
-                    defaultValue = parts[1],
-                    type = parts[2],
-                    moduleName = parts[3],
-                )
-            }
     }
 }

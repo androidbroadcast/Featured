@@ -6,7 +6,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class GenerateIosConstValTaskRegistrationTest {
-
     @Test
     fun `plugin registers generateIosConstVal task`() {
         val project = ProjectBuilder.builder().build()
