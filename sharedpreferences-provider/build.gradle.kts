@@ -54,9 +54,7 @@ dependencies {
     implementation(libs.androidx.preference)
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
-    // Android Test dependencies
-    // Testing dependencies
-    implementation(libs.androidx.core)
+    implementation(libs.androidx.core.ktx)
 
     testImplementation(libs.robolectric)
     testImplementation(libs.kotlin.testJunit)

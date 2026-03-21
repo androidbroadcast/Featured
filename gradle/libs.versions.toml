@@ -30,7 +30,8 @@ bcv = "0.18.1"
 turbine = "1.2.1"
 
 [libraries]
-androidx-core = { module = "androidx.test:core", version.ref = "core" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "core" }
 androidx-datastore-core = { module = "androidx.datastore:datastore-core", version.ref = "androidx-datastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 androidx-preference = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
