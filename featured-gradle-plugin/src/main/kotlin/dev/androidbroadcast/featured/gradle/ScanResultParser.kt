@@ -3,11 +3,11 @@ package dev.androidbroadcast.featured.gradle
 import org.gradle.api.file.RegularFileProperty
 
 /**
- * Parses the line-delimited scan result file produced by [ScanLocalFlagsTask] into
- * a list of [LocalFlagEntry] records.
+ * Reads the line-delimited flag report produced by [ScanLocalFlagsTask] and returns
+ * the parsed entries. Each line must have the format `key|defaultValue|type|moduleName`.
  *
- * Each non-blank line must have the format `key|defaultValue|type|moduleName`.
- * Lines that do not conform are silently skipped.
+ * Returns an empty list when the file does not exist, is empty, or contains
+ * lines that do not conform to the expected format.
  */
 internal fun RegularFileProperty.parseLocalFlagEntries(): List<LocalFlagEntry> {
     val file = get().asFile
