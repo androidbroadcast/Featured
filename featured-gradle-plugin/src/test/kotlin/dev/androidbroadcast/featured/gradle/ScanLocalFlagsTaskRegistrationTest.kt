@@ -29,4 +29,30 @@ class ScanLocalFlagsTaskRegistrationTest {
             "Expected task type ScanLocalFlagsTask but was ${task::class.simpleName}",
         )
     }
+
+    @Test
+    fun `scanLocalFlags task has outputFile configured`() {
+        val project = ProjectBuilder.builder().build()
+        project.plugins.apply("dev.androidbroadcast.featured")
+
+        val task = project.tasks.findByName("scanLocalFlags") as? ScanLocalFlagsTask
+        assertNotNull(task)
+        assertTrue(
+            task.outputFile.isPresent,
+            "Expected outputFile to be configured on ScanLocalFlagsTask",
+        )
+    }
+
+    @Test
+    fun `scanLocalFlags task is in featured group`() {
+        val project = ProjectBuilder.builder().build()
+        project.plugins.apply("dev.androidbroadcast.featured")
+
+        val task = project.tasks.findByName("scanLocalFlags")
+        assertNotNull(task)
+        assertTrue(
+            task.group == "featured",
+            "Expected task group 'featured' but was '${task.group}'",
+        )
+    }
 }

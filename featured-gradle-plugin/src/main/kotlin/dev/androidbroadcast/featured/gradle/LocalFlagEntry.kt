@@ -10,8 +10,8 @@ package dev.androidbroadcast.featured.gradle
  * @property moduleName The Gradle module (project path) that declares this flag.
  */
 public data class LocalFlagEntry(
-    val key: String,
-    val defaultValue: String,
-    val type: String,
-    val moduleName: String,
+    public val key: String,
+    public val defaultValue: String,
+    public val type: String,
+    public val moduleName: String,
 )

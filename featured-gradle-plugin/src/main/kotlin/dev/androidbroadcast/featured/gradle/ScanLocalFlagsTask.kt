@@ -2,9 +2,11 @@ package dev.androidbroadcast.featured.gradle
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
@@ -13,8 +15,10 @@ import org.gradle.api.tasks.TaskAction
  * Gradle task that scans Kotlin source files for `@LocalFlag`-annotated
  * `ConfigParam` declarations in the owning module.
  *
- * Results are logged and made available via [scannedEntries] after task execution.
- * Downstream generation tasks may depend on this task and read [scannedEntries].
+ * Results are written to [outputFile] as a line-delimited text report and exposed
+ * via [scannedEntries] for in-process consumers. Downstream generation tasks should
+ * declare `inputs.files(scanTask.flatMap { it.outputFile })` to establish a proper
+ * task dependency and enable configuration-cache compatibility.
  */
 public abstract class ScanLocalFlagsTask : DefaultTask() {
     /**
@@ -33,6 +37,16 @@ public abstract class ScanLocalFlagsTask : DefaultTask() {
     public abstract val moduleName: Property<String>
 
     /**
+     * Output file containing the scanned [LocalFlagEntry] records, one per line in
+     * `key|defaultValue|type|moduleName` format.
+     *
+     * Downstream tasks should declare this file as an input to establish a proper
+     * task dependency rather than reading [scannedEntries] directly.
+     */
+    @get:OutputFile
+    public abstract val outputFile: RegularFileProperty
+
+    /**
      * Entries found during the last [scan] execution.
      * Empty before the task has run.
      */
@@ -41,12 +55,20 @@ public abstract class ScanLocalFlagsTask : DefaultTask() {
 
     @TaskAction
     public fun scan() {
-        val entries = sourceFiles
-            .filter { it.extension == "kt" }
-            .flatMap { file ->
+        val entries =
+            sourceFiles.flatMap { file ->
                 LocalFlagScanner.scan(file.readText(), moduleName.get())
             }
         scannedEntries = entries
+
+        // Write structured output for downstream tasks.
+        val out = outputFile.get().asFile
+        out.parentFile?.mkdirs()
+        out.writeText(
+            entries.joinToString("\n") { e ->
+                "${e.key}|${e.defaultValue}|${e.type}|${e.moduleName}"
+            },
+        )
 
         if (entries.isEmpty()) {
             logger.lifecycle("[@LocalFlag scan] No @LocalFlag declarations found in module '${moduleName.get()}'.")

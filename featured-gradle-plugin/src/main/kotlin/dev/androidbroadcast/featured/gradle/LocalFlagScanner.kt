@@ -14,10 +14,11 @@ package dev.androidbroadcast.featured.gradle
  */
 public object LocalFlagScanner {
     // Matches: @LocalFlag followed (possibly after blank lines) by a val/var with ConfigParam
-    private val ANNOTATED_PARAM_REGEX = Regex(
-        """@LocalFlag\s+(?:val|var)\s+\w+\s*=\s*ConfigParam\s*\(\s*"([^"]+)"\s*,\s*([^)]+?)\s*\)""",
-        RegexOption.MULTILINE,
-    )
+    private val ANNOTATED_PARAM_REGEX =
+        Regex(
+            """@LocalFlag\s+(?:val|var)\s+\w+\s*=\s*ConfigParam\s*\(\s*"([^"]+)"\s*,\s*([^)]+?)\s*\)""",
+            RegexOption.MULTILINE,
+        )
 
     /**
      * Scans [source] text and returns one [LocalFlagEntry] per `@LocalFlag`-annotated
@@ -26,17 +27,22 @@ public object LocalFlagScanner {
      * @param source Raw Kotlin source code to scan.
      * @param moduleName Gradle module name to embed in each [LocalFlagEntry].
      */
-    public fun scan(source: String, moduleName: String): List<LocalFlagEntry> =
-        ANNOTATED_PARAM_REGEX.findAll(source).map { match ->
-            val key = match.groupValues[1]
-            val rawDefault = match.groupValues[2].trim()
-            LocalFlagEntry(
-                key = key,
-                defaultValue = extractDefaultValue(rawDefault),
-                type = inferType(rawDefault),
-                moduleName = moduleName,
-            )
-        }.toList()
+    public fun scan(
+        source: String,
+        moduleName: String,
+    ): List<LocalFlagEntry> =
+        ANNOTATED_PARAM_REGEX
+            .findAll(source)
+            .map { match ->
+                val key = match.groupValues[1]
+                val rawDefault = match.groupValues[2].trim()
+                LocalFlagEntry(
+                    key = key,
+                    defaultValue = extractDefaultValue(rawDefault),
+                    type = inferType(rawDefault),
+                    moduleName = moduleName,
+                )
+            }.toList()
 
     /** Strips string quotes; leaves other literals as-is. */
     private fun extractDefaultValue(raw: String): String =
@@ -57,8 +63,8 @@ public object LocalFlagScanner {
             raw.startsWith('"') -> "String"
             raw == "true" || raw == "false" -> "Boolean"
             raw.toIntOrNull() != null -> "Int"
-            raw.toDoubleOrNull() != null -> "Double"
             raw.toLongOrNull() != null -> "Long"
+            raw.toDoubleOrNull() != null -> "Double"
             raw.toFloatOrNull() != null -> "Float"
             else -> "String"
         }

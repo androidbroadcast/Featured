@@ -7,10 +7,11 @@ import kotlin.test.assertTrue
 class LocalFlagScannerTest {
     @Test
     fun `scanner returns empty list when no LocalFlag annotations present`() {
-        val source = """
+        val source =
+            """
             package com.example
             val myParam = ConfigParam("key", true)
-        """.trimIndent()
+            """.trimIndent()
 
         val result = LocalFlagScanner.scan(source, moduleName = "app")
 
@@ -19,11 +20,12 @@ class LocalFlagScannerTest {
 
     @Test
     fun `scanner extracts boolean flag annotated with LocalFlag`() {
-        val source = """
+        val source =
+            """
             package com.example
             @LocalFlag
             val darkMode = ConfigParam("dark_mode", false)
-        """.trimIndent()
+            """.trimIndent()
 
         val result = LocalFlagScanner.scan(source, moduleName = "app")
 
@@ -41,11 +43,12 @@ class LocalFlagScannerTest {
 
     @Test
     fun `scanner extracts string flag annotated with LocalFlag`() {
-        val source = """
+        val source =
+            """
             package com.example
             @LocalFlag
             val serverUrl = ConfigParam("server_url", "https://example.com")
-        """.trimIndent()
+            """.trimIndent()
 
         val result = LocalFlagScanner.scan(source, moduleName = "network")
 
@@ -63,11 +66,12 @@ class LocalFlagScannerTest {
 
     @Test
     fun `scanner extracts integer flag annotated with LocalFlag`() {
-        val source = """
+        val source =
+            """
             package com.example
             @LocalFlag
             val retryCount = ConfigParam("retry_count", 3)
-        """.trimIndent()
+            """.trimIndent()
 
         val result = LocalFlagScanner.scan(source, moduleName = "core")
 
@@ -85,7 +89,8 @@ class LocalFlagScannerTest {
 
     @Test
     fun `scanner extracts multiple flags from same source`() {
-        val source = """
+        val source =
+            """
             package com.example
             @LocalFlag
             val darkMode = ConfigParam("dark_mode", false)
@@ -94,7 +99,7 @@ class LocalFlagScannerTest {
 
             @LocalFlag
             val timeout = ConfigParam("timeout", 30)
-        """.trimIndent()
+            """.trimIndent()
 
         val result = LocalFlagScanner.scan(source, moduleName = "app")
 
@@ -105,11 +110,12 @@ class LocalFlagScannerTest {
 
     @Test
     fun `scanner handles double value`() {
-        val source = """
+        val source =
+            """
             package com.example
             @LocalFlag
             val threshold = ConfigParam("threshold", 0.5)
-        """.trimIndent()
+            """.trimIndent()
 
         val result = LocalFlagScanner.scan(source, moduleName = "ml")
 
