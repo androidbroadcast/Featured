@@ -3,8 +3,11 @@
 package dev.androidbroadcast.featured
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 
 /**
  * A class that provides access to configuration values from both local and remote sources.
@@ -23,6 +26,8 @@ public class ConfigValues(
             "At least one provider (local or remote) must be provided."
         }
     }
+
+    private val fetchSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     public suspend fun <T : Any> getValue(param: ConfigParam<T>): ConfigValue<T> =
         localProvider?.get(param)
@@ -55,21 +60,35 @@ public class ConfigValues(
         localProvider?.resetOverride(param)
     }
 
+    /**
+     * Fetches the latest configuration values from the remote provider and activates them.
+     * Any active [observe] flows will re-emit the updated value for the observed parameter.
+     * Has no effect when no remote provider is configured.
+     */
     public suspend fun fetch() {
-        remoteProvider?.fetch(true)
+        if (remoteProvider == null) return
+        remoteProvider.fetch(true)
+        fetchSignal.emit(Unit)
     }
 
     /**
      * Observes changes to the configuration value for the given parameter.
-     * It emits the latest value immediately and then continues to emit updates
-     * whenever the value changes locally.
+     *
+     * Emits the latest value immediately, then continues to emit updates whenever:
+     * - the value changes via the local provider, **or**
+     * - [fetch] completes and the remote provider returns a new value.
      *
      * @param param The configuration parameter to observe.
-     * @return A flow of configuration values for the specified parameter.
+     * @return A [Flow] of [ConfigValue] for the specified parameter.
      */
-    public fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
-        flow<ConfigValue<T>> {
-            emit(getValue(param)) // get latest value
-            localProvider?.observe(param)?.collect { emit(it) } // observe changes
+    public fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> {
+        val localFlow = localProvider?.observe(param)
+        val remoteFlow = fetchSignal.map { getValue(param) }
+
+        return flow<ConfigValue<T>> {
+            emit(getValue(param))
+            val merged = if (localFlow != null) merge(localFlow, remoteFlow) else remoteFlow
+            merged.collect { emit(it) }
         }.distinctUntilChanged()
+    }
 }
