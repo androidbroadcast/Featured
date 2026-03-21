@@ -205,7 +205,7 @@ private fun FlagItemCard(
                 }
             }
 
-            if (item.defaultValue !is Boolean) {
+            if (isScalarParam(item.param) && item.defaultValue !is Boolean) {
                 ScalarInputField(
                     item = item,
                     onScalarInput = onScalarInput,
@@ -249,7 +249,7 @@ private fun ScalarInputField(
     var text by remember(item.key, item.currentValue) {
         mutableStateOf(item.currentValue.toString())
     }
-    var isError by remember { mutableStateOf(false) }
+    var isError by remember(item.key, item.currentValue) { mutableStateOf(false) }
 
     val keyboardType = when (item.defaultValue) {
         is Int, is Long -> KeyboardType.Number
