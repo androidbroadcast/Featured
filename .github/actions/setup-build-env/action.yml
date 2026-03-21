@@ -4,8 +4,6 @@ description: Checkout code, configure Java 21 (Temurin), and set up Gradle with 
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v4
-
     - uses: actions/setup-java@v4
       with:
         distribution: temurin

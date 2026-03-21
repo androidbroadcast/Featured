@@ -19,6 +19,7 @@ jobs:
     name: Tests & Coverage
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build-env
       - run: ./gradlew test :core:koverVerify
       - uses: actions/upload-artifact@v4
@@ -33,6 +34,7 @@ jobs:
     name: Build Android
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build-env
       - name: Assemble and Lint
         # Exclude :sample to avoid requiring google-services.json for the demo app
@@ -48,6 +50,7 @@ jobs:
     name: Lint & API Check
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build-env
       - run: ./gradlew spotlessCheck
       - name: Check public API

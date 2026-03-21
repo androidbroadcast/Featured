@@ -11,4 +11,4 @@ included:
 excluded:
   - iosApp/iosApp.xcodeproj
 
-reporter: "github-actions"
+reporter: "xcode"
