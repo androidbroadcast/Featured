@@ -25,30 +25,32 @@ public struct FeatureFlag<T> {
 }
 
 /// Convenience initializers for common types, handling KMP primitive boxing.
+/// Safe casts (`as?`) are used throughout; on mismatch the defaultValue is returned.
 extension FeatureFlag where T == Bool {
     public init(param: CoreConfigParam<AnyObject>, defaultValue: Bool) {
-        // swiftlint:disable:next force_cast
-        self.init(param: param, defaultValue: defaultValue) { ($0 as! NSNumber).boolValue }
+        self.init(param: param, defaultValue: defaultValue) { ($0 as? NSNumber)?.boolValue ?? defaultValue }
     }
 }
 
 extension FeatureFlag where T == String {
     public init(param: CoreConfigParam<AnyObject>, defaultValue: String) {
-        // swiftlint:disable:next force_cast
-        self.init(param: param, defaultValue: defaultValue) { $0 as! String }
+        self.init(param: param, defaultValue: defaultValue) { ($0 as? String) ?? defaultValue }
     }
 }
 
 extension FeatureFlag where T == Int {
     public init(param: CoreConfigParam<AnyObject>, defaultValue: Int) {
-        // swiftlint:disable:next force_cast
-        self.init(param: param, defaultValue: defaultValue) { ($0 as! NSNumber).intValue }
+        self.init(param: param, defaultValue: defaultValue) { ($0 as? NSNumber)?.intValue ?? defaultValue }
     }
 }
 
 /// Main Swift entry point for feature flags.
 /// Wraps CoreConfigValues and provides type-safe, async-friendly access.
-public final class FeatureFlags {
+///
+/// Marked `@unchecked Sendable` because `CoreConfigValues` (a Kotlin/JVM object bridged via SKIE)
+/// does not carry Swift's `Sendable` annotation, but its internal state is protected by
+/// Kotlin coroutine dispatch semantics. All mutable state lives on the Kotlin side.
+public final class FeatureFlags: @unchecked Sendable {
     private let configValues: CoreConfigValues
 
     public init(_ configValues: CoreConfigValues) {
@@ -57,6 +59,7 @@ public final class FeatureFlags {
 
     /// One-shot async read. Returns the resolved value (local → remote → default).
     /// CancellationError is re-thrown; other errors fall back to defaultValue.
+    @MainActor
     public func value<T>(of flag: FeatureFlag<T>) async throws -> T {
         do {
             let result = try await configValues.getValue(param: flag.param)
