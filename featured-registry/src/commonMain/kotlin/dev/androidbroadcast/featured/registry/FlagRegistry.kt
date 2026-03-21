@@ -6,7 +6,8 @@ import dev.androidbroadcast.featured.ConfigParam
  * Central registry that collects all [ConfigParam] instances across feature modules.
  * Powers debug UI auto-discovery of available feature flags.
  *
- * Thread-safe: registration and retrieval are guarded by a platform lock.
+ * Thread-safe: registration and retrieval use platform-specific synchronization
+ * (a lock on JVM/Android, CAS-based updates on Native/iOS).
  */
 public object FlagRegistry {
     private val delegate = FlagRegistryDelegate()
