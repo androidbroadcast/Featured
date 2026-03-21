@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  test:
+    name: Tests & Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Run tests and verify coverage
+        run: ./gradlew test :core:koverVerify
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            **/build/reports/tests/
+            **/build/reports/kover/
+
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Assemble and Lint
+        # Exclude :sample to avoid requiring google-services.json for the demo app
+        run: ./gradlew assembleDebug lint -x :sample:assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lint-results
+          path: "**/build/reports/lint-results-debug.html"
+
+  lint:
+    name: Lint (Spotless / ktlint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Check formatting
+        run: ./gradlew spotlessCheck
+
+  api-check:
+    name: API Compatibility (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Non-blocking until first release
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Check public API
+        run: ./gradlew apiCheck
+
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        if: always()
+        run: swiftlint lint --strict --config .swiftlint.yml
+
+      - name: Link iOS frameworks (all targets)
+        # Explicit module prefixes required — root-level task aggregation is not guaranteed
+        run: |
+          ./gradlew \
+            :core:linkDebugFrameworkIosSimulatorArm64 \
+            :core:linkDebugFrameworkIosArm64 \
+            :core:linkDebugFrameworkIosX64 \
+            :datastore-provider:linkDebugFrameworkIosSimulatorArm64 \
+            :datastore-provider:linkDebugFrameworkIosArm64 \
+            :datastore-provider:linkDebugFrameworkIosX64
+
+      - name: Build Xcode project
+        # generic/platform avoids "simulator not found" failures on runners
+        # where specific iOS runtime versions are not pre-installed
+        run: |
+          xcodebuild build \
+            -project iosApp/iosApp.xcodeproj \
+            -scheme iosApp \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
