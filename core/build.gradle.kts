@@ -5,6 +5,7 @@ import co.touchlab.skie.configuration.SealedInterop
 import co.touchlab.skie.configuration.SuspendInterop
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -25,6 +26,7 @@ kotlin {
         }
     }
 
+    val xcf = XCFramework("FeaturedCore")
     listOf(
         iosX64(),
         iosArm64(),
@@ -33,6 +35,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "FeaturedCore"
             isStatic = true
+            xcf.add(this)
         }
     }
 
@@ -52,6 +55,20 @@ kotlin {
             }
         }
     }
+}
+
+// Zips the release XCFramework for distribution via Swift Package Manager.
+// Output: build/xcframeworks/FeaturedCore.xcframework.zip
+val zipXCFramework by tasks.registering(Zip::class) {
+    description = "Zips the release FeaturedCore XCFramework for SPM distribution"
+    group = "build"
+
+    dependsOn("assembleFeaturedCoreReleaseXCFramework")
+
+    from(layout.buildDirectory.dir("XCFrameworks/release"))
+    include("FeaturedCore.xcframework/**")
+    archiveFileName.set("FeaturedCore.xcframework.zip")
+    destinationDirectory.set(layout.buildDirectory.dir("xcframeworks"))
 }
 
 android {
