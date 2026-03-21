@@ -14,8 +14,7 @@ internal actual class FlagRegistryDelegate actual constructor() {
         lock.withLock { params.putIfAbsent(param.key, param) }
     }
 
-    actual fun all(): List<ConfigParam<*>> =
-        lock.withLock { params.values.toList() }
+    actual fun all(): List<ConfigParam<*>> = lock.withLock { params.values.toList() }
 
     actual fun reset() {
         lock.withLock { params.clear() }
