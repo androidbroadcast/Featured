@@ -20,11 +20,15 @@ internal const val GENERATE_PROGUARD_TASK_NAME = "generateProguardRules"
 /** Name of the per-module iOS const val generation task registered by this plugin. */
 internal const val GENERATE_IOS_CONST_VAL_TASK_NAME = "generateIosConstVal"
 
+/** Name of the per-module xcconfig generation task registered by this plugin. */
+internal const val GENERATE_XCCONFIG_TASK_NAME = "generateXcconfig"
+
 public class FeaturedPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         val scanTask = registerModuleScanTask(target)
         registerProguardGenerationTask(target, scanTask)
         registerIosConstValGenerationTask(target, scanTask)
+        registerXcconfigGenerationTask(target, scanTask)
         wireModuleTaskToRootAggregator(target, scanTask)
     }
 
@@ -75,6 +79,23 @@ public class FeaturedPlugin : Plugin<Project> {
             task.commonMainOutputFile.set(
                 target.layout.buildDirectory.file("generated/featured/commonMain/FeatureFlagExpect.kt"),
             )
+            task.dependsOn(scanTask)
+        }
+    }
+
+    private fun registerXcconfigGenerationTask(
+        target: Project,
+        scanTask: TaskProvider<ScanLocalFlagsTask>,
+    ) {
+        target.tasks.register(GENERATE_XCCONFIG_TASK_NAME, GenerateXcconfigTask::class.java) { task ->
+            task.group = "featured"
+            task.description =
+                "Generates FeatureFlags.generated.xcconfig for iOS Swift DCE from @LocalFlag(defaultValue=false) flags in '${target.path}'."
+            task.scanResultFile.set(scanTask.flatMap { it.outputFile })
+            task.outputFile.set(
+                target.layout.buildDirectory.file("featured/FeatureFlags.generated.xcconfig"),
+            )
+            task.dependsOn(scanTask)
         }
     }
 
