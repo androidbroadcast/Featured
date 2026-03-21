@@ -9,9 +9,12 @@ import kotlinx.coroutines.flow.flowOf
 
 /**
  * A builder scope used to configure overrides for [fakeConfigValues].
+ *
+ * Use [set] to define per-param overrides. The scope is opaque — only [set] is part of the
+ * public API.
  */
-public class FakeConfigValuesScope {
-    internal val overrides: MutableMap<String, Any> = mutableMapOf()
+public class FakeConfigValuesScope internal constructor() {
+    private val overrides: MutableMap<String, Any> = mutableMapOf()
 
     /**
      * Sets an override value for the given [param].
@@ -23,6 +26,8 @@ public class FakeConfigValuesScope {
     ) {
         overrides[param.key] = value
     }
+
+    internal fun buildOverrides(): Map<String, Any> = overrides.toMap()
 }
 
 /**
@@ -45,7 +50,7 @@ public class FakeConfigValuesScope {
  */
 public fun fakeConfigValues(block: FakeConfigValuesScope.() -> Unit = {}): ConfigValues {
     val scope = FakeConfigValuesScope().apply(block)
-    return ConfigValues(localProvider = FakeLocalConfigValueProvider(scope.overrides))
+    return ConfigValues(localProvider = FakeLocalConfigValueProvider(scope.buildOverrides()))
 }
 
 private class FakeLocalConfigValueProvider(
@@ -67,6 +72,8 @@ private class FakeLocalConfigValueProvider(
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> {
         val override = overrides[param.key] as? T
+        // Emit only when an override exists. For unset params, ConfigValues.observe() falls back
+        // to the defaultValue via getValue(), so returning an empty flow is correct here.
         return if (override != null) {
             flowOf(ConfigValue(override, ConfigValue.Source.LOCAL))
         } else {
