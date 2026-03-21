@@ -25,7 +25,7 @@ kotlin {
         iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "FeaturedCompose"
+            baseName = "FeaturedDebugUi"
             isStatic = true
         }
     }
@@ -34,20 +34,23 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":core"))
+            implementation(projects.core)
+            implementation(projects.featuredRegistry)
             implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.ui)
         }
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
-            implementation(libs.turbine)
         }
     }
 }
 
 android {
-    namespace = "dev.androidbroadcast.featured.compose"
+    namespace = "dev.androidbroadcast.featured.debugui"
     compileSdk =
         libs.versions.android.compileSdk
             .get()

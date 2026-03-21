@@ -4,13 +4,14 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
     explicitApi()
-    jvmToolchain(21)
+
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
 
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -25,29 +26,44 @@ kotlin {
         iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "FeaturedCompose"
+            baseName = "FeaturedRegistry"
             isStatic = true
         }
     }
 
     jvm()
 
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jvmCommon") {
+                withJvm()
+                withAndroidTarget()
+            }
+            group("native") {
+                withIosX64()
+                withIosArm64()
+                withIosSimulatorArm64()
+            }
+        }
+    }
+
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":core"))
-            implementation(compose.runtime)
+            api(projects.core)
         }
 
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.kotlinx.coroutines.test)
-            implementation(libs.turbine)
+        @Suppress("unused")
+        val commonTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test)
+            }
         }
     }
 }
 
 android {
-    namespace = "dev.androidbroadcast.featured.compose"
+    namespace = "dev.androidbroadcast.featured.registry"
     compileSdk =
         libs.versions.android.compileSdk
             .get()

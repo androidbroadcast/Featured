@@ -94,6 +94,7 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+    debugImplementation(project(":featured-debug-ui"))
 }
 
 compose.desktop {

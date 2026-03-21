@@ -36,9 +36,12 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
+include(":featured-gradle-plugin")
 include(":sample")
 include(":core")
 include(":datastore-provider")
 include(":firebase-provider")
 include(":sharedpreferences-provider")
 include(":featured-compose")
+include(":featured-registry")
+include(":featured-debug-ui")
