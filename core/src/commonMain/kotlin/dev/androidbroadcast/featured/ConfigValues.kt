@@ -10,12 +10,34 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 
 /**
- * A class that provides access to configuration values from both local and remote sources.
- * Local values are typically used for user-specific overrides and have higher priority,
- * while remote values are fetched from a remote configuration service.
+ * Central access point for reading, overriding, and observing configuration values.
  *
- * If both local and remote values are available, the local value will be returned.
- * If neither is available, the default value from the parameter will be returned.
+ * [ConfigValues] composes an optional [LocalConfigValueProvider] and an optional
+ * [RemoteConfigValueProvider] using a well-defined priority order:
+ * 1. **Local provider** — highest priority; used for user-specific overrides.
+ * 2. **Remote provider** — values fetched from a remote configuration service.
+ * 3. **Default** — [ConfigParam.defaultValue] is used when no provider returns a value.
+ *
+ * At least one provider must be supplied; passing `null` for both throws [IllegalArgumentException].
+ *
+ * ```kotlin
+ * val configValues = ConfigValues(
+ *     localProvider  = InMemoryConfigValueProvider(),
+ *     remoteProvider = FirebaseConfigValueProvider(),
+ * )
+ *
+ * // One-shot read
+ * val value: ConfigValue<Boolean> = configValues.getValue(DarkModeParam)
+ *
+ * // Reactive observation
+ * configValues.observe(DarkModeParam).collect { configValue ->
+ *     applyTheme(configValue.value)
+ * }
+ * ```
+ *
+ * @param localProvider Optional provider for locally persisted overrides.
+ * @param remoteProvider Optional provider for remote configuration values.
+ * @throws IllegalArgumentException if both [localProvider] and [remoteProvider] are `null`.
  */
 public class ConfigValues(
     private val localProvider: LocalConfigValueProvider? = null,
@@ -29,6 +51,14 @@ public class ConfigValues(
 
     private val fetchSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
+    /**
+     * Returns the current value for [param], applying provider priority.
+     *
+     * Priority order: local provider → remote provider → [ConfigParam.defaultValue].
+     *
+     * @param param The configuration parameter to read.
+     * @return The resolved [ConfigValue], never `null`.
+     */
     public suspend fun <T : Any> getValue(param: ConfigParam<T>): ConfigValue<T> =
         localProvider?.get(param)
             ?: remoteProvider?.get(param)
