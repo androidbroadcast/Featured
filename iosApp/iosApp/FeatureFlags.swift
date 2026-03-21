@@ -2,6 +2,35 @@ import Combine
 import Foundation
 import FeaturedSampleApp
 
+// MARK: - #if entry point pattern for Swift dead code elimination (DCE)
+//
+// For every @LocalFlag with defaultValue = false on the Kotlin side, the
+// featured-gradle-plugin generates a DISABLE_<FLAG_KEY> compilation condition
+// in FeatureFlags.generated.xcconfig (written to
+// <module>/build/featured/FeatureFlags.generated.xcconfig).
+//
+// One-time Xcode setup (Release configuration only):
+//   1. Run `./gradlew :shared:generateXcconfig` to produce the xcconfig file.
+//   2. Copy or symlink it to iosApp/Configuration/FeatureFlags.generated.xcconfig.
+//   3. In Xcode: Project → Info → Configurations → Release →
+//      set the configuration file to FeatureFlags.generated.xcconfig.
+//
+// Usage at Swift entry points:
+//
+//   // View entry point guarded by @LocalFlag new_checkout (defaultValue = false)
+//   #if !DISABLE_NEW_CHECKOUT
+//   NewCheckoutButton()
+//   #endif
+//
+//   // Deeplink handler
+//   #if !DISABLE_NEW_CHECKOUT
+//   case .newCheckout: NewCheckoutCoordinator.start()
+//   #endif
+//
+// When the flag is defaultValue = false the compiler strips the guarded code
+// from the Release binary entirely, with zero runtime overhead.
+// See docs/ios-integration.md for the full integration guide.
+
 /// A type-safe wrapper around a KMP CoreConfigParam.
 ///
 /// Declare flags on the Kotlin side (in your shared module), then wrap them here:
