@@ -14,9 +14,13 @@ internal const val SCAN_TASK_NAME = "scanLocalFlags"
 /** Name of the root-level aggregation task that depends on all module scan tasks. */
 internal const val SCAN_ALL_TASK_NAME = "scanAllLocalFlags"
 
+/** Name of the per-module ProGuard rules generation task registered by this plugin. */
+internal const val GENERATE_PROGUARD_TASK_NAME = "generateProguardRules"
+
 public class FeaturedPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         val scanTask = registerModuleScanTask(target)
+        registerProguardGenerationTask(target, scanTask)
         wireModuleTaskToRootAggregator(target, scanTask)
     }
 
@@ -35,6 +39,22 @@ public class FeaturedPlugin : Plugin<Project> {
                 target.provider { target.kotlinSourceFiles() },
             )
         }
+
+    private fun registerProguardGenerationTask(
+        target: Project,
+        scanTask: TaskProvider<ScanLocalFlagsTask>,
+    ) {
+        target.tasks.register(GENERATE_PROGUARD_TASK_NAME, GenerateProguardRulesTask::class.java) { task ->
+            task.group = "featured"
+            task.description =
+                "Generates ProGuard/R8 -assumevalues rules for @LocalFlag(defaultValue=false) flags in '${target.path}'."
+            task.scanResultFile.set(scanTask.flatMap { it.outputFile })
+            task.outputFile.set(
+                target.layout.buildDirectory.file("featured/proguard-featured.pro"),
+            )
+            task.dependsOn(scanTask)
+        }
+    }
 
     /**
      * Ensures the root project has a `scanAllLocalFlags` aggregation task and wires

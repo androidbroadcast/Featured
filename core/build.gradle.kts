@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.skie)
     alias(libs.plugins.kover)
     alias(libs.plugins.bcv)
+    alias(libs.plugins.mavenPublish)
 }
 
 kotlin {
@@ -82,6 +83,40 @@ skie {
             DefaultArgumentInterop.Enabled(true)
             EnumInterop.Enabled(true)
             SealedInterop.Enabled(true) // or false
+        }
+    }
+}
+
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+    coordinates(
+        groupId = "dev.androidbroadcast.featured",
+        artifactId = "featured-core",
+    )
+    pom {
+        name.set("Featured Core")
+        description.set("Core module for Featured – type-safe, reactive KMP configuration management")
+        inceptionYear.set("2024")
+        url.set("https://github.com/AndroidBroadcast/Featured")
+        licenses {
+            license {
+                name.set("The Apache Software License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("repo")
+            }
+        }
+        developers {
+            developer {
+                id.set("androidbroadcast")
+                name.set("Kirill Rozov")
+                url.set("https://github.com/androidbroadcast")
+            }
+        }
+        scm {
+            url.set("https://github.com/AndroidBroadcast/Featured")
+            connection.set("scm:git:git://github.com/AndroidBroadcast/Featured.git")
+            developerConnection.set("scm:git:ssh://git@github.com/AndroidBroadcast/Featured.git")
         }
     }
 }

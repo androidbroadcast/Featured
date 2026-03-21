@@ -1,6 +1,7 @@
 package dev.androidbroadcast.featured.debugui
 
 import dev.androidbroadcast.featured.ConfigParam
+import dev.androidbroadcast.featured.ConfigValue
 
 /**
  * Represents a single feature flag entry shown in the debug UI.
@@ -9,11 +10,13 @@ import dev.androidbroadcast.featured.ConfigParam
  * @property param The underlying [ConfigParam] describing the flag.
  * @property currentValue The value currently in effect (local override or remote or default).
  * @property overrideValue The locally overridden value, or null if not overridden.
+ * @property source Where the current value originates from (DEFAULT, LOCAL, REMOTE, etc.).
  */
 public data class DebugFlagItem<T : Any>(
     public val param: ConfigParam<T>,
     public val currentValue: T,
     public val overrideValue: T?,
+    public val source: ConfigValue.Source = ConfigValue.Source.DEFAULT,
 ) {
     /** The unique key that identifies this flag. */
     public val key: String get() = param.key
