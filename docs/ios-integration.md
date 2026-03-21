@@ -22,8 +22,6 @@ with no runtime overhead.
 Only Boolean flags with `defaultValue = false` produce a condition. Flags with
 `defaultValue = true`, non-boolean flags, and `@RemoteFlag` declarations are excluded.
 
----
-
 ## Step 1: Generate the xcconfig file
 
 Run the Gradle task from the module that contains your `@LocalFlag` declarations
@@ -47,9 +45,7 @@ Example output:
 SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DISABLE_NEW_CHECKOUT DISABLE_EXPERIMENTAL_UI
 ```
 
----
-
-## Step 2: Make the file available to Xcode
+## Step2: Make the file available to Xcode
 
 The generated file lives inside the Gradle build directory and is not committed to source
 control. Copy or symlink it to a stable path inside your Xcode project tree.
@@ -75,9 +71,7 @@ iosApp/Configuration/FeatureFlags.generated.xcconfig
 The repository ships a placeholder file at this path so the Xcode project reference
 remains valid in a clean checkout.
 
----
-
-## Step 3: Configure Xcode (one-time)
+## Step3: Configure Xcode (one-time)
 
 1. Open `iosApp/iosApp.xcodeproj` in Xcode.
 2. Select the project in the Project Navigator → **Info** tab → **Configurations**.
@@ -87,9 +81,7 @@ remains valid in a clean checkout.
 Only configure the Release configuration. Debug builds intentionally omit the xcconfig
 so all features remain reachable during development.
 
----
-
-## Step 4: Guard Swift entry points with #if
+## Step4: Guard Swift entry points with #if
 
 Wrap every Swift entry point for a feature behind the corresponding `#if !DISABLE_*`
 condition. The Swift compiler removes the entire guarded block from Release binaries.
@@ -144,8 +136,6 @@ cp shared/build/featured/FeatureFlags.generated.xcconfig \
 ```
 
 Set **Based on dependency analysis** to **off** so it runs on every build.
-
----
 
 ## Reference
 
