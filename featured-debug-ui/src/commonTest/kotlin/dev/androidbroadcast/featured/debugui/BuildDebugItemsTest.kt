@@ -12,64 +12,74 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class BuildDebugItemsTest {
+    private fun fakeConfigValues(
+        source: ConfigValue.Source,
+        value: Any,
+    ): ConfigValues {
+        val provider =
+            object : LocalConfigValueProvider {
+                @Suppress("UNCHECKED_CAST")
+                override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T> = ConfigValue(value = value as T, source = source)
 
-    private fun fakeConfigValues(source: ConfigValue.Source, value: Any): ConfigValues {
-        val provider = object : LocalConfigValueProvider {
-            @Suppress("UNCHECKED_CAST")
-            override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T> =
-                ConfigValue(value = value as T, source = source)
+                override suspend fun <T : Any> set(
+                    param: ConfigParam<T>,
+                    value: T,
+                ) = Unit
 
-            override suspend fun <T : Any> set(param: ConfigParam<T>, value: T) = Unit
-
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
-                flowOf(ConfigValue(value = value as T, source = source))
-        }
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
+                    flowOf(ConfigValue(value = value as T, source = source))
+            }
         return ConfigValues(localProvider = provider)
     }
 
     @Test
-    fun buildDebugItems_setsSourceFromConfigValue() = runTest {
-        val param = ConfigParam(key = "p", defaultValue = true)
-        val configValues = fakeConfigValues(ConfigValue.Source.REMOTE, true)
+    fun buildDebugItems_setsSourceFromConfigValue() =
+        runTest {
+            val param = ConfigParam(key = "p", defaultValue = true)
+            val configValues = fakeConfigValues(ConfigValue.Source.REMOTE, true)
 
-        val items = buildDebugItems(configValues, listOf(param))
+            val items = buildDebugItems(configValues, listOf(param))
 
-        assertEquals(1, items.size)
-        assertEquals(ConfigValue.Source.REMOTE, items[0].source)
-    }
-
-    @Test
-    fun buildDebugItems_setsOverrideValueWhenSourceIsLocal() = runTest {
-        val param = ConfigParam(key = "p2", defaultValue = false)
-        val configValues = fakeConfigValues(ConfigValue.Source.LOCAL, true)
-
-        val items = buildDebugItems(configValues, listOf(param))
-
-        assertEquals(true, items[0].overrideValue)
-    }
+            assertEquals(1, items.size)
+            assertEquals(ConfigValue.Source.REMOTE, items[0].source)
+        }
 
     @Test
-    fun buildDebugItems_overrideValueNullWhenSourceIsDefault() = runTest {
-        val param = ConfigParam(key = "p3", defaultValue = "hello")
-        val configValues = fakeConfigValues(ConfigValue.Source.DEFAULT, "hello")
+    fun buildDebugItems_setsOverrideValueWhenSourceIsLocal() =
+        runTest {
+            val param = ConfigParam(key = "p2", defaultValue = false)
+            val configValues = fakeConfigValues(ConfigValue.Source.LOCAL, true)
 
-        val items = buildDebugItems(configValues, listOf(param))
+            val items = buildDebugItems(configValues, listOf(param))
 
-        assertNull(items[0].overrideValue)
-    }
+            assertEquals(true, items[0].overrideValue)
+        }
 
     @Test
-    fun buildDebugItems_returnsItemForEachParam() = runTest {
-        val params = listOf(
-            ConfigParam(key = "a", defaultValue = 1),
-            ConfigParam(key = "b", defaultValue = 2),
-            ConfigParam(key = "c", defaultValue = 3),
-        )
-        val configValues = fakeConfigValues(ConfigValue.Source.DEFAULT, 1)
+    fun buildDebugItems_overrideValueNullWhenSourceIsDefault() =
+        runTest {
+            val param = ConfigParam(key = "p3", defaultValue = "hello")
+            val configValues = fakeConfigValues(ConfigValue.Source.DEFAULT, "hello")
 
-        val items = buildDebugItems(configValues, params)
+            val items = buildDebugItems(configValues, listOf(param))
 
-        assertEquals(3, items.size)
-    }
+            assertNull(items[0].overrideValue)
+        }
+
+    @Test
+    fun buildDebugItems_returnsItemForEachParam() =
+        runTest {
+            val params =
+                listOf(
+                    ConfigParam(key = "a", defaultValue = 1),
+                    ConfigParam(key = "b", defaultValue = 2),
+                    ConfigParam(key = "c", defaultValue = 3),
+                )
+            val configValues = fakeConfigValues(ConfigValue.Source.DEFAULT, 1)
+
+            val items = buildDebugItems(configValues, params)
+
+            assertEquals(3, items.size)
+        }
 }

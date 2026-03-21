@@ -62,10 +62,10 @@ public fun FeatureFlagsDebugScreen(
 
     LaunchedEffect(configValues) {
         val params = FlagRegistry.all()
-        // Initial load
         groupedItems = groupFlagsByCategory(buildDebugItems(configValues, params))
 
-        // Reactive: observe all params and refresh on any change
+        // Reactive: observe all params and refresh on any change.
+        // On each emission all params are re-read — acceptable for a debug-only screen.
         val flows = params.map { param -> configValues.observe(param) }
         if (flows.isNotEmpty()) {
             flows.merge().collect {
@@ -92,16 +92,23 @@ public fun FeatureFlagsDebugScreen(
                 )
             }
         } else {
+            val hasCategories = groupedItems.keys.any { it != null }
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 groupedItems.forEach { (category, flagsInCategory) ->
-                    if (category != null) {
-                        item(key = "header_$category") {
+                    val headerText =
+                        when {
+                            category != null -> category
+                            hasCategories -> "Other"
+                            else -> null
+                        }
+                    if (headerText != null) {
+                        item(key = "header_$headerText") {
                             Text(
-                                text = category,
+                                text = headerText,
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(vertical = 4.dp),
@@ -192,27 +199,36 @@ private fun FlagItemCard(
 @Composable
 @Suppress("ktlint:standard:function-naming")
 private fun SourceBadge(source: ConfigValue.Source) {
-    val label = when (source) {
-        ConfigValue.Source.DEFAULT -> "DEFAULT"
-        ConfigValue.Source.LOCAL -> "LOCAL"
-        ConfigValue.Source.REMOTE -> "REMOTE"
-        ConfigValue.Source.REMOTE_DEFAULT -> "REMOTE"
-        ConfigValue.Source.UNKNOWN -> "UNKNOWN"
-    }
-    val containerColor = when (source) {
-        ConfigValue.Source.LOCAL -> MaterialTheme.colorScheme.tertiary
-        ConfigValue.Source.REMOTE, ConfigValue.Source.REMOTE_DEFAULT -> MaterialTheme.colorScheme.secondary
-        else -> MaterialTheme.colorScheme.surfaceVariant
-    }
-    val contentColor = when (source) {
-        ConfigValue.Source.LOCAL -> MaterialTheme.colorScheme.onTertiary
-        ConfigValue.Source.REMOTE, ConfigValue.Source.REMOTE_DEFAULT -> MaterialTheme.colorScheme.onSecondary
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    data class BadgeStyle(
+        val label: String,
+        val containerColor: androidx.compose.ui.graphics.Color,
+        val contentColor: androidx.compose.ui.graphics.Color,
+    )
+
+    val style =
+        when (source) {
+            ConfigValue.Source.LOCAL -> {
+                BadgeStyle("LOCAL", MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.onTertiary)
+            }
+
+            ConfigValue.Source.REMOTE,
+            ConfigValue.Source.REMOTE_DEFAULT,
+            -> {
+                BadgeStyle(
+                    "REMOTE",
+                    MaterialTheme.colorScheme.secondary,
+                    MaterialTheme.colorScheme.onSecondary,
+                )
+            }
+
+            else -> {
+                BadgeStyle(source.name, MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
     Badge(
-        containerColor = containerColor,
-        contentColor = contentColor,
+        containerColor = style.containerColor,
+        contentColor = style.contentColor,
     ) {
-        Text(text = label, style = MaterialTheme.typography.labelSmall)
+        Text(text = style.label, style = MaterialTheme.typography.labelSmall)
     }
 }

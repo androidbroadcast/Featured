@@ -8,7 +8,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class FlagGroupingTest {
-
     private fun makeItem(
         key: String,
         category: String? = null,
@@ -22,11 +21,12 @@ class FlagGroupingTest {
 
     @Test
     fun groupByCategory_groupsItemsByCategory() {
-        val items = listOf(
-            makeItem("flag_a", category = "UI"),
-            makeItem("flag_b", category = "Network"),
-            makeItem("flag_c", category = "UI"),
-        )
+        val items =
+            listOf(
+                makeItem("flag_a", category = "UI"),
+                makeItem("flag_b", category = "Network"),
+                makeItem("flag_c", category = "UI"),
+            )
 
         val grouped = groupFlagsByCategory(items)
 
@@ -37,10 +37,11 @@ class FlagGroupingTest {
 
     @Test
     fun groupByCategory_placesNullCategoryUnderNullKey() {
-        val items = listOf(
-            makeItem("flag_x", category = null),
-            makeItem("flag_y", category = "Experimental"),
-        )
+        val items =
+            listOf(
+                makeItem("flag_x", category = null),
+                makeItem("flag_y", category = "Experimental"),
+            )
 
         val grouped = groupFlagsByCategory(items)
 
@@ -57,11 +58,12 @@ class FlagGroupingTest {
 
     @Test
     fun groupByCategory_preservesOrderWithinGroup() {
-        val items = listOf(
-            makeItem("flag_1", category = "A"),
-            makeItem("flag_2", category = "A"),
-            makeItem("flag_3", category = "A"),
-        )
+        val items =
+            listOf(
+                makeItem("flag_1", category = "A"),
+                makeItem("flag_2", category = "A"),
+                makeItem("flag_3", category = "A"),
+            )
 
         val grouped = groupFlagsByCategory(items)
         val keys = grouped["A"]?.map { item -> item.key }

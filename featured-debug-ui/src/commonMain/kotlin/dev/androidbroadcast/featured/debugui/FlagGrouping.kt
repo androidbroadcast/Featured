@@ -8,6 +8,4 @@ package dev.androidbroadcast.featured.debugui
  *
  * @return A [Map] from category name (or null) to the list of items in that category.
  */
-public fun groupFlagsByCategory(
-    items: List<DebugFlagItem<*>>,
-): Map<String?, List<DebugFlagItem<*>>> = items.groupBy { it.category }
+internal fun groupFlagsByCategory(items: List<DebugFlagItem<*>>): Map<String?, List<DebugFlagItem<*>>> = items.groupBy { it.category }
