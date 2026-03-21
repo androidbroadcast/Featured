@@ -4,28 +4,60 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileTree
 import org.gradle.api.logging.Logging
+import org.gradle.api.tasks.TaskProvider
 
 private val logger = Logging.getLogger("dev.androidbroadcast.featured")
 
+/** Name of the per-module scan task registered by this plugin. */
+internal const val SCAN_TASK_NAME = "scanLocalFlags"
+
+/** Name of the root-level aggregation task that depends on all module scan tasks. */
+internal const val SCAN_ALL_TASK_NAME = "scanAllLocalFlags"
+
 public class FeaturedPlugin : Plugin<Project> {
     override fun apply(target: Project) {
-        val scanTask =
-            target.tasks.register("scanLocalFlags", ScanLocalFlagsTask::class.java) { task ->
-                task.group = "featured"
-                task.description = "Scans Kotlin sources for @LocalFlag-annotated ConfigParam declarations."
-                task.moduleName.set(target.path)
-                task.outputFile.set(
-                    target.layout.buildDirectory.file("featured/local-flags.txt"),
-                )
-            }
+        val scanTask = registerModuleScanTask(target)
+        wireModuleTaskToRootAggregator(target, scanTask)
+    }
 
-        // Wire Kotlin source files lazily after all plugins have been applied,
-        // so that Kotlin/KMP source sets are fully configured before we collect them.
-        target.afterEvaluate {
-            scanTask.configure { task ->
-                task.sourceFiles.setFrom(target.kotlinSourceFiles())
+    private fun registerModuleScanTask(target: Project): TaskProvider<ScanLocalFlagsTask> =
+        target.tasks.register(SCAN_TASK_NAME, ScanLocalFlagsTask::class.java) { task ->
+            task.group = "featured"
+            task.description =
+                "Scans Kotlin sources in '${target.path}' for @LocalFlag-annotated ConfigParam declarations."
+            task.moduleName.set(target.path)
+            task.outputFile.set(
+                target.layout.buildDirectory.file("featured/local-flags.txt"),
+            )
+            // Wire source files lazily: resolved after all plugins have applied so
+            // KMP/Android source sets are fully configured.
+            task.sourceFiles.setFrom(
+                target.provider { target.kotlinSourceFiles() },
+            )
+        }
+
+    /**
+     * Ensures the root project has a `scanAllLocalFlags` aggregation task and wires
+     * [scanTask] into it as a dependency. This makes `./gradlew scanAllLocalFlags`
+     * discover flags across every module that applies the plugin.
+     */
+    private fun wireModuleTaskToRootAggregator(
+        target: Project,
+        scanTask: TaskProvider<ScanLocalFlagsTask>,
+    ) {
+        val root = target.rootProject
+
+        // Register the aggregation task if this is the first module to apply the plugin.
+        if (root.tasks.findByName(SCAN_ALL_TASK_NAME) == null) {
+            root.tasks.register(SCAN_ALL_TASK_NAME) { task ->
+                task.group = "featured"
+                task.description =
+                    "Aggregates @LocalFlag scan results from all modules applying the Featured plugin."
             }
         }
+
+        // Wire this module's scan task as a dependency of the root aggregator.
+        root.tasks.named(SCAN_ALL_TASK_NAME) { it.dependsOn(scanTask) }
     }
 }
 
@@ -33,8 +65,8 @@ public class FeaturedPlugin : Plugin<Project> {
  * Returns a [FileTree] containing all `.kt` source files on [this] project.
  *
  * Supports Kotlin Multiplatform (`src/<sourceSet>/kotlin`) and conventional JVM
- * (`src/main/kotlin`, `src/main/java`) layouts, plus any source directories
- * contributed by applied Kotlin plugins via the `sourceSets` extension.
+ * (`src/main/kotlin`, `src/main/java`) layouts by scanning the `src/` directory.
+ * Custom source directories registered via the Kotlin extension are also included.
  */
 internal fun Project.kotlinSourceFiles(): FileTree {
     val trees = mutableListOf<FileTree>()
@@ -45,36 +77,38 @@ internal fun Project.kotlinSourceFiles(): FileTree {
         trees += fileTree(srcDir) { it.include("**/*.kt") }
     }
 
-    // Also honour custom source directories registered via the Kotlin or Java
-    // `sourceSets` extension (covers custom source sets and non-standard layouts).
-    listOf("kotlin", "sourceSets").forEach { extensionName ->
-        extensions.findByName(extensionName)?.let { ext ->
-            runCatching {
-                val sourceSetsMap =
-                    ext::class.java.getMethod("getAsMap").invoke(ext)
-                        as? Map<*, *> ?: return@runCatching
-                sourceSetsMap.values.forEach { ss ->
-                    ss ?: return@forEach
-                    runCatching {
-                        val kotlin = ss::class.java.getMethod("getKotlin").invoke(ss)
-                        val srcDirs =
-                            kotlin?.let {
-                                it::class.java.getMethod("getSrcDirs").invoke(it) as? Set<*>
-                            } ?: return@runCatching
-                        srcDirs.filterIsInstance<java.io.File>().forEach { dir ->
-                            if (dir.isDirectory) trees += fileTree(dir) { it.include("**/*.kt") }
+    // Also honour custom source directories registered via the Kotlin extension
+    // (covers source sets outside the conventional `src/` tree).
+    extensions.findByName("kotlin")?.let { ext ->
+        runCatching {
+            // KotlinProjectExtension exposes getSourceSets() returning a NamedDomainObjectContainer.
+            val sourceSets =
+                ext::class.java.getMethod("getSourceSets").invoke(ext)
+                    as? Iterable<*> ?: return@runCatching
+            sourceSets.forEach { ss ->
+                ss ?: return@forEach
+                runCatching {
+                    val kotlin = ss::class.java.getMethod("getKotlin").invoke(ss)
+                    val srcDirs =
+                        kotlin?.let {
+                            it::class.java.getMethod("getSrcDirs").invoke(it) as? Set<*>
+                        } ?: return@runCatching
+                    srcDirs.filterIsInstance<java.io.File>().forEach { dir ->
+                        // Only add dirs outside `src/` to avoid duplicates with the tree above.
+                        if (dir.isDirectory && !dir.startsWith(srcDir)) {
+                            trees += fileTree(dir) { it.include("**/*.kt") }
                         }
-                    }.onFailure { ex ->
-                        logger.warn(
-                            "[featured] Could not read source dirs from '$extensionName' source set: ${ex.message}",
-                        )
                     }
+                }.onFailure { ex ->
+                    logger.warn(
+                        "[featured] Could not read Kotlin source dirs for source set in '$path': ${ex.message}",
+                    )
                 }
-            }.onFailure { ex ->
-                logger.warn(
-                    "[featured] Could not inspect '$extensionName' extension on project '$path': ${ex.message}",
-                )
             }
+        }.onFailure { ex ->
+            logger.warn(
+                "[featured] Could not inspect 'kotlin' extension on project '$path': ${ex.message}",
+            )
         }
     }
 

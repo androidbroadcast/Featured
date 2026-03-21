@@ -6,6 +6,7 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -49,7 +50,12 @@ public abstract class ScanLocalFlagsTask : DefaultTask() {
     /**
      * Entries found during the last [scan] execution.
      * Empty before the task has run.
+     *
+     * Marked `@Internal` so Gradle's task property validator does not require this
+     * in-memory field to be declared as an input or output. Downstream tasks should
+     * use [outputFile] to declare a proper file-based dependency instead.
      */
+    @get:Internal
     public var scannedEntries: List<LocalFlagEntry> = emptyList()
         private set
 

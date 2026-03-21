@@ -19,7 +19,7 @@ class LocalFlagScannerTest {
     }
 
     @Test
-    fun `scanner extracts boolean flag annotated with LocalFlag`() {
+    fun `scanner extracts boolean flag with positional args`() {
         val source =
             """
             package com.example
@@ -42,7 +42,7 @@ class LocalFlagScannerTest {
     }
 
     @Test
-    fun `scanner extracts string flag annotated with LocalFlag`() {
+    fun `scanner extracts string flag with positional args`() {
         val source =
             """
             package com.example
@@ -65,7 +65,7 @@ class LocalFlagScannerTest {
     }
 
     @Test
-    fun `scanner extracts integer flag annotated with LocalFlag`() {
+    fun `scanner extracts integer flag with positional args`() {
         val source =
             """
             package com.example
@@ -85,6 +85,100 @@ class LocalFlagScannerTest {
             ),
             result[0],
         )
+    }
+
+    @Test
+    fun `scanner extracts double value`() {
+        val source =
+            """
+            package com.example
+            @LocalFlag
+            val threshold = ConfigParam("threshold", 0.5)
+            """.trimIndent()
+
+        val result = LocalFlagScanner.scan(source, moduleName = "ml")
+
+        assertEquals(1, result.size)
+        assertEquals(
+            LocalFlagEntry(
+                key = "threshold",
+                defaultValue = "0.5",
+                type = "Double",
+                moduleName = "ml",
+            ),
+            result[0],
+        )
+    }
+
+    @Test
+    fun `scanner handles Long literal with L suffix`() {
+        val source =
+            """
+            package com.example
+            @LocalFlag
+            val bigNumber = ConfigParam("big_number", 123456789L)
+            """.trimIndent()
+
+        val result = LocalFlagScanner.scan(source, moduleName = "core")
+
+        assertEquals(1, result.size)
+        assertEquals("Long", result[0].type)
+        assertEquals("123456789", result[0].defaultValue)
+    }
+
+    @Test
+    fun `scanner handles Float literal with f suffix`() {
+        val source =
+            """
+            package com.example
+            @LocalFlag
+            val ratio = ConfigParam("ratio", 3.14f)
+            """.trimIndent()
+
+        val result = LocalFlagScanner.scan(source, moduleName = "core")
+
+        assertEquals(1, result.size)
+        assertEquals("Float", result[0].type)
+        assertEquals("3.14", result[0].defaultValue)
+    }
+
+    @Test
+    fun `scanner extracts flag with named arguments`() {
+        val source =
+            """
+            package com.example
+            @LocalFlag
+            val timeout = ConfigParam<Int>(key = "timeout", defaultValue = 30)
+            """.trimIndent()
+
+        val result = LocalFlagScanner.scan(source, moduleName = "network")
+
+        assertEquals(1, result.size)
+        assertEquals(
+            LocalFlagEntry(
+                key = "timeout",
+                defaultValue = "30",
+                type = "Int",
+                moduleName = "network",
+            ),
+            result[0],
+        )
+    }
+
+    @Test
+    fun `scanner extracts flag with named boolean defaultValue`() {
+        val source =
+            """
+            package com.example
+            @LocalFlag
+            val featureEnabled = ConfigParam<Boolean>(key = "feature_enabled", defaultValue = true)
+            """.trimIndent()
+
+        val result = LocalFlagScanner.scan(source, moduleName = "app")
+
+        assertEquals(1, result.size)
+        assertEquals("Boolean", result[0].type)
+        assertEquals("true", result[0].defaultValue)
     }
 
     @Test
@@ -109,26 +203,19 @@ class LocalFlagScannerTest {
     }
 
     @Test
-    fun `scanner handles double value`() {
+    fun `scanner skips unannotated ConfigParam`() {
         val source =
             """
             package com.example
+            val notAFlag = ConfigParam("not_a_flag", false)
             @LocalFlag
-            val threshold = ConfigParam("threshold", 0.5)
+            val isAFlag = ConfigParam("is_a_flag", true)
             """.trimIndent()
 
-        val result = LocalFlagScanner.scan(source, moduleName = "ml")
+        val result = LocalFlagScanner.scan(source, moduleName = "app")
 
         assertEquals(1, result.size)
-        assertEquals(
-            LocalFlagEntry(
-                key = "threshold",
-                defaultValue = "0.5",
-                type = "Double",
-                moduleName = "ml",
-            ),
-            result[0],
-        )
+        assertEquals("is_a_flag", result[0].key)
     }
 
     @Test
