@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.kotlinJvm) apply false
     alias(libs.plugins.spotless)
     alias(libs.plugins.mavenPublish) apply false
+    alias(libs.plugins.dokka)
 }
 
 spotless {
