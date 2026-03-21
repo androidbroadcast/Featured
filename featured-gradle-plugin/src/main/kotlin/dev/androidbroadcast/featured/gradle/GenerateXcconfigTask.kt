@@ -40,7 +40,7 @@ public abstract class GenerateXcconfigTask : DefaultTask() {
 
     @TaskAction
     public fun generate() {
-        val entries = parseScanResult()
+        val entries = scanResultFile.parseLocalFlagEntries()
         val content = XcconfigGenerator.generate(entries)
 
         val out = outputFile.get().asFile
@@ -53,23 +53,5 @@ public abstract class GenerateXcconfigTask : DefaultTask() {
             val count = entries.count { it.type == "Boolean" && it.defaultValue == "false" }
             logger.lifecycle("[featured] Generated xcconfig with $count DISABLE_ condition(s) → ${out.path}")
         }
-    }
-
-    private fun parseScanResult(): List<LocalFlagEntry> {
-        val file = scanResultFile.get().asFile
-        if (!file.exists() || file.readText().isBlank()) return emptyList()
-        return file
-            .readLines()
-            .filter { it.isNotBlank() }
-            .mapNotNull { line ->
-                val parts = line.split("|")
-                if (parts.size != 4) return@mapNotNull null
-                LocalFlagEntry(
-                    key = parts[0],
-                    defaultValue = parts[1],
-                    type = parts[2],
-                    moduleName = parts[3],
-                )
-            }
     }
 }
