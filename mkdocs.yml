@@ -1,0 +1,61 @@
+site_name: Featured
+site_description: Type-safe, reactive feature-flag and configuration management for Kotlin Multiplatform
+site_url: https://androidbroadcast.github.io/Featured/
+repo_name: AndroidBroadcast/Featured
+repo_url: https://github.com/AndroidBroadcast/Featured
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Guides:
+      - Android: guides/android.md
+      - iOS: guides/ios.md
+      - JVM: guides/jvm.md
+      - Providers: guides/providers.md
+      - Best Practices: guides/best-practices.md
+  - API Reference: api/index.md
+  - Changelog: changelog.md
