@@ -54,6 +54,7 @@ public final class dev/androidbroadcast/featured/ConfigValues {
 	public final fun getValue (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun observe (Ldev/androidbroadcast/featured/ConfigParam;)Lkotlinx/coroutines/flow/Flow;
 	public final fun override (Ldev/androidbroadcast/featured/ConfigParam;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun resetOverride (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class dev/androidbroadcast/featured/ConfigValuesExtensionsKt {
@@ -67,12 +68,17 @@ public final class dev/androidbroadcast/featured/InMemoryConfigValueProvider : d
 	public final fun clear ()V
 	public fun get (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun observe (Ldev/androidbroadcast/featured/ConfigParam;)Lkotlinx/coroutines/flow/Flow;
+	public fun resetOverride (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun set (Ldev/androidbroadcast/featured/ConfigParam;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class dev/androidbroadcast/featured/LocalConfigValueProvider : dev/androidbroadcast/featured/ConfigValueProvider {
 	public abstract fun observe (Ldev/androidbroadcast/featured/ConfigParam;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun resetOverride (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun set (Ldev/androidbroadcast/featured/ConfigParam;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface annotation class dev/androidbroadcast/featured/LocalFlag : java/lang/annotation/Annotation {
 }
 
 public abstract interface class dev/androidbroadcast/featured/RemoteConfigValueProvider : dev/androidbroadcast/featured/ConfigValueProvider {
