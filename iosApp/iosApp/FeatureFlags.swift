@@ -27,18 +27,21 @@ public struct FeatureFlag<T> {
 /// Convenience initializers for common types, handling KMP primitive boxing.
 extension FeatureFlag where T == Bool {
     public init(param: CoreConfigParam<AnyObject>, defaultValue: Bool) {
+        // swiftlint:disable:next force_cast
         self.init(param: param, defaultValue: defaultValue) { ($0 as! NSNumber).boolValue }
     }
 }
 
 extension FeatureFlag where T == String {
     public init(param: CoreConfigParam<AnyObject>, defaultValue: String) {
+        // swiftlint:disable:next force_cast
         self.init(param: param, defaultValue: defaultValue) { $0 as! String }
     }
 }
 
 extension FeatureFlag where T == Int {
     public init(param: CoreConfigParam<AnyObject>, defaultValue: Int) {
+        // swiftlint:disable:next force_cast
         self.init(param: param, defaultValue: defaultValue) { ($0 as! NSNumber).intValue }
     }
 }
