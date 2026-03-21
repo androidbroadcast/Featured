@@ -69,15 +69,16 @@ Orchestrator (ralph-loop body)
 │   └── If all issues terminal (done|failed) → write REPORT.md → print PIPELINE_COMPLETE
 │
 └── Subagent (one per issue, stays alive through full PR lifecycle)
-    ├── Preflight: check worktree/branch existence
-    ├── Implement
-    ├── Local review + simplify (max 3 inner iterations)
+    ├── superpowers:using-git-worktrees  (create isolated worktree)
+    ├── superpowers:test-driven-development  (implement)
+    ├── superpowers:requesting-code-review + simplify  (local quality loop, max 3x)
+    ├── superpowers:verification-before-completion  (pre-push check)
     ├── Push PR
     └── PR feedback loop (max 3 total push attempts)
-        ├── On CI failure: fix + push
+        ├── On CI failure: superpowers:systematic-debugging + push
         ├── On serious bot comments: fix + push
-        └── On success: merge, cleanup, write .done signal
-        └── On max attempts exceeded: cleanup, write .failed signal
+        ├── On success: superpowers:finishing-a-development-branch (merge)
+        └── On max attempts exceeded: superpowers:finishing-a-development-branch (discard)
 ```
 
 ---
@@ -147,47 +148,41 @@ Actual graph determined at runtime from real issue content.
 
 ## Subagent Lifecycle
 
-### Preflight
-
-Before doing any work, the subagent checks:
-```bash
-# Prune stale git worktree index entries first
-git worktree prune
-# If worktree directory exists from a prior partial run → remove it
-if [ -d ".worktrees/issue-{id}" ]; then
-  git worktree remove --force .worktrees/issue-{id}
-fi
-# If branch already exists on remote → delete it
-if git ls-remote --heads origin feat/issue-{id}-{slug} | grep -q .; then
-  git push origin --delete feat/issue-{id}-{slug}
-fi
-```
-
-### Implementation Loop
+The subagent delegates each phase to the appropriate superpowers skill.
+Only the `simplify` skill is outside the superpowers plugin scope.
 
 ```
-1. git worktree add .worktrees/issue-{id} -b feat/issue-{id}-{slug}
+1. superpowers:using-git-worktrees
+   → Creates isolated worktree at .worktrees/issue-{id}
+   → Branch: feat/issue-{id}-{slug}
+   → Handles preflight: git worktree prune, collision cleanup, branch cleanup
+
 2. gh issue view {id}  →  read full issue body
-3. Implement the change
-4. [Local review loop, max 3 iterations]:
+
+3. superpowers:test-driven-development
+   → Implements the change with tests written first
+
+4. [Local quality loop, max 3 iterations]:
    a. superpowers:requesting-code-review
-   b. simplify skill
-   c. If code-reviewer subagent returns no serious issues → break
+   b. simplify skill  ← only non-superpowers step
+   c. If reviewer returns no serious issues → break
    d. Else fix issues → go to (a)
-5. git push origin feat/issue-{id}-{slug}
-6. gh pr create --title "feat: {title}" --body "Closes #{id}"
-7. Write .pipeline/signals/{id}.started  (contains PR number from step 6)
+
+5. superpowers:verification-before-completion
+   → Runs all tests, confirms build passes before any push
+
+6. git push origin feat/issue-{id}-{slug}
+   gh pr create --title "feat: {title}" --body "Closes #{id}"
+   Write .pipeline/signals/{id}.started  (contains PR number)
 ```
 
 ### PR Feedback Loop
 
 **Retry budget:** 3 total push attempts (initial push + 2 fix pushes).
-The counter `attempt_count` tracks fix pushes only.
-Rule: `if attempt_count >= 2 → FAIL`.
+`attempt_count` tracks fix pushes only. Rule: `if attempt_count >= 2 → FAIL`.
 
-**Per-iteration rule:** Each loop iteration performs at most ONE `fix + push`.
-If both CI failures AND serious bot comments exist in the same iteration,
-fix ALL of them in a single commit and push once. `attempt_count` increments by 1 per loop iteration, never more.
+**Per-iteration rule:** Each iteration performs at most ONE `fix + push` — all CI
+failures and serious bot comments are batched into a single commit per iteration.
 
 **CI timeout:** 30 minutes maximum wait per CI run. If exceeded, treat as CI failure.
 
@@ -196,19 +191,20 @@ LOOP:
   if attempt_count >= 2 → FAIL     ← guard at top: fires before waiting for CI
   Wait for gh pr checks (poll every 60s, timeout 30 min)
   Collect all issues to fix this iteration:
-    - If CI failed: read gh run view --log-failed, collect fixes
+    - If CI failed:
+        superpowers:systematic-debugging  → diagnose + fix
     - Read bot comments: gh pr reviews + gh api .../comments
-    - Collect all serious comment fixes
+        Collect all serious comment fixes
   If CI green AND no serious bot comments:
     → BREAK → SUCCESS
+  superpowers:verification-before-completion  → confirm fixes pass locally
   Apply ALL fixes in one commit, git push
   attempt_count++
   continue loop
 
 SUCCESS:
-  gh pr merge --squash   (CI is already confirmed green; --auto is not needed)
-  git worktree remove .worktrees/issue-{id}
-  git push origin --delete feat/issue-{id}-{slug}  (remote branch cleanup)
+  superpowers:finishing-a-development-branch  (select: merge to main + squash)
+  → Handles: gh pr merge --squash, worktree removal, remote branch cleanup
   Write .pipeline/signals/{id}.done
 ```
 
@@ -216,8 +212,8 @@ SUCCESS:
 
 ```
 If open PR exists: gh pr close {pr_number} --comment "Pipeline: abandoning after {n} attempts"
-git push origin --delete feat/issue-{id}-{slug}  (remote branch cleanup)
-git worktree remove --force .worktrees/issue-{id}
+superpowers:finishing-a-development-branch  (select: discard branch)
+→ Handles: worktree removal + remote branch deletion
 gh issue comment {id} \
   --body "⚠️ Pipeline failed after {n} attempts.\n\nReason: {failure_reason}\n\nLast CI: {url}"
 Write .pipeline/signals/{id}.failed
