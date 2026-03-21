@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
  * such as local storage, remote servers, or a combination of both.
  */
 public sealed interface ConfigValueProvider {
-
     /**
      * Retrieves the configuration value for the given parameter.
      * If the value is not available, returns null.
@@ -24,7 +23,6 @@ public sealed interface ConfigValueProvider {
 }
 
 public interface RemoteConfigValueProvider : ConfigValueProvider {
-
     /**
      * Fetches the latest configuration values from the remote source and apply them.
      * This method should be called to ensure that the latest values are available.
@@ -37,7 +35,6 @@ public interface RemoteConfigValueProvider : ConfigValueProvider {
 }
 
 public interface LocalConfigValueProvider : ConfigValueProvider {
-
     /**
      * Sets the configuration value for the given parameter.
      * This method should be used to update local values,
@@ -46,7 +43,10 @@ public interface LocalConfigValueProvider : ConfigValueProvider {
      * @param param The configuration parameter to set the value for.
      * @param value The value to set for the specified parameter.
      */
-    public suspend fun <T : Any> set(param: ConfigParam<T>, value: T)
+    public suspend fun <T : Any> set(
+        param: ConfigParam<T>,
+        value: T,
+    )
 
     /**
      * Observes changes to the configuration value for the given parameter.

@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:function-naming")
+
 package dev.androidbroadcast.featured
 
 import androidx.compose.foundation.layout.Box
@@ -20,14 +22,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun FeaturedSample(
     modifier: Modifier = Modifier,
-    configValues: ConfigValues = createDefaultConfigValues()
+    configValues: ConfigValues = createDefaultConfigValues(),
 ) {
     val viewModel: SampleViewModel = viewModel { SampleViewModel(configValues) }
     val activate by viewModel.flagActive.collectAsStateWithLifecycle()
 
     Box(
-        modifier = modifier.padding(16.dp)
-            .fillMaxSize(),
+        modifier =
+            modifier
+                .padding(16.dp)
+                .fillMaxSize(),
     ) {
         Checkbox(
             activate,
@@ -37,7 +41,7 @@ fun FeaturedSample(
         val buttonColor by viewModel.mainButtonColor.collectAsStateWithLifecycle()
         MainButton(
             onClick = { viewModel.setMainButtonColorFlag(!activate) },
-            buttonColor = buttonColor
+            buttonColor = buttonColor,
         )
     }
 }
@@ -45,27 +49,27 @@ fun FeaturedSample(
 @Composable
 fun MainButton(
     onClick: () -> Unit,
-    buttonColor: SampleViewModel.MainButtonColor
+    buttonColor: SampleViewModel.MainButtonColor,
 ) {
     Button(
         onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = when (buttonColor) {
-                SampleViewModel.MainButtonColor.Red -> Color.Red
-                SampleViewModel.MainButtonColor.Blue -> Color.Blue
-            }
-        ),
-        modifier = Modifier.fillMaxWidth()
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor =
+                    when (buttonColor) {
+                        SampleViewModel.MainButtonColor.Red -> Color.Red
+                        SampleViewModel.MainButtonColor.Blue -> Color.Blue
+                    },
+            ),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Text(
             text = "Main Button",
-            color = Color.White
+            color = Color.White,
         )
     }
 }
 
 // Helper function to create default ConfigValues for demonstration
 @Composable
-fun createDefaultConfigValues(): ConfigValues {
-    return remember { ConfigValues(localProvider = InMemoryConfigValueProvider()) }
-}
+fun createDefaultConfigValues(): ConfigValues = remember { ConfigValues(localProvider = InMemoryConfigValueProvider()) }

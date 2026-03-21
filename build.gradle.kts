@@ -8,4 +8,19 @@ plugins {
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.kotlinAndroid) apply false
+    alias(libs.plugins.spotless)
+}
+
+spotless {
+    val ktlintVersion = libs.versions.ktlint.get()
+    kotlin {
+        target("**/*.kt")
+        targetExclude("**/build/**/*.kt")
+        ktlint(ktlintVersion)
+    }
+    kotlinGradle {
+        target("**/*.kts")
+        targetExclude("**/build/**/*.kts")
+        ktlint(ktlintVersion)
+    }
 }

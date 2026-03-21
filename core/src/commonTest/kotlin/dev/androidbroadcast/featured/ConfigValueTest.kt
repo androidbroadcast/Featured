@@ -4,7 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ConfigValueTest {
-
     @Test
     fun testConfigValueCreation() {
         val value = ConfigValue("test", ConfigValue.Source.LOCAL)
@@ -58,7 +57,7 @@ class ConfigValueTest {
         value.doIf(
             predicate = { it.value > 5 },
             action = { actionCalled = true },
-            elseAction = { elseActionCalled = true }
+            elseAction = { elseActionCalled = true },
         )
 
         assertEquals(true, actionCalled)
@@ -74,7 +73,7 @@ class ConfigValueTest {
         value.doIf(
             predicate = { it.value > 5 },
             action = { actionCalled = true },
-            elseAction = { elseActionCalled = true }
+            elseAction = { elseActionCalled = true },
         )
 
         assertEquals(false, actionCalled)
@@ -88,7 +87,7 @@ class ConfigValueTest {
 
         value.doIf(
             predicate = { it.value > 5 },
-            action = { actionCalled = true }
+            action = { actionCalled = true },
         )
 
         assertEquals(true, actionCalled)

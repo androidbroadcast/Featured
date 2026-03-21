@@ -7,8 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-public fun <T : Any> ConfigValues.observeValue(param: ConfigParam<T>): Flow<T> =
-    observe(param).map { it.value }
+public fun <T : Any> ConfigValues.observeValue(param: ConfigParam<T>): Flow<T> = observe(param).map { it.value }
 
 public fun <T : Any> ConfigValues.asStateFlow(
     param: ConfigParam<T>,

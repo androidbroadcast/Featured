@@ -1,0 +1,12 @@
+name: Setup Build Environment
+description: Checkout code, configure Java 21 (Temurin), and set up Gradle with caching
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: 21
+
+    - uses: gradle/actions/setup-gradle@v3

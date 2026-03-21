@@ -7,16 +7,16 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ConfigParamTest {
-
     @Test
     fun testConfigParamCreation() {
-        val param = ConfigParam(
-            key = "test_key",
-            defaultValue = "default",
-            description = "Test description",
-            category = "Test category",
-            since = "1.0.0"
-        )
+        val param =
+            ConfigParam(
+                key = "test_key",
+                defaultValue = "default",
+                description = "Test description",
+                category = "Test category",
+                since = "1.0.0",
+            )
 
         assertEquals("test_key", param.key)
         assertEquals("default", param.defaultValue)
@@ -28,13 +28,14 @@ class ConfigParamTest {
 
     @Test
     fun testConfigParamBuilderFunction() {
-        val param = ConfigParam(
-            key = "test_key",
-            defaultValue = 42,
-            description = "Test number",
-            category = "Numbers",
-            since = "1.1.0"
-        )
+        val param =
+            ConfigParam(
+                key = "test_key",
+                defaultValue = 42,
+                description = "Test number",
+                category = "Numbers",
+                since = "1.1.0",
+            )
 
         assertEquals("test_key", param.key)
         assertEquals(42, param.defaultValue)
@@ -46,10 +47,11 @@ class ConfigParamTest {
 
     @Test
     fun testConfigParamWithNullOptionalFields() {
-        val param = ConfigParam(
-            key = "simple_key",
-            defaultValue = true
-        )
+        val param =
+            ConfigParam(
+                key = "simple_key",
+                defaultValue = true,
+            )
 
         assertEquals("simple_key", param.key)
         assertEquals(true, param.defaultValue)
@@ -81,13 +83,14 @@ class ConfigParamTest {
 
     @Test
     fun testConfigParamToString() {
-        val param = ConfigParam(
-            key = "test_key",
-            defaultValue = "value",
-            description = "desc",
-            category = "cat",
-            since = "1.0"
-        )
+        val param =
+            ConfigParam(
+                key = "test_key",
+                defaultValue = "value",
+                description = "desc",
+                category = "cat",
+                since = "1.0",
+            )
 
         val result = param.toString()
         assertTrue(result.contains("key='test_key'"))
