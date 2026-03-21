@@ -28,6 +28,7 @@ spotless = "8.3.0"
 ktlint = "1.8.0"
 bcv = "0.18.1"
 turbine = "1.2.1"
+mavenPublish = "0.32.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
@@ -74,3 +75,4 @@ kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 bcv = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "bcv" }
+mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
