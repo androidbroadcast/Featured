@@ -12,7 +12,7 @@ struct ComposeView: UIViewControllerRepresentable {
 
 struct ContentView: View {
     var body: some View {
-        VStack {
+        ZStack(alignment: .bottom) {
             ComposeView()
                 .ignoresSafeArea()
 
@@ -31,12 +31,12 @@ struct ContentView: View {
 
 // MARK: - Sample entry point guarded by the new_checkout flag
 
-/// Shown only when the new_checkout @LocalFlag is enabled (defaultValue = true)
-/// or when building a Debug configuration without the generated xcconfig.
+/// Overlaid at the bottom of the screen only when DISABLE_NEW_CHECKOUT is not set.
 ///
-/// In a Release build where new_checkout has defaultValue = false, the compiler
-/// removes this view and all references to it via the DISABLE_NEW_CHECKOUT
-/// compilation condition, achieving zero-overhead dead code elimination.
+/// In a Debug build the condition is absent (xcconfig not included), so the view
+/// always appears. In a Release build where @LocalFlag new_checkout has
+/// defaultValue = false, the Swift compiler removes this view and all references
+/// to it via the DISABLE_NEW_CHECKOUT compilation condition — zero runtime overhead.
 private struct NewCheckoutBanner: View {
     var body: some View {
         Text("New checkout is enabled")
