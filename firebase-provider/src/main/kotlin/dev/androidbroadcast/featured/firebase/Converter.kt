@@ -19,6 +19,6 @@ internal class FloatConverter : Converter<Float> {
     override fun convert(value: FirebaseRemoteConfigValue): Float =
         value
             .asDouble()
-            .also { require(it in Float.MIN_VALUE..Float.MAX_VALUE) { "Value outside of Float range" } }
+            .also { require(it.isFinite()) { "Value must be finite (not NaN or Infinity)" } }
             .toFloat()
 }
