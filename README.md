@@ -70,9 +70,9 @@ dependencies {
     implementation("dev.androidbroadcast.featured:core")
 
     // Optional modules — add only what you use
-    implementation("dev.androidbroadcast.featured:featured-compose")        // Compose extensions
-    implementation("dev.androidbroadcast.featured:featured-registry")       // Flag registry for debug UI
-    debugImplementation("dev.androidbroadcast.featured:featured-debug-ui")  // Debug screen
+    implementation("dev.androidbroadcast.featured:featured-compose")         // Compose extensions
+    debugImplementation("dev.androidbroadcast.featured:featured-registry")   // Flag registry for debug UI
+    debugImplementation("dev.androidbroadcast.featured:featured-debug-ui")   // Debug screen
 
     // Local persistence providers — pick one (or both)
     implementation("dev.androidbroadcast.featured:datastore-provider")
@@ -228,10 +228,16 @@ fun SomeDeepComponent() {
 
 ### iOS (Swift)
 
-The `FeatureFlags` Swift class wraps `CoreConfigValues` (the KMP-exported type):
+The `FeatureFlags` Swift class wraps `CoreConfigValues` (the KMP-exported type). Define your flags as `FeatureFlag` values that reference the shared `CoreConfigParam` exported from Kotlin:
 
 ```swift
 import FeaturedCore
+
+// Map a Kotlin ConfigParam to a Swift FeatureFlag
+let newCheckoutFlag = FeatureFlag<Bool>(
+    param: CoreFeatureFlagsCompanion().newCheckout,
+    defaultValue: false
+)
 
 let featureFlags = FeatureFlags(configValues)
 
@@ -269,14 +275,16 @@ val configValues = ConfigValues(
 Persists overrides to Jetpack DataStore Preferences.
 
 ```kotlin
-val dataStore: DataStore<Preferences> = context.createDataStore("feature_flags")
+// Declare once per file, outside any function or class
+private val Context.featureFlagsDataStore: DataStore<Preferences>
+    by preferencesDataStore(name = "feature_flags")
 
 val configValues = ConfigValues(
-    localProvider = DataStoreConfigValueProvider(dataStore),
+    localProvider = DataStoreConfigValueProvider(context.featureFlagsDataStore),
 )
 ```
 
-### SharedPreferencesConfigValueProvider
+### SharedPreferencesProviderConfig
 
 Android-only. Persists overrides to SharedPreferences.
 
@@ -284,7 +292,7 @@ Android-only. Persists overrides to SharedPreferences.
 val prefs = context.getSharedPreferences("feature_flags", Context.MODE_PRIVATE)
 
 val configValues = ConfigValues(
-    localProvider = SharedPreferencesConfigValueProvider(prefs),
+    localProvider = SharedPreferencesProviderConfig(prefs),
 )
 ```
 
@@ -298,8 +306,8 @@ val configValues = ConfigValues(
     remoteProvider = FirebaseConfigValueProvider(),
 )
 
-// Fetch and activate in a coroutine (e.g., on app start)
-configValues.fetch()
+// Fetch and activate — suspend function, call from a coroutine (e.g., on app start)
+lifecycleScope.launch { configValues.fetch() }
 ```
 
 `FirebaseConfigValueProvider` uses `FirebaseRemoteConfig.getInstance()` by default. Pass a custom instance if you manage the Firebase lifecycle yourself:
@@ -347,12 +355,7 @@ fun DebugMenuScreen(configValues: ConfigValues) {
 }
 ```
 
-Only include `featured-debug-ui` and `featured-registry` in debug builds:
-
-```kotlin
-debugImplementation("dev.androidbroadcast.featured:featured-debug-ui")
-debugImplementation("dev.androidbroadcast.featured:featured-registry")
-```
+Only include `featured-debug-ui` and `featured-registry` in debug builds (they are already declared that way in the installation section above):
 
 ---
 
