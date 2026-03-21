@@ -4,6 +4,24 @@ package dev.androidbroadcast.featured
 
 import kotlin.reflect.KClass
 
+/**
+ * Declares a named, typed configuration key with a default value.
+ *
+ * A [ConfigParam] is a descriptor — it does not hold a live value itself. Pass it to
+ * [ConfigValues] to read, observe, or override the corresponding runtime value.
+ *
+ * Instances are considered equal when all constructor properties are equal. The hash code
+ * is derived solely from [key] so that params can be used as map keys with predictable
+ * behaviour.
+ *
+ * Prefer the inline factory function [ConfigParam] over the primary constructor to avoid
+ * passing an explicit [kotlin.reflect.KClass] argument:
+ * ```kotlin
+ * val darkMode = ConfigParam(key = "dark_mode", defaultValue = false)
+ * ```
+ *
+ * @param T The non-null type of the configuration value.
+ */
 public class ConfigParam<T : Any>
     @PublishedApi
     internal constructor(
@@ -85,6 +103,25 @@ private fun StringBuilder.appendIfPresent(
     return this
 }
 
+/**
+ * Creates a [ConfigParam] without requiring an explicit [kotlin.reflect.KClass] argument.
+ *
+ * The type parameter [T] is reified at the call site, so the compiler fills in [valueType]
+ * automatically.
+ *
+ * ```kotlin
+ * val maxRetries = ConfigParam(key = "max_retries", defaultValue = 3)
+ * val theme = ConfigParam(key = "theme", defaultValue = "light", description = "App colour theme")
+ * ```
+ *
+ * @param T The non-null type of the configuration value.
+ * @param key Unique identifier used to look up this parameter in providers.
+ * @param defaultValue Value returned when no provider supplies a value for this key.
+ * @param description Optional human-readable explanation shown in debug UIs.
+ * @param category Optional group name used to organise related params in debug UIs.
+ * @param since Optional version or date string indicating when this param was introduced.
+ * @return A [ConfigParam] instance typed to [T].
+ */
 public inline fun <reified T : Any> ConfigParam(
     key: String,
     defaultValue: T,

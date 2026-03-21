@@ -19,8 +19,27 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * Implementation of FeatureFlagProvider that uses Android SharedPreferences for local storage.
- * This provider stores and retrieves feature flags from the device's local storage.
+ * A [LocalConfigValueProvider] backed by Android [SharedPreferences].
+ *
+ * Values are persisted in the provided [SharedPreferences] file and survive process restarts.
+ * All reads and writes are dispatched on [kotlinx.coroutines.Dispatchers.IO] merged with an
+ * optional caller-supplied [CoroutineContext].
+ *
+ * Supported value types: [String], [Int], [Long], [Float], [Double], [Boolean].
+ * Attempting to read or write an unsupported type throws [IllegalArgumentException].
+ *
+ * Active [observe] flows receive updates whenever [set], [resetOverride], or [remove] is called
+ * for the observed key.
+ *
+ * ```kotlin
+ * val prefs = context.getSharedPreferences("feature_flags", Context.MODE_PRIVATE)
+ * val provider = SharedPreferencesProviderConfig(prefs)
+ * val configValues = ConfigValues(localProvider = provider)
+ * ```
+ *
+ * @param sharedPreferences The [SharedPreferences] instance used for persistence.
+ * @param context Additional [CoroutineContext] elements merged with [kotlinx.coroutines.Dispatchers.IO]
+ *   for all IO-bound operations. Defaults to [EmptyCoroutineContext].
  */
 public class SharedPreferencesProviderConfig(
     private val sharedPreferences: SharedPreferences,
@@ -41,6 +60,13 @@ public class SharedPreferencesProviderConfig(
         }
     }
 
+    /**
+     * Returns the persisted value for [param], or `null` if it has not been set.
+     *
+     * @param param The configuration parameter to look up.
+     * @return A [ConfigValue] with [ConfigValue.Source.LOCAL], or `null` if not present.
+     * @throws IllegalArgumentException if the type of [param] is not supported.
+     */
     override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T>? =
         withContext(context) {
             val valueSaver =
@@ -51,6 +77,15 @@ public class SharedPreferencesProviderConfig(
             }
         }
 
+    /**
+     * Persists [value] as a local override for [param] and notifies active [observe] flows.
+     *
+     * The write is performed with `commit = true` (synchronous) on the IO dispatcher.
+     *
+     * @param param The configuration parameter to override.
+     * @param value The value to persist.
+     * @throws IllegalArgumentException if the type of [param] is not supported.
+     */
     override suspend fun <T : Any> set(
         param: ConfigParam<T>,
         value: T,
@@ -65,6 +100,14 @@ public class SharedPreferencesProviderConfig(
             changedKeysFlow.tryEmit(param.key)
         }
 
+    /**
+     * Removes the persisted override for [param], delegating to [remove].
+     *
+     * After this call, [get] returns `null` and [ConfigValues] falls back to the remote
+     * provider or [ConfigParam.defaultValue].
+     *
+     * @param param The configuration parameter whose override should be cleared.
+     */
     override suspend fun <T : Any> resetOverride(param: ConfigParam<T>): Unit = remove(param.key)
 
     /**
@@ -90,6 +133,16 @@ public class SharedPreferencesProviderConfig(
             }
         }
 
+    /**
+     * Returns a [Flow] that emits a [ConfigValue] for [param] on every change to its key.
+     *
+     * The flow emits the current persisted value immediately (skipping `null` if unset) and
+     * then emits again whenever [set], [resetOverride], or [remove] is called for the same
+     * key. Consecutive identical values are deduplicated via `distinctUntilChanged`.
+     *
+     * @param param The configuration parameter to observe.
+     * @return A cold [Flow] that completes when the collector's scope is cancelled.
+     */
     override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> {
         return flow<ConfigValue<T>?> {
             emit(get(param)) // Emit the current value first
