@@ -33,6 +33,55 @@ class ConfigValuesTest {
     }
 
     @Test
+    fun testObserveEmitsNewValueAfterRemoteFetch() =
+        runTest {
+            val remoteProvider = MockRemoteProvider()
+            val configValues = ConfigValues(remoteProvider = remoteProvider)
+            val param = ConfigParam("remote_flag", "default")
+
+            remoteProvider.setMockValue("remote_flag", "initial_remote")
+
+            configValues.observe(param).test {
+                // Should emit current remote value first
+                val firstEmission = awaitItem()
+                assertEquals("initial_remote", firstEmission.value)
+                assertEquals(ConfigValue.Source.REMOTE, firstEmission.source)
+
+                // Simulate remote update and fetch
+                remoteProvider.setMockValue("remote_flag", "updated_remote")
+                configValues.fetch()
+
+                // Should emit new value after fetch
+                val secondEmission = awaitItem()
+                assertEquals("updated_remote", secondEmission.value)
+                assertEquals(ConfigValue.Source.REMOTE, secondEmission.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun testObserveDoesNotEmitWhenFetchDoesNotChangeValue() =
+        runTest {
+            val remoteProvider = MockRemoteProvider()
+            val configValues = ConfigValues(remoteProvider = remoteProvider)
+            val param = ConfigParam("remote_flag", "default")
+
+            remoteProvider.setMockValue("remote_flag", "same_value")
+
+            configValues.observe(param).test {
+                val firstEmission = awaitItem()
+                assertEquals("same_value", firstEmission.value)
+
+                // Fetch without changing the remote value — should not emit again
+                configValues.fetch()
+                expectNoEvents()
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
     fun testConfigValuesRequiresAtLeastOneProvider() {
         assertFailsWith<IllegalArgumentException> {
             ConfigValues(localProvider = null, remoteProvider = null)
@@ -195,8 +244,8 @@ class ConfigValuesTest {
                 assertEquals("remote_value", emission.value)
                 assertEquals(ConfigValue.Source.REMOTE, emission.source)
 
-                // Flow will complete since there's no local provider to observe changes
-                awaitComplete()
+                // Flow stays open — future fetch() calls can deliver updated remote values
+                cancelAndIgnoreRemainingEvents()
             }
         }
 
