@@ -45,6 +45,15 @@ class FlagRegistryTest {
     }
 
     @Test
+    fun registeringSameKeyWithDifferentDefaultValueDoesNotDuplicate() {
+        val param1 = ConfigParam(key = "flag_g", defaultValue = "first")
+        val param2 = ConfigParam(key = "flag_g", defaultValue = "second")
+        FlagRegistry.register(param1)
+        FlagRegistry.register(param2)
+        assertEquals(1, FlagRegistry.all().size)
+    }
+
+    @Test
     fun allReturnsImmutableSnapshot() {
         val param = ConfigParam(key = "flag_e", defaultValue = 1)
         FlagRegistry.register(param)

@@ -6,14 +6,16 @@ import kotlin.concurrent.withLock
 
 internal actual class FlagRegistryDelegate actual constructor() {
     private val lock = ReentrantLock()
-    private val params: LinkedHashSet<ConfigParam<*>> = LinkedHashSet()
+
+    // Keyed by ConfigParam.key to guarantee one entry per key across platforms.
+    private val params: LinkedHashMap<String, ConfigParam<*>> = LinkedHashMap()
 
     actual fun register(param: ConfigParam<*>) {
-        lock.withLock { params.add(param) }
+        lock.withLock { params.putIfAbsent(param.key, param) }
     }
 
     actual fun all(): List<ConfigParam<*>> =
-        lock.withLock { params.toList() }
+        lock.withLock { params.values.toList() }
 
     actual fun reset() {
         lock.withLock { params.clear() }

@@ -27,7 +27,6 @@ public object FlagRegistry {
     /**
      * Clears all registered params. Intended for use in tests only.
      */
-    @PublishedApi
     internal fun reset() {
         delegate.reset()
     }
