@@ -6,7 +6,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class FeaturedPluginTest {
-
     @Test
     fun `plugin registers under correct id`() {
         val project = ProjectBuilder.builder().build()
