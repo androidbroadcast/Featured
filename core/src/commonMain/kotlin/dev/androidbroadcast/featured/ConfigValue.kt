@@ -6,14 +6,12 @@ public data class ConfigValue<T : Any>(
      * This is the actual value that was fetched from a provider.
      */
     val value: T,
-
     /**
      * The source of the value.
      * This indicates where the value was fetched from, such as a default value, remote source, or local storage.
      */
     val source: Source,
 ) {
-
     /**
      * Represents the source of the configuration value.
      * This enum defines the possible origins of the value, such as default values, remote sources,
@@ -47,18 +45,11 @@ public data class ConfigValue<T : Any>(
     }
 }
 
-public inline fun <T : Any, R : Any> ConfigValue<T>.map(
-    transform: (T) -> R,
-): ConfigValue<R> {
-    return ConfigValue(value = transform(value), source = source)
-}
-
+public inline fun <T : Any, R : Any> ConfigValue<T>.map(transform: (T) -> R): ConfigValue<R> =
+    ConfigValue(value = transform(value), source = source)
 
 public inline fun <T : Any> ConfigValue<T>.doIf(
     predicate: (ConfigValue<T>) -> Boolean,
     action: (ConfigValue<T>) -> Unit,
     elseAction: (ConfigValue<T>) -> Unit = {},
-) {
-    return if (predicate(this)) action(this) else elseAction(this)
-}
-
+): Unit = if (predicate(this)) action(this) else elseAction(this)

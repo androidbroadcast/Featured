@@ -24,13 +24,10 @@ public class ConfigValues(
         }
     }
 
-    public suspend fun <T : Any> getValue(
-        param: ConfigParam<T>,
-    ): ConfigValue<T> {
-        return localProvider?.get(param)
+    public suspend fun <T : Any> getValue(param: ConfigParam<T>): ConfigValue<T> =
+        localProvider?.get(param)
             ?: remoteProvider?.get(param)
             ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
-    }
 
     /**
      * Overrides the configuration value for the given parameter with a local value.
@@ -60,12 +57,9 @@ public class ConfigValues(
      * @param param The configuration parameter to observe.
      * @return A flow of configuration values for the specified parameter.
      */
-    public fun <T : Any> observe(
-        param: ConfigParam<T>,
-    ): Flow<ConfigValue<T>> {
-        return flow<ConfigValue<T>> {
+    public fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
+        flow<ConfigValue<T>> {
             emit(getValue(param)) // get latest value
             localProvider?.observe(param)?.collect { emit(it) } // observe changes
         }.distinctUntilChanged()
-    }
 }
