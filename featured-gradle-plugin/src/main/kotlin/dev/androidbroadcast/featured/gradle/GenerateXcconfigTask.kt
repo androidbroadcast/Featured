@@ -22,7 +22,6 @@ import org.gradle.api.tasks.TaskAction
  * The output file is written to `<module>/build/featured/FeatureFlags.generated.xcconfig`.
  */
 public abstract class GenerateXcconfigTask : DefaultTask() {
-
     /**
      * The line-delimited flag report produced by [ScanLocalFlagsTask].
      * Each line has the format `key|defaultValue|type|moduleName`.

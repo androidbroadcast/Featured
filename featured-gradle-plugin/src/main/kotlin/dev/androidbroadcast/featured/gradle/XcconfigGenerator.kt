@@ -14,7 +14,6 @@ package dev.androidbroadcast.featured.gradle
  * - `experimentalUi` → `DISABLE_EXPERIMENTAL_UI`
  */
 public object XcconfigGenerator {
-
     /**
      * Generates an xcconfig content string from [entries].
      *

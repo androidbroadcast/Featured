@@ -6,7 +6,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class XcconfigGeneratorTest {
-
     @Test
     fun `generates empty output when entries list is empty`() {
         val result = XcconfigGenerator.generate(emptyList())
@@ -15,28 +14,31 @@ class XcconfigGeneratorTest {
 
     @Test
     fun `generates no conditions for boolean flag with defaultValue true`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "feature_enabled", defaultValue = "true", type = "Boolean", moduleName = ":app"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "feature_enabled", defaultValue = "true", type = "Boolean", moduleName = ":app"),
+            )
         val result = XcconfigGenerator.generate(entries)
         assertTrue(result.isBlank(), "Expected no output for flags with defaultValue=true, got: '$result'")
     }
 
     @Test
     fun `generates no conditions for non-boolean flags`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "timeout", defaultValue = "30", type = "Int", moduleName = ":app"),
-            LocalFlagEntry(key = "server_url", defaultValue = "https://example.com", type = "String", moduleName = ":app"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "timeout", defaultValue = "30", type = "Int", moduleName = ":app"),
+                LocalFlagEntry(key = "server_url", defaultValue = "https://example.com", type = "String", moduleName = ":app"),
+            )
         val result = XcconfigGenerator.generate(entries)
         assertTrue(result.isBlank(), "Expected no output for non-boolean flags, got: '$result'")
     }
 
     @Test
     fun `generates DISABLE_ condition for boolean flag with defaultValue false`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "new_checkout", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "new_checkout", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+            )
         val result = XcconfigGenerator.generate(entries)
         assertContains(result, "DISABLE_NEW_CHECKOUT")
         assertFalse(result.isBlank())
@@ -44,46 +46,51 @@ class XcconfigGeneratorTest {
 
     @Test
     fun `snake_case key is converted to SCREAMING_SNAKE_CASE with DISABLE_ prefix`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "my_feature_flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "my_feature_flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+            )
         val result = XcconfigGenerator.generate(entries)
         assertContains(result, "DISABLE_MY_FEATURE_FLAG")
     }
 
     @Test
     fun `camelCase key is converted to SCREAMING_SNAKE_CASE with DISABLE_ prefix`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "myFeatureFlag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "myFeatureFlag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+            )
         val result = XcconfigGenerator.generate(entries)
         assertContains(result, "DISABLE_MY_FEATURE_FLAG")
     }
 
     @Test
     fun `output contains SWIFT_ACTIVE_COMPILATION_CONDITIONS assignment`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "new_checkout", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "new_checkout", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+            )
         val result = XcconfigGenerator.generate(entries)
         assertContains(result, "SWIFT_ACTIVE_COMPILATION_CONDITIONS")
     }
 
     @Test
     fun `output contains dollar-sign inherited for Xcode inheritance`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "new_checkout", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "new_checkout", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+            )
         val result = XcconfigGenerator.generate(entries)
         assertContains(result, "\$(inherited)")
     }
 
     @Test
     fun `generates conditions for multiple boolean false flags`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "new_checkout", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-            LocalFlagEntry(key = "experimental_ui", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "new_checkout", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+                LocalFlagEntry(key = "experimental_ui", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+            )
         val result = XcconfigGenerator.generate(entries)
         assertContains(result, "DISABLE_NEW_CHECKOUT")
         assertContains(result, "DISABLE_EXPERIMENTAL_UI")
@@ -91,11 +98,12 @@ class XcconfigGeneratorTest {
 
     @Test
     fun `generates conditions only for boolean false flags when mixed entries provided`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "disabled_flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-            LocalFlagEntry(key = "enabled_flag", defaultValue = "true", type = "Boolean", moduleName = ":app"),
-            LocalFlagEntry(key = "timeout", defaultValue = "30", type = "Int", moduleName = ":app"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "disabled_flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+                LocalFlagEntry(key = "enabled_flag", defaultValue = "true", type = "Boolean", moduleName = ":app"),
+                LocalFlagEntry(key = "timeout", defaultValue = "30", type = "Int", moduleName = ":app"),
+            )
         val result = XcconfigGenerator.generate(entries)
         assertContains(result, "DISABLE_DISABLED_FLAG")
         assertFalse(result.contains("ENABLED_FLAG"), "Should not contain conditions for true flags")
@@ -104,19 +112,21 @@ class XcconfigGeneratorTest {
 
     @Test
     fun `output contains auto-generated header comment`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "new_checkout", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "new_checkout", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+            )
         val result = XcconfigGenerator.generate(entries)
         assertContains(result, "Auto-generated by featured-gradle-plugin")
     }
 
     @Test
     fun `all conditions appear on a single SWIFT_ACTIVE_COMPILATION_CONDITIONS line`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "flag_a", defaultValue = "false", type = "Boolean", moduleName = ":core"),
-            LocalFlagEntry(key = "flag_b", defaultValue = "false", type = "Boolean", moduleName = ":feature"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "flag_a", defaultValue = "false", type = "Boolean", moduleName = ":core"),
+                LocalFlagEntry(key = "flag_b", defaultValue = "false", type = "Boolean", moduleName = ":feature"),
+            )
         val result = XcconfigGenerator.generate(entries)
         val conditionLines = result.lines().filter { it.startsWith("SWIFT_ACTIVE_COMPILATION_CONDITIONS") }
         assertTrue(conditionLines.size == 1, "Expected exactly one SWIFT_ACTIVE_COMPILATION_CONDITIONS line")

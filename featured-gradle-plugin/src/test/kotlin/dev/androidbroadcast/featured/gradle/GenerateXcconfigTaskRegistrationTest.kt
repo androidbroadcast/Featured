@@ -6,7 +6,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class GenerateXcconfigTaskRegistrationTest {
-
     @Test
     fun `plugin registers generateXcconfig task`() {
         val project = ProjectBuilder.builder().build()
@@ -81,7 +80,9 @@ class GenerateXcconfigTaskRegistrationTest {
         val task = project.tasks.findByName(GENERATE_XCCONFIG_TASK_NAME) as? GenerateXcconfigTask
         assertNotNull(task)
         assertTrue(
-            task.outputFile.get().asFile.name == "FeatureFlags.generated.xcconfig",
+            task.outputFile
+                .get()
+                .asFile.name == "FeatureFlags.generated.xcconfig",
             "Expected output file name 'FeatureFlags.generated.xcconfig' but was '${task.outputFile.get().asFile.name}'",
         )
     }
