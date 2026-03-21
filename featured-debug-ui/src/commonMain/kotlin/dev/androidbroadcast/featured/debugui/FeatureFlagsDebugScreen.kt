@@ -9,15 +9,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,6 +32,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
@@ -42,6 +48,10 @@ import kotlinx.coroutines.launch
  *
  * Flags are grouped by [ConfigParam.category]. Each flag shows its current value, source
  * (DEFAULT / LOCAL / REMOTE), and optional description.
+ *
+ * Boolean flags have a toggle switch. Scalar flags (String, Int, Long, Float, Double) have
+ * an inline text input with type validation. All flags with a local override have a
+ * "Reset to default" button that clears the override.
  *
  * Intended for debug/internal builds only.
  *
@@ -127,6 +137,20 @@ public fun FeatureFlagsDebugScreen(
                                     )
                                 }
                             },
+                            onScalarInput = { newValue ->
+                                scope.launch {
+                                    @Suppress("UNCHECKED_CAST")
+                                    configValues.override(
+                                        item.param as ConfigParam<Any>,
+                                        newValue,
+                                    )
+                                }
+                            },
+                            onResetToDefault = {
+                                scope.launch {
+                                    configValues.resetOverride(item.param)
+                                }
+                            },
                         )
                     }
                 }
@@ -140,6 +164,8 @@ public fun FeatureFlagsDebugScreen(
 private fun FlagItemCard(
     item: DebugFlagItem<*>,
     onToggleBoolean: (Boolean) -> Unit,
+    onScalarInput: (Any) -> Unit,
+    onResetToDefault: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -175,24 +201,92 @@ private fun FlagItemCard(
                             checked = item.currentValue as Boolean,
                             onCheckedChange = { onToggleBoolean(it) },
                         )
-                    } else {
+                    }
+                }
+            }
+
+            if (item.defaultValue !is Boolean) {
+                ScalarInputField(
+                    item = item,
+                    onScalarInput = onScalarInput,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                )
+            }
+
+            if (item.isOverridden) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Default: ${item.defaultValue}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                    TextButton(onClick = onResetToDefault) {
                         Text(
-                            text = item.currentValue.toString(),
-                            style = MaterialTheme.typography.bodyMedium,
+                            text = "Reset",
+                            style = MaterialTheme.typography.labelSmall,
                         )
                     }
                 }
             }
-            if (item.isOverridden) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                Text(
-                    text = "Default: ${item.defaultValue}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-            }
         }
     }
+}
+
+@Composable
+@Suppress("ktlint:standard:function-naming")
+private fun ScalarInputField(
+    item: DebugFlagItem<*>,
+    onScalarInput: (Any) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var text by remember(item.key, item.currentValue) {
+        mutableStateOf(item.currentValue.toString())
+    }
+    var isError by remember { mutableStateOf(false) }
+
+    val keyboardType = when (item.defaultValue) {
+        is Int, is Long -> KeyboardType.Number
+        is Float, is Double -> KeyboardType.Decimal
+        else -> KeyboardType.Text
+    }
+
+    fun commit() {
+        val parsed = parseInput(item.param, text)
+        if (parsed != null) {
+            isError = false
+            onScalarInput(parsed)
+        } else {
+            isError = true
+        }
+    }
+
+    OutlinedTextField(
+        value = text,
+        onValueChange = { newText ->
+            text = newText
+            isError = parseInput(item.param, newText) == null && newText.isNotEmpty()
+        },
+        modifier = modifier,
+        isError = isError,
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyboardType,
+            imeAction = ImeAction.Done,
+        ),
+        keyboardActions = KeyboardActions(onDone = { commit() }),
+        supportingText = if (isError) {
+            { Text("Invalid ${item.defaultValue::class.simpleName} value") }
+        } else {
+            null
+        },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

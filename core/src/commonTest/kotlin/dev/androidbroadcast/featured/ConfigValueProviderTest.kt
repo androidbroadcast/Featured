@@ -23,6 +23,10 @@ class ConfigValueProviderTest {
             storage[param.key] = value
         }
 
+        override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
+            storage.remove(param.key)
+        }
+
         override fun <T : Any> observe(param: ConfigParam<T>) = throw NotImplementedError()
     }
 
