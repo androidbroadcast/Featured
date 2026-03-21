@@ -64,7 +64,8 @@ public abstract class GenerateProguardRulesTask : DefaultTask() {
     private fun parseScanResult(): List<LocalFlagEntry> {
         val file = scanResultFile.get().asFile
         if (!file.exists() || file.readText().isBlank()) return emptyList()
-        return file.readLines()
+        return file
+            .readLines()
             .filter { it.isNotBlank() }
             .mapNotNull { line ->
                 val parts = line.split("|")

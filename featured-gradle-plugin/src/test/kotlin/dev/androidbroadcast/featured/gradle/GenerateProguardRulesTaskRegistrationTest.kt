@@ -74,6 +74,10 @@ class GenerateProguardRulesTaskRegistrationTest {
 }
 
 // Local helper for cleaner assertions
-private fun assertEquals(expected: String, actual: String?, message: String) {
+private fun assertEquals(
+    expected: String,
+    actual: String?,
+    message: String,
+) {
     kotlin.test.assertEquals(expected, actual, message)
 }
