@@ -94,6 +94,12 @@ jobs:
             :datastore-provider:linkDebugFrameworkIosArm64 \
             :datastore-provider:linkDebugFrameworkIosX64
 
+      - name: Write local.properties
+        # Xcode build phases spawn a new shell that sources ~/.profile (sdkman),
+        # overriding JAVA_HOME. Writing it to local.properties ensures gradlew
+        # inside the build phase picks up the correct JDK.
+        run: echo "java.home=$JAVA_HOME" > local.properties
+
       - name: Build Xcode project
         # generic/platform avoids "simulator not found" failures on runners
         # where specific iOS runtime versions are not pre-installed
