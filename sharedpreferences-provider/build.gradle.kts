@@ -49,10 +49,6 @@ mavenPublishing {
     coordinates(
         groupId = "dev.androidbroadcast.featured",
         artifactId = "featured-sharedpreferences-provider",
-        version =
-            findProperty("VERSION_NAME")?.toString()
-                ?: System.getenv("RELEASE_VERSION")
-                ?: "0.1.0-SNAPSHOT",
     )
     pom {
         name.set("Featured SharedPreferences Provider")

@@ -29,9 +29,12 @@ jobs:
         id: version
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            # Release: strip the leading "v" from the tag (e.g. v1.0.0 -> 1.0.0)
             VERSION="${GITHUB_REF_NAME#v}"
           else
-            VERSION="0.1.0-SNAPSHOT"
+            # SNAPSHOT: read baseline from gradle.properties and append -SNAPSHOT
+            BASE=$(grep "^VERSION_NAME=" gradle.properties | cut -d= -f2 | sed 's/-SNAPSHOT//')
+            VERSION="${BASE}-SNAPSHOT"
           fi
           echo "VERSION_NAME=${VERSION}" | tee -a "$GITHUB_OUTPUT"
 
@@ -42,6 +45,5 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_KEY_PASSWORD }}
-        run: |
-          ./gradlew --no-daemon publishAllPublicationsToMavenCentralRepository \
-            -PVERSION_NAME=${{ steps.version.outputs.VERSION_NAME }}
+          ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
+        run: ./gradlew --no-daemon publishAllPublicationsToMavenCentralRepository

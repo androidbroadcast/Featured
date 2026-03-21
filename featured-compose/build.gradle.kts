@@ -53,10 +53,6 @@ mavenPublishing {
     coordinates(
         groupId = "dev.androidbroadcast.featured",
         artifactId = "featured-compose",
-        version =
-            findProperty("VERSION_NAME")?.toString()
-                ?: System.getenv("RELEASE_VERSION")
-                ?: "0.1.0-SNAPSHOT",
     )
     pom {
         name.set("Featured Compose")
