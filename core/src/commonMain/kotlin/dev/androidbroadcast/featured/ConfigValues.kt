@@ -45,6 +45,16 @@ public class ConfigValues(
         localProvider?.set(param, value)
     }
 
+    /**
+     * Clears the local override for the given parameter, so subsequent reads fall back
+     * to remote or default values.
+     *
+     * @param param The configuration parameter whose local override should be cleared.
+     */
+    public suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
+        localProvider?.resetOverride(param)
+    }
+
     public suspend fun fetch() {
         remoteProvider?.fetch(true)
     }

@@ -65,6 +65,8 @@ public class SharedPreferencesProviderConfig(
             changedKeysFlow.tryEmit(param.key)
         }
 
+    override suspend fun <T : Any> resetOverride(param: ConfigParam<T>): Unit = remove(param.key)
+
     /**
      * Removes a feature flag from SharedPreferences.
      *

@@ -28,6 +28,11 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
         changedKeyFlow.emit(param.key)
     }
 
+    public override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
+        storage = storage - param.key
+        changedKeyFlow.emit(param.key)
+    }
+
     public fun clear() {
         storage = emptyMap()
     }

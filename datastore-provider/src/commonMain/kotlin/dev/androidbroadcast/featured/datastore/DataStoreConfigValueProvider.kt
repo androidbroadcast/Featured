@@ -46,6 +46,12 @@ public class DataStoreConfigValueProvider(
         }
     }
 
+    override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
+        dataStore.edit { preferences ->
+            preferences.remove(createPreferencesKey(param))
+        }
+    }
+
     override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
         dataStore.data.map { preferences ->
             val key = createPreferencesKey(param)
