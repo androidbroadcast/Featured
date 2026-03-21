@@ -32,6 +32,8 @@ jobs:
         with:
           languages: java-kotlin
 
-      - uses: github/codeql-action/autobuild@v3
+      - name: Build for CodeQL
+        # autobuild looks for 'testClasses' which doesn't exist in KMP; build manually instead
+        run: ./gradlew assembleDebug -x :sample:assembleDebug
 
       - uses: github/codeql-action/analyze@v3
