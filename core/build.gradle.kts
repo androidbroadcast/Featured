@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.skie)
     alias(libs.plugins.kover)
+    alias(libs.plugins.bcv)
 }
 
 kotlin {
