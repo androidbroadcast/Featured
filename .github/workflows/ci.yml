@@ -30,7 +30,7 @@ jobs:
           :featured-compose:koverVerify
           :featured-registry:koverVerify
           :featured-testing:koverVerify
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results
@@ -47,7 +47,7 @@ jobs:
       - name: Assemble and Lint
         # Exclude :sample to avoid requiring google-services.json for the demo app
         run: ./gradlew assembleDebug lint -x :sample:assembleDebug -x :sample:lintDebug
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: lint-results
