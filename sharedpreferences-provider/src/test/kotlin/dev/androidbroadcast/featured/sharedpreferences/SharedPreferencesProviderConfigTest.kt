@@ -390,15 +390,17 @@ class SharedPreferencesProviderConfigTest {
         val context: Application = ApplicationProvider.getApplicationContext()
         val sharedPreferences = context.getSharedPreferences("test_prefs_ctx", Context.MODE_PRIVATE)
 
-        val providerWithContext = SharedPreferencesProviderConfig(
-            sharedPreferences = sharedPreferences,
-            additionalContext = coroutineName,
-        )
+        val providerWithContext =
+            SharedPreferencesProviderConfig(
+                sharedPreferences = sharedPreferences,
+                additionalContext = coroutineName,
+            )
 
         // Verify via reflection that the merged context contains the supplied CoroutineName
-        val contextField = SharedPreferencesProviderConfig::class.java
-            .getDeclaredField("context")
-            .apply { isAccessible = true }
+        val contextField =
+            SharedPreferencesProviderConfig::class.java
+                .getDeclaredField("context")
+                .apply { isAccessible = true }
         val mergedContext = contextField.get(providerWithContext) as kotlin.coroutines.CoroutineContext
 
         assertEquals(coroutineName, mergedContext[CoroutineName])
