@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
 import dev.androidbroadcast.featured.LocalConfigValueProvider
+import dev.androidbroadcast.featured.TypeConverter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.reflect.KClass
 
 /**
  * A [LocalConfigValueProvider] backed by Android [SharedPreferences].
@@ -58,6 +60,24 @@ public class SharedPreferencesProviderConfig(
             put<Double>(DoubleValueSaver())
             put<String>(StringValueSaver())
         }
+    }
+
+    /**
+     * Registers a [TypeConverter] for [klass], enabling [set] and [get] for custom types
+     * (e.g. enums) that are serialized as strings in [SharedPreferences].
+     *
+     * Must be called before any [set] or [get] call for the corresponding type.
+     * Prefer the inline overload [registerConverter] to avoid passing [KClass] explicitly.
+     *
+     * @param T The non-null type to register.
+     * @param klass The [KClass] of the type.
+     * @param converter The [TypeConverter] that serializes/deserializes [T] as a [String].
+     */
+    public fun <T : Any> registerConverter(
+        klass: KClass<T>,
+        converter: TypeConverter<T>,
+    ) {
+        savers[klass] = TypeConverterValueSaver(converter)
     }
 
     /**
@@ -154,4 +174,21 @@ public class SharedPreferencesProviderConfig(
         }.filterNotNull()
             .distinctUntilChanged() // Avoid emitting the same value multiple times
     }
+}
+
+/**
+ * Registers a [TypeConverter] for the reified type [T] on this [SharedPreferencesProviderConfig],
+ * enabling [SharedPreferencesProviderConfig.set] and [SharedPreferencesProviderConfig.get] for
+ * custom types (e.g. enums) serialized as strings in [android.content.SharedPreferences].
+ *
+ * Inline convenience wrapper that avoids passing [kotlin.reflect.KClass] explicitly:
+ * ```kotlin
+ * provider.registerConverter(enumConverter<CheckoutVariant>())
+ * ```
+ *
+ * @param T The non-null custom type to register.
+ * @param converter The [TypeConverter] that serializes/deserializes [T] as a [String].
+ */
+public inline fun <reified T : Any> SharedPreferencesProviderConfig.registerConverter(converter: TypeConverter<T>) {
+    registerConverter(T::class, converter)
 }

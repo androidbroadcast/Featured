@@ -4,6 +4,7 @@ public final class dev/androidbroadcast/featured/datastore/DataStoreConfigValueP
 	public fun <init> (Landroidx/datastore/core/DataStore;)V
 	public fun get (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun observe (Ldev/androidbroadcast/featured/ConfigParam;)Lkotlinx/coroutines/flow/Flow;
+	public final fun registerConverter (Lkotlin/reflect/KClass;Ldev/androidbroadcast/featured/TypeConverter;)V
 	public fun resetOverride (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun set (Ldev/androidbroadcast/featured/ConfigParam;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
