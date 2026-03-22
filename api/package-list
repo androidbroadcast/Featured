@@ -15,11 +15,7 @@ module:featured-platform
 dev.androidbroadcast.featured.platform
 module:featured-registry
 dev.androidbroadcast.featured.registry
-module:firebase-provider
-dev.androidbroadcast.featured.firebase
 module:javaprefs-provider
 dev.androidbroadcast.featured.javaprefs
 module:nsuserdefaults-provider
 dev.androidbroadcast.featured.nsuserdefaults
-module:sharedpreferences-provider
-dev.androidbroadcast.featured.sharedpreferences
