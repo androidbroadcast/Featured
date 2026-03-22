@@ -74,6 +74,9 @@ public class FirebaseConfigValueProvider(
      *
      * @param activate When `true`, calls `fetchAndActivate()` so values become available
      *   immediately after this call. When `false`, only fetches without activating.
+     * @throws FetchException if the Firebase fetch operation fails (e.g. network error,
+     *   timeout, or service unavailability). The [FetchException.cause] holds the original
+     *   exception for diagnostics. See [FetchException] for retry recommendations.
      */
     override suspend fun fetch(activate: Boolean) {
         val task =
@@ -81,7 +84,11 @@ public class FirebaseConfigValueProvider(
                 true -> remoteConfig.fetchAndActivate()
                 false -> remoteConfig.fetch()
             }
-        task.await()
+        try {
+            task.await()
+        } catch (e: Exception) {
+            throw FetchException("Firebase Remote Config fetch failed", e)
+        }
     }
 }
 

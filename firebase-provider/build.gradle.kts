@@ -78,4 +78,9 @@ dependencies {
     implementation(libs.firebase.analytics)
 
     implementation(libs.kotlinx.coroutines.playServices)
+
+    testImplementation(libs.kotlin.testJunit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
 }
