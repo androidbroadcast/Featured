@@ -143,6 +143,17 @@ public class DataStoreConfigValueProvider(
     }
 
     /**
+     * Removes all persisted overrides by clearing the entire DataStore preferences file.
+     *
+     * After this call, [get] returns `null` for every parameter that was previously set,
+     * and [ConfigValues] falls back to the remote provider or [ConfigParam.defaultValue].
+     * Active [observe] flows will re-emit after the DataStore write completes.
+     */
+    override suspend fun clear() {
+        dataStore.edit { preferences -> preferences.clear() }
+    }
+
+    /**
      * Returns a [Flow] that emits a [ConfigValue] for [param] on every DataStore update.
      *
      * The flow emits immediately with the current persisted value (or [ConfigParam.defaultValue]

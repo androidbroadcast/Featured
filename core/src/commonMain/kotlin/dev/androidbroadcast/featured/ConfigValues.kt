@@ -121,6 +121,16 @@ public class ConfigValues(
     }
 
     /**
+     * Removes all locally overridden values, resetting the local provider to an empty state.
+     *
+     * After this call, every [getValue] call falls back to the remote provider or
+     * [ConfigParam.defaultValue]. Has no effect when no local provider is configured.
+     */
+    public suspend fun clearOverrides() {
+        localProvider?.clear()
+    }
+
+    /**
      * Loads previously cached remote values into memory without performing a network fetch.
      *
      * Call this once at an appropriate moment during app startup — before any [getValue] calls

@@ -63,4 +63,31 @@ class DataStoreEnumTest {
                 provider.set(param, CheckoutVariant.LEGACY)
             }
         }
+
+    @Test
+    fun clear_removesAllStoredValues_soGetReturnsNull() =
+        testScope.runTest {
+            val provider = createProvider()
+            val stringParam = ConfigParam("string_flag", "default")
+            val intParam = ConfigParam("int_flag", 0)
+            provider.set(stringParam, "value")
+            provider.set(intParam, 99)
+
+            provider.clear()
+
+            assertNull(provider.get(stringParam))
+            assertNull(provider.get(intParam))
+        }
+
+    @Test
+    fun clear_asLocalConfigValueProvider_removesAllValues() =
+        testScope.runTest {
+            val provider: dev.androidbroadcast.featured.LocalConfigValueProvider = createProvider()
+            val param = ConfigParam("flag", false)
+            provider.set(param, true)
+
+            provider.clear()
+
+            assertNull(provider.get(param))
+        }
 }

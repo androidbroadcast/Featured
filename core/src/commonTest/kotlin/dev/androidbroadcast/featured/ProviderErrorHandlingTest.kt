@@ -31,6 +31,8 @@ class ProviderErrorHandlingTest {
 
         override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) = Unit
 
+        override suspend fun clear() = Unit
+
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> = updates as Flow<ConfigValue<T>>
     }

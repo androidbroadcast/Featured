@@ -144,9 +144,12 @@ public class SharedPreferencesProviderConfig(
         }
 
     /**
-     * Clears all feature flags from SharedPreferences.
+     * Removes all feature flags from SharedPreferences.
+     *
+     * After this call, [get] returns `null` for every parameter that was previously set,
+     * and [ConfigValues] falls back to the remote provider or [ConfigParam.defaultValue].
      */
-    public suspend fun clear(): Unit =
+    public override suspend fun clear(): Unit =
         withContext(context) {
             sharedPreferences.edit(commit = true) {
                 clear()

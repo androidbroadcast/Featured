@@ -57,6 +57,15 @@ public interface LocalConfigValueProvider : ConfigValueProvider {
     public suspend fun <T : Any> resetOverride(param: ConfigParam<T>)
 
     /**
+     * Removes all locally overridden values, resetting the provider to an empty state.
+     *
+     * After this call, [get] returns `null` for every parameter that was previously
+     * overridden, and [ConfigValues] falls back to the remote provider or
+     * [ConfigParam.defaultValue].
+     */
+    public suspend fun clear()
+
+    /**
      * Observes changes to the configuration value for the given parameter.
      * It emits the latest value immediately and then continues to emit updates
      * whenever the value changes locally.

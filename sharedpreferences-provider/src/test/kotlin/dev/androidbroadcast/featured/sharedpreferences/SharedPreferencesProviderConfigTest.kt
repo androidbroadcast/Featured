@@ -369,4 +369,17 @@ class SharedPreferencesProviderConfigTest {
                 assertTrue(e.message!!.contains("Unsupported type"))
             }
         }
+
+    @Test
+    fun `clear via LocalConfigValueProvider interface removes all values`() =
+        runTest {
+            val localProvider: dev.androidbroadcast.featured.LocalConfigValueProvider = provider
+            localProvider.set(stringParam, "value1")
+            localProvider.set(intParam, 99)
+
+            localProvider.clear()
+
+            assertNull(localProvider.get(stringParam))
+            assertNull(localProvider.get(intParam))
+        }
 }
