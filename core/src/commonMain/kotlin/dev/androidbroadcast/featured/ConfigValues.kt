@@ -26,6 +26,9 @@ import kotlinx.coroutines.flow.merge
  *     remoteProvider = FirebaseConfigValueProvider(),
  * )
  *
+ * // Load cached remote values at app start (no network call)
+ * configValues.initialize()
+ *
  * // One-shot read
  * val value: ConfigValue<Boolean> = configValues.getValue(DarkModeParam)
  *

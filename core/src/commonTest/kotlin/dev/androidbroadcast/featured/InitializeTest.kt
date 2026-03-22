@@ -55,12 +55,10 @@ class InitializeTest {
             val remote = CachingRemoteProvider(cachedValues = mapOf("flag" to "cached_remote"))
             val configValues = ConfigValues(remoteProvider = remote)
 
-            // Before initialize, remote provider has no active values
             val beforeInit = configValues.getValue(param)
             assertEquals("default", beforeInit.value)
             assertEquals(ConfigValue.Source.DEFAULT, beforeInit.source)
 
-            // After initialize, cached remote values are loaded into memory
             configValues.initialize()
 
             val afterInit = configValues.getValue(param)
@@ -96,7 +94,6 @@ class InitializeTest {
             val remote = PlainRemoteProvider()
             val configValues = ConfigValues(remoteProvider = remote)
 
-            // Should not throw even if provider does not implement InitializableConfigValueProvider
             configValues.initialize()
 
             assertFalse(remote.fetchCalled)
@@ -111,7 +108,6 @@ class InitializeTest {
 
             local.set(param, "local_value")
 
-            // initialize() should not throw; local values remain accessible
             configValues.initialize()
 
             val result = configValues.getValue(param)
