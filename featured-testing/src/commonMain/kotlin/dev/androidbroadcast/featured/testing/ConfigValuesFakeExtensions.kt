@@ -3,7 +3,7 @@ package dev.androidbroadcast.featured.testing
 import dev.androidbroadcast.featured.ConfigValues
 
 /**
- * Creates a [ConfigValues] suitable for use in unit tests and Compose Previews.
+ * Creates a [ConfigValues] suitable for use in unit tests.
  *
  * This is a convenience alias for [fakeConfigValues] callable on the [ConfigValues] companion.
  *

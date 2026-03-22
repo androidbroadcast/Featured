@@ -11,8 +11,7 @@ import dev.androidbroadcast.featured.InMemoryConfigValueProvider
  * public API.
  */
 public class FakeConfigValuesScope internal constructor() {
-    private val overrides: MutableList<suspend InMemoryConfigValueProvider.() -> Unit> =
-        mutableListOf()
+    private val overrides: MutableList<Pair<ConfigParam<*>, Any>> = mutableListOf()
 
     /**
      * Sets an initial override value for the given [param].
@@ -24,16 +23,19 @@ public class FakeConfigValuesScope internal constructor() {
         param: ConfigParam<T>,
         value: T,
     ) {
-        overrides.add { set(param, value) }
+        overrides.add(param to value)
     }
 
     internal suspend fun applyTo(provider: InMemoryConfigValueProvider) {
-        overrides.forEach { action -> provider.action() }
+        @Suppress("UNCHECKED_CAST")
+        overrides.forEach { (param, value) ->
+            provider.set(param as ConfigParam<Any>, value)
+        }
     }
 }
 
 /**
- * Creates a [ConfigValues] suitable for use in unit tests and Compose Previews.
+ * Creates a [ConfigValues] suitable for use in unit tests.
  *
  * Initial values for specific params are set via [block]. Unset params fall back to
  * [ConfigParam.defaultValue]. Values can be changed mid-test using [ConfigValues.override],
@@ -48,7 +50,7 @@ public class FakeConfigValuesScope internal constructor() {
  * // Read initial value
  * val value = configValues.getValue(NewCheckoutFlag) // true
  *
- * // Simulate remote change mid-test
+ * // Simulate a remote change mid-test
  * configValues.override(NewCheckoutFlag, false)
  * ```
  */
