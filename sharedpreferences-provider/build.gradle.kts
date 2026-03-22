@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kover)
     alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
     alias(libs.plugins.dokka)
@@ -99,4 +100,38 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.androidx.testExt.junit)
     testImplementation(libs.turbine)
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("*Test*", "*Mock*", "*Fake*")
+            }
+        }
+
+        total {
+            html {
+                onCheck = false
+            }
+
+            xml {
+                onCheck = false
+            }
+
+            log {
+                onCheck = true
+                header = "Code coverage summary for :sharedpreferences-provider module"
+                format = "Line coverage: <value>%"
+            }
+
+            verify {
+                onCheck = true
+
+                rule {
+                    minBound(80)
+                }
+            }
+        }
+    }
 }

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kover)
     alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
     alias(libs.plugins.dokka)
@@ -83,4 +84,41 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("*Test*", "*Mock*", "*Fake*")
+            }
+        }
+
+        total {
+            html {
+                onCheck = false
+            }
+
+            xml {
+                onCheck = false
+            }
+
+            log {
+                onCheck = true
+                header = "Code coverage summary for :firebase-provider module"
+                format = "Line coverage: <value>%"
+            }
+
+            verify {
+                onCheck = true
+
+                // Firebase SDK requires a real Firebase project or a Firebase emulator
+                // for meaningful unit tests. Threshold is intentionally kept at 0 until
+                // integration tests are added. See issue #45.
+                rule {
+                    minBound(0)
+                }
+            }
+        }
+    }
 }

@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.skie)
+    alias(libs.plugins.kover)
     alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
     alias(libs.plugins.dokka)
@@ -106,5 +107,39 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+    }
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("*Test*", "*Mock*", "*Fake*")
+            }
+        }
+
+        total {
+            html {
+                onCheck = false
+            }
+
+            xml {
+                onCheck = false
+            }
+
+            log {
+                onCheck = true
+                header = "Code coverage summary for :datastore-provider module"
+                format = "Line coverage: <value>%"
+            }
+
+            verify {
+                onCheck = true
+
+                rule {
+                    minBound(70)
+                }
+            }
+        }
     }
 }
