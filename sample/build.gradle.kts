@@ -52,6 +52,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             implementation(project(":core"))
+            implementation(project(":featured-registry"))
         }
 
         jvmMain.dependencies {
