@@ -1,6 +1,8 @@
 $dokka.format:html-v1
 $dokka.linkExtension:html
 
+module:configcat-provider
+dev.androidbroadcast.featured.configcat
 module:core
 dev.androidbroadcast.featured
 module:datastore-provider

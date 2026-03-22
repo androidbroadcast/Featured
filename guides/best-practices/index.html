@@ -587,19 +587,79 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#multi-module-setup" class="md-nav__link">
+  <a href="#flag-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
-      Multi-module setup
+      Flag lifecycle
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Multi-module setup">
+    <nav class="md-nav" aria-label="Flag lifecycle">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#single-configvalues-instance" class="md-nav__link">
+  <a href="#1-draft-introduce-the-flag" class="md-nav__link">
     <span class="md-ellipsis">
-      Single ConfigValues instance
+      1. Draft — introduce the flag
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-rollout-enable-remotely" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Rollout — enable remotely
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-cleanup-delete-the-flag" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Cleanup — delete the flag
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Naming conventions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-module-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi-module patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi-module patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#one-flagregistry-per-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      One FlagRegistry per module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#app-level-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      App-level aggregation
     </span>
   </a>
   
@@ -620,27 +680,69 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#naming-flags" class="md-nav__link">
+  <a href="#anti-patterns" class="md-nav__link">
     <span class="md-ellipsis">
-      Naming flags
+      Anti-patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Anti-patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flags-that-never-get-cleaned-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flags that never get cleaned up
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#avoiding-flag-proliferation" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#using-flags-for-configuration-values" class="md-nav__link">
     <span class="md-ellipsis">
-      Avoiding flag proliferation
+      Using flags for configuration values
     </span>
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#hardcoding-flag-values-in-production-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hardcoding flag values in production code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#missing-localflag-or-remoteflag-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Missing @LocalFlag or @RemoteFlag annotation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-with-real-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing with real providers
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#flag-lifecycle" class="md-nav__link">
+  <a href="#automated-enforcement-detekt-rules" class="md-nav__link">
     <span class="md-ellipsis">
-      Flag lifecycle
+      Automated enforcement (Detekt rules)
     </span>
   </a>
   
@@ -827,19 +929,79 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#multi-module-setup" class="md-nav__link">
+  <a href="#flag-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
-      Multi-module setup
+      Flag lifecycle
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Multi-module setup">
+    <nav class="md-nav" aria-label="Flag lifecycle">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#single-configvalues-instance" class="md-nav__link">
+  <a href="#1-draft-introduce-the-flag" class="md-nav__link">
     <span class="md-ellipsis">
-      Single ConfigValues instance
+      1. Draft — introduce the flag
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-rollout-enable-remotely" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Rollout — enable remotely
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-cleanup-delete-the-flag" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Cleanup — delete the flag
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Naming conventions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-module-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi-module patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi-module patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#one-flagregistry-per-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      One FlagRegistry per module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#app-level-aggregation" class="md-nav__link">
+    <span class="md-ellipsis">
+      App-level aggregation
     </span>
   </a>
   
@@ -860,27 +1022,69 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#naming-flags" class="md-nav__link">
+  <a href="#anti-patterns" class="md-nav__link">
     <span class="md-ellipsis">
-      Naming flags
+      Anti-patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Anti-patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flags-that-never-get-cleaned-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flags that never get cleaned up
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#avoiding-flag-proliferation" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#using-flags-for-configuration-values" class="md-nav__link">
     <span class="md-ellipsis">
-      Avoiding flag proliferation
+      Using flags for configuration values
     </span>
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#hardcoding-flag-values-in-production-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hardcoding flag values in production code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#missing-localflag-or-remoteflag-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Missing @LocalFlag or @RemoteFlag annotation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-with-real-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing with real providers
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#flag-lifecycle" class="md-nav__link">
+  <a href="#automated-enforcement-detekt-rules" class="md-nav__link">
     <span class="md-ellipsis">
-      Flag lifecycle
+      Automated enforcement (Detekt rules)
     </span>
   </a>
   
@@ -914,102 +1118,279 @@
 
 
 <h1 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h1>
-<h2 id="multi-module-setup">Multi-module setup<a class="headerlink" href="#multi-module-setup" title="Permanent link">&para;</a></h2>
-<p>In a multi-module project, apply the Gradle plugin to every module that declares <code>@LocalFlag</code> annotations:</p>
-<div class="highlight"><span class="filename">:feature:checkout/build.gradle.kts</span><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">plugins</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">id</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="c1">// … other plugins</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
+<h2 id="flag-lifecycle">Flag lifecycle<a class="headerlink" href="#flag-lifecycle" title="Permanent link">&para;</a></h2>
+<p>Feature flags are temporary by design. Every flag should progress through three stages and then be deleted.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Draft → Rollout → Cleanup
 </code></pre></div>
-<p>Run code generation tasks across all modules at once:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Scan flags in all modules</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>./gradlew<span class="w"> </span>scanAllLocalFlags
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Generate R8 rules for all Android modules</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>./gradlew<span class="w"> </span>generateProguardRules
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Generate xcconfig across all modules</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>./gradlew<span class="w"> </span>generateXcconfig
+<h3 id="1-draft-introduce-the-flag">1. Draft — introduce the flag<a class="headerlink" href="#1-draft-introduce-the-flag" title="Permanent link">&para;</a></h3>
+<p>Declare the <code>ConfigParam</code> in your module's flags registry. Annotate it with <code>@LocalFlag</code> or <code>@RemoteFlag</code> (required by the <code>MissingFlagAnnotationRule</code> Detekt rule) and set an expiry date using <code>@ExpiresAt</code> so stale flags surface automatically in CI.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// GOOD: annotated, expiry date set, snake_case key, module-prefixed</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nd">@LocalFlag</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nd">@ExpiresAt</span><span class="p">(</span><span class="s">&quot;2026-09-01&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">newCheckout</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout_new_flow&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enable the redesigned single-page checkout&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="n">category</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">)</span>
 </code></pre></div>
-<h3 id="single-configvalues-instance">Single ConfigValues instance<a class="headerlink" href="#single-configvalues-instance" title="Permanent link">&para;</a></h3>
-<p>Declare a single shared <code>ConfigValues</code> in your <strong>app module</strong> and inject it into feature modules through dependency injection. Feature modules declare their own <code>ConfigParam</code> objects but do not create <code>ConfigValues</code> themselves.</p>
-<div class="highlight"><span class="filename">:app/src/main/kotlin/.../AppModule.kt (Hilt example)</span><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nd">@Module</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nd">@InstallIn</span><span class="p">(</span><span class="n">SingletonComponent</span><span class="o">::</span><span class="n">class</span><span class="p">)</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AppModule</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nd">@Provides</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="nd">@Singleton</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">provideConfigValues</span><span class="p">(</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="nd">@ApplicationContext</span><span class="w"> </span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">Context</span><span class="p">,</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="p">):</span><span class="w"> </span><span class="n">ConfigValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">(</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">        </span><span class="n">localProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataStoreConfigValueProvider</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="na">featureFlagsDataStore</span><span class="p">),</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">        </span><span class="n">remoteProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FirebaseConfigValueProvider</span><span class="p">(),</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="p">)</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="p">}</span>
+<p>Guard every entry point — UI composition roots <strong>and</strong> deep-link handlers — behind the flag value. Keep the default <code>false</code> so the feature is off until you explicitly enable it.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// Guard a Compose entry point</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">isNewCheckout</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">collectAsState</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isNewCheckout</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="n">NewCheckoutScreen</span><span class="p">()</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="n">LegacyCheckoutScreen</span><span class="p">()</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">}</span>
 </code></pre></div>
-<div class="highlight"><span class="filename">:feature:checkout/src/main/kotlin/.../CheckoutViewModel.kt</span><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nd">@HiltViewModel</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kd">class</span><span class="w"> </span><span class="nc">CheckoutViewModel</span><span class="w"> </span><span class="nd">@Inject</span><span class="w"> </span><span class="k">constructor</span><span class="p">(</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">,</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ViewModel</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">isNewCheckoutEnabled</span><span class="p">:</span><span class="w"> </span><span class="n">StateFlow</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">asStateFlow</span><span class="p">(</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">        </span><span class="n">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">,</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">        </span><span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModelScope</span><span class="p">,</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="p">)</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">}</span>
+<h3 id="2-rollout-enable-remotely">2. Rollout — enable remotely<a class="headerlink" href="#2-rollout-enable-remotely" title="Permanent link">&para;</a></h3>
+<p>Use a <code>RemoteConfigValueProvider</code> (e.g. Firebase Remote Config) to enable the flag for a growing percentage of users. Remote values automatically override local defaults — no code change required.</p>
+<p>Annotate the flag <code>@RemoteFlag</code> when it is intended to be permanently controlled from the server (A/B experiments, promotional banners). Use <code>@LocalFlag</code> for flags that will eventually be deleted once the rollout is complete.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Permanent remote-controlled flag</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nd">@RemoteFlag</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">promoBannerEnabled</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;promo_banner_enabled&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Show a promotional banner (remote-controlled)&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="n">category</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;promotions&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">)</span>
+</code></pre></div>
+<h3 id="3-cleanup-delete-the-flag">3. Cleanup — delete the flag<a class="headerlink" href="#3-cleanup-delete-the-flag" title="Permanent link">&para;</a></h3>
+<p>Once the feature is fully rolled out and validated:</p>
+<ol>
+<li>Delete the <code>ConfigParam</code> declaration.</li>
+<li>Remove the <code>@LocalFlag</code> / <code>@ExpiresAt</code> annotations (they go with the declaration).</li>
+<li>Remove the guarding <code>if</code> blocks — keep only the new-path code.</li>
+<li>Remove the corresponding key from your remote configuration backend.</li>
+<li>Regenerate platform artefacts:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>./gradlew<span class="w"> </span>generateProguardRules<span class="w">   </span><span class="c1"># keep Android R8 rules in sync</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>./gradlew<span class="w"> </span>generateXcconfig<span class="w">        </span><span class="c1"># keep iOS xcconfig in sync</span>
+</code></pre></div>
+<p>The <code>ExpiredFeatureFlagRule</code> Detekt rule will warn at build time for any flag whose <code>@ExpiresAt</code> date has passed, preventing flags from silently accumulating.</p>
+<hr />
+<h2 id="naming-conventions">Naming conventions<a class="headerlink" href="#naming-conventions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>Convention</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ConfigParam</code> key</td>
+<td><code>snake_case</code>, module-prefixed</td>
+<td><code>checkout_new_flow</code></td>
+</tr>
+<tr>
+<td>Kotlin property</td>
+<td><code>camelCase</code> matching the key</td>
+<td><code>newCheckoutFlow</code></td>
+</tr>
+<tr>
+<td>Firebase / remote key</td>
+<td>Same <code>snake_case</code> as the key</td>
+<td><code>checkout_new_flow</code></td>
+</tr>
+</tbody>
+</table>
+<p>Group related flags with a shared prefix (<code>checkout_*</code>, <code>payments_*</code>). This keeps the debug UI readable and makes it obvious which team owns each flag.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1">// GOOD</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">newCheckoutFlow</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout_new_flow&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">checkoutPaymentV2</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout_payment_v2&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1">// BAD — no module prefix, impossible to attribute ownership</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;new_flow&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span>
+</code></pre></div>
+<hr />
+<h2 id="multi-module-patterns">Multi-module patterns<a class="headerlink" href="#multi-module-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="one-flagregistry-per-module">One FlagRegistry per module<a class="headerlink" href="#one-flagregistry-per-module" title="Permanent link">&para;</a></h3>
+<p>Each feature module declares its own object holding its <code>ConfigParam</code> instances. The module does not create <code>ConfigValues</code> — that is the app module's responsibility.</p>
+<div class="highlight"><span class="filename">:feature:checkout/src/.../CheckoutFlags.kt</span><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">public</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">CheckoutFlags</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nd">@LocalFlag</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nd">@ExpiresAt</span><span class="p">(</span><span class="s">&quot;2026-09-01&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">newFlow</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout_new_flow&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">        </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">        </span><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enable the redesigned checkout flow&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">        </span><span class="n">category</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span><span class="nd">@LocalFlag</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span><span class="nd">@ExpiresAt</span><span class="p">(</span><span class="s">&quot;2026-09-01&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">paymentV2</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout_payment_v2&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">        </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">        </span><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enable Payment V2 during checkout&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">        </span><span class="n">category</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><span class="filename">:feature:promotions/src/.../PromotionsFlags.kt</span><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">public</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">PromotionsFlags</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nd">@RemoteFlag</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">promoBanner</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;promo_banner_enabled&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">        </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">        </span><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Show a promotional banner (remote-controlled)&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">        </span><span class="n">category</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;promotions&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="app-level-aggregation">App-level aggregation<a class="headerlink" href="#app-level-aggregation" title="Permanent link">&para;</a></h3>
+<p>The app module owns the single <code>ConfigValues</code> instance and wires together providers. Feature modules receive <code>ConfigValues</code> via dependency injection.</p>
+<div class="highlight"><span class="filename">:app/src/main/kotlin/.../AppModule.kt (Hilt example)</span><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nd">@Module</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nd">@InstallIn</span><span class="p">(</span><span class="n">SingletonComponent</span><span class="o">::</span><span class="n">class</span><span class="p">)</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kd">object</span><span class="w"> </span><span class="nc">AppModule</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="nd">@Provides</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="nd">@Singleton</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">provideConfigValues</span><span class="p">(</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">        </span><span class="nd">@ApplicationContext</span><span class="w"> </span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">Context</span><span class="p">,</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="p">):</span><span class="w"> </span><span class="n">ConfigValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">(</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">        </span><span class="n">localProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataStoreConfigValueProvider</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="na">featureFlagsDataStore</span><span class="p">),</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">        </span><span class="n">remoteProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FirebaseConfigValueProvider</span><span class="p">(),</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="p">}</span>
+</code></pre></div>
+<p>Feature modules consume <code>ConfigValues</code> without knowing how providers are wired:</p>
+<div class="highlight"><span class="filename">:feature:checkout/src/.../CheckoutViewModel.kt</span><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nd">@HiltViewModel</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kd">class</span><span class="w"> </span><span class="nc">CheckoutViewModel</span><span class="w"> </span><span class="nd">@Inject</span><span class="w"> </span><span class="k">constructor</span><span class="p">(</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ViewModel</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">isNewFlowEnabled</span><span class="p">:</span><span class="w"> </span><span class="n">StateFlow</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">asStateFlow</span><span class="p">(</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">        </span><span class="n">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CheckoutFlags</span><span class="p">.</span><span class="na">newFlow</span><span class="p">,</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">        </span><span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModelScope</span><span class="p">,</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="p">}</span>
 </code></pre></div>
 <p>See <a href="../../adr/001-configvalues-multi-module/">ADR 001</a> for the rationale behind this design.</p>
+<hr />
 <h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
-<p>Use <code>InMemoryConfigValueProvider</code> in tests — it requires no dependencies and is fully synchronous:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">CheckoutViewModelTest</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">InMemoryConfigValueProvider</span><span class="p">()</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">(</span><span class="n">localProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">provider</span><span class="p">)</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nd">@Test</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">`new checkout enabled shows new UI`</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runTest</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">        </span><span class="c1">// Arrange: override flag for this test</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">        </span><span class="n">configValues</span><span class="p">.</span><span class="na">override</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">vm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CheckoutViewModelTest</span><span class="p">(</span><span class="n">configValues</span><span class="p">)</span>
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">        </span><span class="c1">// Assert</span>
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">        </span><span class="n">assertEquals</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">vm</span><span class="p">.</span><span class="na">isNewCheckoutEnabled</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
-<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span><span class="nd">@Test</span>
-<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">`new checkout disabled shows legacy UI`</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runTest</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">        </span><span class="c1">// No override — default value (false) applies</span>
-<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">vm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CheckoutViewModelTest</span><span class="p">(</span><span class="n">configValues</span><span class="p">)</span>
-<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>
-<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">        </span><span class="n">assertEquals</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="n">vm</span><span class="p">.</span><span class="na">isNewCheckoutEnabled</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
-<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="p">}</span>
+<p>Use <code>fakeConfigValues</code> from the <code>featured-testing</code> artifact — it is fully synchronous, has no external dependencies, and supports both initial values and mid-test overrides.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.testing.fakeConfigValues</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="kd">class</span><span class="w"> </span><span class="nc">CheckoutViewModelTest</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="nd">@Test</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">`new checkout flow enabled shows new UI`</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runTest</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fakeConfigValues</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">            </span><span class="k">set</span><span class="p">(</span><span class="n">CheckoutFlags</span><span class="p">.</span><span class="na">newFlow</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">vm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CheckoutViewModel</span><span class="p">(</span><span class="n">configValues</span><span class="p">)</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">        </span><span class="n">assertEquals</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">vm</span><span class="p">.</span><span class="na">isNewFlowEnabled</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">    </span><span class="nd">@Test</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">`new checkout flow disabled shows legacy UI`</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runTest</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="w">        </span><span class="c1">// No override — default value (false) applies</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fakeConfigValues</span><span class="p">()</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">vm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CheckoutViewModel</span><span class="p">(</span><span class="n">configValues</span><span class="p">)</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="w">        </span><span class="n">assertEquals</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="n">vm</span><span class="p">.</span><span class="na">isNewFlowEnabled</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>
+<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="w">    </span><span class="nd">@Test</span>
+<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">`reactive update when flag toggled mid-test`</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runTest</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fakeConfigValues</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a><span class="w">            </span><span class="k">set</span><span class="p">(</span><span class="n">CheckoutFlags</span><span class="p">.</span><span class="na">newFlow</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+<a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">vm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CheckoutViewModel</span><span class="p">(</span><span class="n">configValues</span><span class="p">)</span>
+<a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a>
+<a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a><span class="w">        </span><span class="c1">// Simulate a remote change arriving during the session</span>
+<a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a><span class="w">        </span><span class="n">configValues</span><span class="p">.</span><span class="na">override</span><span class="p">(</span><span class="n">CheckoutFlags</span><span class="p">.</span><span class="na">newFlow</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a>
+<a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a><span class="w">        </span><span class="n">assertEquals</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">vm</span><span class="p">.</span><span class="na">isNewFlowEnabled</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
+<a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="naming-flags">Naming flags<a class="headerlink" href="#naming-flags" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Use <code>snake_case</code> keys — they map cleanly to Firebase Remote Config parameter names and the xcconfig <code>DISABLE_*</code> conditions.</li>
-<li>Group related flags with a common prefix: <code>checkout_new_flow</code>, <code>checkout_payment_v2</code>.</li>
-<li>Keep <code>description</code> concise but specific enough to understand at a glance in the debug UI.</li>
-</ul>
-<h2 id="avoiding-flag-proliferation">Avoiding flag proliferation<a class="headerlink" href="#avoiding-flag-proliferation" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Remove flags for fully rolled-out features. Dead flags accumulate maintenance cost.</li>
-<li>Use <code>category</code> on <code>ConfigParam</code> to group flags in the debug UI.</li>
-<li>Archive removed flags in a comment block or changelog entry so the key isn't accidentally reused.</li>
-</ul>
-<h2 id="flag-lifecycle">Flag lifecycle<a class="headerlink" href="#flag-lifecycle" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Draft → Rollout → Cleanup
+<p>Never use real providers (<code>FirebaseConfigValueProvider</code>, <code>DataStoreConfigValueProvider</code>) in unit tests — they require Android or network context and make tests non-deterministic.</p>
+<hr />
+<h2 id="anti-patterns">Anti-patterns<a class="headerlink" href="#anti-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="flags-that-never-get-cleaned-up">Flags that never get cleaned up<a class="headerlink" href="#flags-that-never-get-cleaned-up" title="Permanent link">&para;</a></h3>
+<p>Flags are temporary scaffolding, not permanent configuration. Without an expiry date they accumulate silently.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1">// BAD — no @ExpiresAt, will never prompt cleanup</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nd">@LocalFlag</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">newCheckout</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout_new_flow&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="c1">// GOOD — @ExpiresAt triggers the ExpiredFeatureFlagRule Detekt warning on the deadline</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="nd">@LocalFlag</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="nd">@ExpiresAt</span><span class="p">(</span><span class="s">&quot;2026-09-01&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">newCheckout</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout_new_flow&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
 </code></pre></div>
-<ol>
-<li><strong>Draft</strong> — add flag with <code>defaultValue = false</code>. Ship behind the flag.</li>
-<li><strong>Rollout</strong> — enable remotely for a percentage of users. Monitor metrics.</li>
-<li><strong>Cleanup</strong> — once fully rolled out, delete the flag, the <code>@LocalFlag</code> annotation, and any guarding <code>if</code> blocks. Run <code>generateProguardRules</code> / <code>generateXcconfig</code> to keep generated files in sync.</li>
-</ol>
+<h3 id="using-flags-for-configuration-values">Using flags for configuration values<a class="headerlink" href="#using-flags-for-configuration-values" title="Permanent link">&para;</a></h3>
+<p><code>ConfigParam&lt;Boolean&gt;</code> is for feature toggles that will be deleted. Long-lived configuration values (thresholds, URLs, strings) should use the appropriate type directly and be annotated <code>@RemoteFlag</code> — they are not subject to the cleanup lifecycle.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// BAD — a URL is not a feature flag; it will never be &quot;cleaned up&quot;</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="nd">@LocalFlag</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kd">val</span><span class="w"> </span><span class="nv">apiBaseUrl</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;api_base_url&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://api.example.com&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1">// GOOD — permanent remote config value, not a temporary flag</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="nd">@RemoteFlag</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">apiBaseUrl</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;api_base_url&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://api.example.com&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="hardcoding-flag-values-in-production-code">Hardcoding flag values in production code<a class="headerlink" href="#hardcoding-flag-values-in-production-code" title="Permanent link">&para;</a></h3>
+<p>Hardcoding <code>true</code> or <code>false</code> instead of reading from <code>ConfigValues</code> defeats the purpose of the system. The <code>HardcodedFlagValueRule</code> Detekt rule catches direct accesses to <code>ConfigParam.defaultValue</code> in production code.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1">// BAD — bypasses the provider stack entirely</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">.</span><span class="na">defaultValue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1">// GOOD — reads the live value through ConfigValues</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">configValues</span><span class="p">.</span><span class="na">getValue</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<h3 id="missing-localflag-or-remoteflag-annotation">Missing <code>@LocalFlag</code> or <code>@RemoteFlag</code> annotation<a class="headerlink" href="#missing-localflag-or-remoteflag-annotation" title="Permanent link">&para;</a></h3>
+<p>Every <code>ConfigParam</code> property must carry one of these annotations. The <code>MissingFlagAnnotationRule</code> Detekt rule enforces this, making intent explicit and enabling the Gradle plugin's code-generation tasks.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1">// BAD — unannotated, Detekt will warn</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">newCheckout</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout_new_flow&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1">// GOOD</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="nd">@LocalFlag</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="nd">@ExpiresAt</span><span class="p">(</span><span class="s">&quot;2026-09-01&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">newCheckout</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;checkout_new_flow&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="testing-with-real-providers">Testing with real providers<a class="headerlink" href="#testing-with-real-providers" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1">// BAD — requires Firebase SDK and network; non-deterministic</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">(</span><span class="n">remoteProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FirebaseConfigValueProvider</span><span class="p">())</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="c1">// GOOD — deterministic, no dependencies</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fakeConfigValues</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">set</span><span class="p">(</span><span class="n">CheckoutFlags</span><span class="p">.</span><span class="na">newFlow</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="automated-enforcement-detekt-rules">Automated enforcement (Detekt rules)<a class="headerlink" href="#automated-enforcement-detekt-rules" title="Permanent link">&para;</a></h2>
+<p>Add the <code>featured-detekt-rules</code> dependency to your Detekt configuration to enforce the above patterns automatically at build time:</p>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>What it catches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MissingFlagAnnotationRule</code></td>
+<td><code>ConfigParam</code> properties missing <code>@LocalFlag</code> or <code>@RemoteFlag</code></td>
+</tr>
+<tr>
+<td><code>ExpiredFeatureFlagRule</code></td>
+<td>Flags whose <code>@ExpiresAt</code> date is in the past</td>
+</tr>
+<tr>
+<td><code>HardcodedFlagValueRule</code></td>
+<td>Direct access to <code>ConfigParam.defaultValue</code> in production code</td>
+</tr>
+</tbody>
+</table>
+<p>With these rules enabled, the lifecycle contract is enforced by CI rather than code review alone.</p>
+<hr />
 <h2 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Never store secrets (API keys, tokens) as <code>ConfigParam</code> values. Flags are intended for boolean/numeric/string feature toggles.</li>
+<li>Never store secrets (API keys, tokens) as <code>ConfigParam</code> values. Flags are for feature toggles and configuration, not credentials.</li>
 <li>Remote Config values are not end-to-end encrypted. Do not use them to gate security-critical behaviour.</li>
+<li>Default values are compiled into the binary. Do not rely on a flag's default being secret.</li>
 </ul>
 
 

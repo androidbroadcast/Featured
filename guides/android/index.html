@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#android-guide" class="md-skip">
+        <a href="#android-integration-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -503,6 +503,159 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#1-add-gradle-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Add Gradle dependencies
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-declare-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Declare flags
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-initialize-configvalues-in-applicationoncreate" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Initialize ConfigValues in Application.onCreate
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Initialize ConfigValues in Application.onCreate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#with-datastore-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      With DataStore (recommended)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#with-sharedpreferences" class="md-nav__link">
+    <span class="md-ellipsis">
+      With SharedPreferences
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-use-in-viewmodel-with-observe" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Use in ViewModel with observe
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-compose-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Compose integration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Compose integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#collecting-flag-state-in-a-composable" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collecting flag state in a Composable
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#providing-configvalues-via-compositionlocal" class="md-nav__link">
+    <span class="md-ellipsis">
+      Providing ConfigValues via CompositionLocal
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-add-firebase-remote-config-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Add Firebase Remote Config provider
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-debug-ui-flag-override-screen" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Debug UI — flag override screen
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Debug UI — flag override screen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#register-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      Register flags
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show-the-debug-screen" class="md-nav__link">
+    <span class="md-ellipsis">
+      Show the debug screen
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-proguard-r8-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. ProGuard / R8 setup
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overriding-and-resetting-at-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overriding and resetting at runtime
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#reading-flags" class="md-nav__link">
     <span class="md-ellipsis">
       Reading flags
@@ -536,84 +689,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#compose-integration" class="md-nav__link">
+  <a href="#next-steps" class="md-nav__link">
     <span class="md-ellipsis">
-      Compose integration
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Compose integration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#collecting-flag-state-in-a-composable" class="md-nav__link">
-    <span class="md-ellipsis">
-      Collecting flag state in a Composable
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#providing-configvalues-via-compositionlocal" class="md-nav__link">
-    <span class="md-ellipsis">
-      Providing ConfigValues via CompositionLocal
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#debug-ui" class="md-nav__link">
-    <span class="md-ellipsis">
-      Debug UI
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Debug UI">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-register-flags" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Register flags
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-show-the-debug-screen" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Show the debug screen
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#release-build-optimization-r8-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Release build optimization — R8 rules
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#overriding-and-resetting-at-runtime" class="md-nav__link">
-    <span class="md-ellipsis">
-      Overriding and resetting at runtime
+      Next steps
     </span>
   </a>
   
@@ -875,6 +953,159 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#1-add-gradle-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Add Gradle dependencies
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-declare-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Declare flags
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-initialize-configvalues-in-applicationoncreate" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Initialize ConfigValues in Application.onCreate
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Initialize ConfigValues in Application.onCreate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#with-datastore-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      With DataStore (recommended)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#with-sharedpreferences" class="md-nav__link">
+    <span class="md-ellipsis">
+      With SharedPreferences
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-use-in-viewmodel-with-observe" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Use in ViewModel with observe
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-compose-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Compose integration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Compose integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#collecting-flag-state-in-a-composable" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collecting flag state in a Composable
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#providing-configvalues-via-compositionlocal" class="md-nav__link">
+    <span class="md-ellipsis">
+      Providing ConfigValues via CompositionLocal
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-add-firebase-remote-config-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Add Firebase Remote Config provider
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-debug-ui-flag-override-screen" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Debug UI — flag override screen
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Debug UI — flag override screen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#register-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      Register flags
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show-the-debug-screen" class="md-nav__link">
+    <span class="md-ellipsis">
+      Show the debug screen
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-proguard-r8-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. ProGuard / R8 setup
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overriding-and-resetting-at-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overriding and resetting at runtime
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#reading-flags" class="md-nav__link">
     <span class="md-ellipsis">
       Reading flags
@@ -908,84 +1139,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#compose-integration" class="md-nav__link">
+  <a href="#next-steps" class="md-nav__link">
     <span class="md-ellipsis">
-      Compose integration
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Compose integration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#collecting-flag-state-in-a-composable" class="md-nav__link">
-    <span class="md-ellipsis">
-      Collecting flag state in a Composable
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#providing-configvalues-via-compositionlocal" class="md-nav__link">
-    <span class="md-ellipsis">
-      Providing ConfigValues via CompositionLocal
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#debug-ui" class="md-nav__link">
-    <span class="md-ellipsis">
-      Debug UI
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Debug UI">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-register-flags" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Register flags
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-show-the-debug-screen" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Show the debug screen
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#release-build-optimization-r8-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Release build optimization — R8 rules
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#overriding-and-resetting-at-runtime" class="md-nav__link">
-    <span class="md-ellipsis">
-      Overriding and resetting at runtime
+      Next steps
     </span>
   </a>
   
@@ -1009,98 +1165,250 @@
   
 
 
-<h1 id="android-guide">Android Guide<a class="headerlink" href="#android-guide" title="Permanent link">&para;</a></h1>
-<p>This guide covers Android-specific integration: reading flags reactively, using Compose extensions, and the debug UI.</p>
-<h2 id="reading-flags">Reading flags<a class="headerlink" href="#reading-flags" title="Permanent link">&para;</a></h2>
-<h3 id="one-shot-read">One-shot read<a class="headerlink" href="#one-shot-read" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">configValue</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValue</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">getValue</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">configValue</span><span class="p">.</span><span class="na">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="c1">// feature is active</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
+<h1 id="android-integration-guide">Android Integration Guide<a class="headerlink" href="#android-integration-guide" title="Permanent link">&para;</a></h1>
+<p>This guide walks you through integrating Featured into an Android project from scratch — from adding Gradle dependencies to using flags in a ViewModel with Compose and Firebase Remote Config.</p>
+<h2 id="1-add-gradle-dependencies">1. Add Gradle dependencies<a class="headerlink" href="#1-add-gradle-dependencies" title="Permanent link">&para;</a></h2>
+<p>Apply the Featured Gradle plugin and declare the artifacts you need. The BOM manages all module versions from a single place.</p>
+<div class="highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">plugins</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">id</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="s">&quot;&lt;version&gt;&quot;</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="n">platform</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:featured-bom:&lt;version&gt;&quot;</span><span class="p">))</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="c1">// Core runtime — always required</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:core&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="c1">// Local persistence — pick one (or both)</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:datastore-provider&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:sharedpreferences-provider&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="c1">// Remote config</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:firebase-provider&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span><span class="c1">// Compose extensions</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:featured-compose&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">    </span><span class="c1">// Debug UI — debug builds only</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">    </span><span class="n">debugImplementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:featured-registry&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">    </span><span class="n">debugImplementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:featured-debug-ui&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="reactive-observation-flow">Reactive observation (Flow)<a class="headerlink" href="#reactive-observation-flow" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Emits immediately with the current value, then on every change</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">configValues</span><span class="p">.</span><span class="na">observe</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="p">.</span><span class="na">collect</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">configValue</span><span class="w"> </span><span class="o">-&gt;</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;new_checkout = </span><span class="si">${</span><span class="n">configValue</span><span class="p">.</span><span class="na">value</span><span class="si">}</span><span class="s"> (source: </span><span class="si">${</span><span class="n">configValue</span><span class="p">.</span><span class="na">source</span><span class="si">}</span><span class="s">)&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1">// Convenience: emit only the raw value, not the ConfigValue wrapper</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">configValues</span><span class="p">.</span><span class="na">observeValue</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="p">.</span><span class="na">collect</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">isEnabled</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="cm">/* … */</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1">// Convert to StateFlow</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="kd">val</span><span class="w"> </span><span class="nv">isEnabled</span><span class="p">:</span><span class="w"> </span><span class="n">StateFlow</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">asStateFlow</span><span class="p">(</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span><span class="n">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">,</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">    </span><span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModelScope</span><span class="p">,</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="p">)</span>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The Gradle plugin ID is <code>dev.androidbroadcast.featured</code>. It generates ProGuard / R8 rules and xcconfig files automatically when you build.</p>
+</div>
+<h2 id="2-declare-flags">2. Declare flags<a class="headerlink" href="#2-declare-flags" title="Permanent link">&para;</a></h2>
+<div class="highlight"><span class="filename">shared/src/commonMain/kotlin/com/example/FeatureFlags.kt</span><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigParam</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.LocalFlag</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kd">object</span><span class="w"> </span><span class="nc">FeatureFlags</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nd">@LocalFlag</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">newCheckout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="p">(</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;new_checkout&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enable the new checkout flow&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="nd">@LocalFlag</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">maxCartItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Int</span><span class="o">&gt;</span><span class="p">(</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;max_cart_items&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">        </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">,</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="compose-integration">Compose integration<a class="headerlink" href="#compose-integration" title="Permanent link">&para;</a></h2>
-<p>Add the <code>featured-compose</code> artifact to your dependencies:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">implementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:featured-compose&quot;</span><span class="p">)</span>
+<p>Annotate flags with <code>@LocalFlag</code> so the Gradle plugin can scan them for code generation (ProGuard rules, xcconfig).</p>
+<h2 id="3-initialize-configvalues-in-applicationoncreate">3. Initialize <code>ConfigValues</code> in <code>Application.onCreate</code><a class="headerlink" href="#3-initialize-configvalues-in-applicationoncreate" title="Permanent link">&para;</a></h2>
+<p>Create a single <code>ConfigValues</code> instance and call <code>initialize()</code> before the app serves any screen. <code>initialize()</code> triggers the remote provider's activation step (for Firebase: activates fetched values).</p>
+<h3 id="with-datastore-recommended">With DataStore (recommended)<a class="headerlink" href="#with-datastore-recommended" title="Permanent link">&para;</a></h3>
+<div class="highlight"><span class="filename">MyApplication.kt</span><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">androidx.datastore.preferences.preferencesDataStore</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigValues</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.datastore.DataStoreConfigValueProvider</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.firebase.FirebaseConfigValueProvider</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">Context</span><span class="p">.</span><span class="na">featureFlagDataStore</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">preferencesDataStore</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;feature_flags&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="kd">class</span><span class="w"> </span><span class="nc">MyApplication</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Application</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="kd">lateinit</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">configValues</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValues</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onCreate</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">        </span><span class="k">super</span><span class="p">.</span><span class="na">onCreate</span><span class="p">()</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">localProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DataStoreConfigValueProvider</span><span class="p">(</span><span class="n">featureFlagDataStore</span><span class="p">)</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">remoteProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FirebaseConfigValueProvider</span><span class="p">()</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">        </span><span class="n">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">(</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">            </span><span class="n">localProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">localProvider</span><span class="p">,</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">            </span><span class="n">remoteProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">remoteProvider</span><span class="p">,</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">        </span><span class="p">)</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">        </span><span class="c1">// Activate previously fetched remote values and trigger a background fetch</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">        </span><span class="n">lifecycleScope</span><span class="p">.</span><span class="na">launch</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="w">            </span><span class="n">configValues</span><span class="p">.</span><span class="na">initialize</span><span class="p">()</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="w">            </span><span class="n">configValues</span><span class="p">.</span><span class="na">fetch</span><span class="p">()</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="collecting-flag-state-in-a-composable">Collecting flag state in a Composable<a class="headerlink" href="#collecting-flag-state-in-a-composable" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nd">@Composable</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">CheckoutScreen</span><span class="p">(</span><span class="n">configValues</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">isEnabled</span><span class="p">:</span><span class="w"> </span><span class="n">State</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">collectAsState</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<h3 id="with-sharedpreferences">With SharedPreferences<a class="headerlink" href="#with-sharedpreferences" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">android.content.Context</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigValues</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.sharedpreferences.SharedPreferencesProviderConfig</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isEnabled</span><span class="p">.</span><span class="na">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">        </span><span class="n">NewCheckoutContent</span><span class="p">()</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">        </span><span class="n">LegacyCheckoutContent</span><span class="p">()</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">}</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">prefs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">getSharedPreferences</span><span class="p">(</span><span class="s">&quot;feature_flags&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="p">.</span><span class="na">MODE_PRIVATE</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">localProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SharedPreferencesProviderConfig</span><span class="p">(</span><span class="n">prefs</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">(</span><span class="n">localProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">localProvider</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="4-use-in-viewmodel-with-observe">4. Use in ViewModel with <code>observe</code><a class="headerlink" href="#4-use-in-viewmodel-with-observe" title="Permanent link">&para;</a></h2>
+<p>Expose flag state as <code>StateFlow</code> so Compose (or view-based UIs) can collect it:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">androidx.lifecycle.ViewModel</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">androidx.lifecycle.viewModelScope</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigValues</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.flow.SharingStarted</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.flow.StateFlow</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.flow.map</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.flow.stateIn</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="kd">class</span><span class="w"> </span><span class="nc">CheckoutViewModel</span><span class="p">(</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">,</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ViewModel</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="c1">// StateFlow of the raw Boolean — reacts to both local and remote changes</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">isNewCheckoutEnabled</span><span class="p">:</span><span class="w"> </span><span class="n">StateFlow</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">        </span><span class="n">configValues</span><span class="p">.</span><span class="na">observe</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">            </span><span class="p">.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">value</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">            </span><span class="p">.</span><span class="na">stateIn</span><span class="p">(</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">                </span><span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModelScope</span><span class="p">,</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">                </span><span class="n">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SharingStarted</span><span class="p">.</span><span class="na">WhileSubscribed</span><span class="p">(</span><span class="m">5</span><span class="n">_000</span><span class="p">),</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">                </span><span class="n">initialValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">.</span><span class="na">defaultValue</span><span class="p">,</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">            </span><span class="p">)</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="p">}</span>
+</code></pre></div>
+<p>Or use the built-in <code>asStateFlow</code> extension:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">isNewCheckoutEnabled</span><span class="p">:</span><span class="w"> </span><span class="n">StateFlow</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">asStateFlow</span><span class="p">(</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="n">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModelScope</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="p">)</span>
+</code></pre></div>
+<h2 id="5-compose-integration">5. Compose integration<a class="headerlink" href="#5-compose-integration" title="Permanent link">&para;</a></h2>
+<p>Add the <code>featured-compose</code> artifact (already listed in step 1).</p>
+<h3 id="collecting-flag-state-in-a-composable">Collecting flag state in a Composable<a class="headerlink" href="#collecting-flag-state-in-a-composable" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nd">@Composable</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">CheckoutScreen</span><span class="p">(</span><span class="n">configValues</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">isEnabled</span><span class="p">:</span><span class="w"> </span><span class="n">State</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">collectAsState</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isEnabled</span><span class="p">.</span><span class="na">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="n">NewCheckoutContent</span><span class="p">()</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">        </span><span class="n">LegacyCheckoutContent</span><span class="p">()</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="p">}</span>
 </code></pre></div>
 <h3 id="providing-configvalues-via-compositionlocal">Providing <code>ConfigValues</code> via CompositionLocal<a class="headerlink" href="#providing-configvalues-via-compositionlocal" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1">// In your root composable</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">CompositionLocalProvider</span><span class="p">(</span><span class="n">LocalConfigValues</span><span class="w"> </span><span class="n">provides</span><span class="w"> </span><span class="n">configValues</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="n">AppContent</span><span class="p">()</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">}</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1">// Anywhere below</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="nd">@Composable</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">SomeDeepComponent</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LocalConfigValues</span><span class="p">.</span><span class="na">current</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">collectAsState</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="c1">// …</span>
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1">// In your root composable</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">CompositionLocalProvider</span><span class="p">(</span><span class="n">LocalConfigValues</span><span class="w"> </span><span class="n">provides</span><span class="w"> </span><span class="n">configValues</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">AppContent</span><span class="p">()</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="p">}</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1">// Anywhere below</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="nd">@Composable</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">SomeDeepComponent</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LocalConfigValues</span><span class="p">.</span><span class="na">current</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">collectAsState</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="c1">// …</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="debug-ui">Debug UI<a class="headerlink" href="#debug-ui" title="Permanent link">&para;</a></h2>
-<p><code>featured-debug-ui</code> provides a ready-made Compose screen that lists all registered flags with their current values and sources, and lets you toggle or override them at runtime.</p>
-<p>Add the debug artifacts only to debug builds:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">debugImplementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:featured-registry&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">debugImplementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:featured-debug-ui&quot;</span><span class="p">)</span>
+<h2 id="6-add-firebase-remote-config-provider">6. Add Firebase Remote Config provider<a class="headerlink" href="#6-add-firebase-remote-config-provider" title="Permanent link">&para;</a></h2>
+<p><code>FirebaseConfigValueProvider</code> wraps the Firebase SDK. Add the dependency (step 1) and pass it as <code>remoteProvider</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">com.google.firebase.remoteconfig.FirebaseRemoteConfig</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.firebase.FirebaseConfigValueProvider</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1">// Use the default singleton (recommended)</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">remoteProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FirebaseConfigValueProvider</span><span class="p">()</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1">// Or supply a custom instance with non-default fetch interval</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="kd">val</span><span class="w"> </span><span class="nv">remoteConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FirebaseRemoteConfig</span><span class="p">.</span><span class="na">getInstance</span><span class="p">().</span><span class="na">also</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">-&gt;</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="n">config</span><span class="p">.</span><span class="na">setConfigSettingsAsync</span><span class="p">(</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">        </span><span class="n">com</span><span class="p">.</span><span class="na">google</span><span class="p">.</span><span class="na">firebase</span><span class="p">.</span><span class="na">remoteconfig</span><span class="p">.</span><span class="na">remoteConfigSettings</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">            </span><span class="n">minimumFetchIntervalInSeconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3600</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="p">}</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="kd">val</span><span class="w"> </span><span class="nv">remoteProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FirebaseConfigValueProvider</span><span class="p">(</span><span class="n">remoteConfig</span><span class="p">)</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">(</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">    </span><span class="n">localProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">localProvider</span><span class="p">,</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="w">    </span><span class="n">remoteProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">remoteProvider</span><span class="p">,</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="p">)</span>
 </code></pre></div>
-<h3 id="1-register-flags">1. Register flags<a class="headerlink" href="#1-register-flags" title="Permanent link">&para;</a></h3>
-<p>Register each <code>ConfigParam</code> in the <code>FlagRegistry</code> so the debug screen can discover them:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.registry.FlagRegistry</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1">// Call once on app start (e.g., in Application.onCreate or your DI module)</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">FlagRegistry</span><span class="p">.</span><span class="na">register</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">FlagRegistry</span><span class="p">.</span><span class="na">register</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">maxCartItems</span><span class="p">)</span>
+<p>After <code>configValues.initialize()</code>, remote values fetched during the previous session become active. Call <code>configValues.fetch()</code> to trigger a fresh fetch and activate the result.</p>
+<h2 id="7-debug-ui-flag-override-screen">7. Debug UI — flag override screen<a class="headerlink" href="#7-debug-ui-flag-override-screen" title="Permanent link">&para;</a></h2>
+<p><code>featured-debug-ui</code> ships a Compose screen that lists every registered flag with its current value and source, and lets you toggle or override values at runtime.</p>
+<p>Add debug artifacts only to debug builds (step 1 already shows <code>debugImplementation</code>).</p>
+<h3 id="register-flags">Register flags<a class="headerlink" href="#register-flags" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.registry.FlagRegistry</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="c1">// Call once in Application.onCreate (or your DI module) — debug builds only</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BuildConfig</span><span class="p">.</span><span class="na">DEBUG</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="n">FlagRegistry</span><span class="p">.</span><span class="na">register</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="n">FlagRegistry</span><span class="p">.</span><span class="na">register</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">maxCartItems</span><span class="p">)</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="2-show-the-debug-screen">2. Show the debug screen<a class="headerlink" href="#2-show-the-debug-screen" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.debugui.FeatureFlagsDebugScreen</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="nd">@Composable</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">DebugMenuScreen</span><span class="p">(</span><span class="n">configValues</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="n">FeatureFlagsDebugScreen</span><span class="p">(</span><span class="n">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">)</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
+<h3 id="show-the-debug-screen">Show the debug screen<a class="headerlink" href="#show-the-debug-screen" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.debugui.FeatureFlagsDebugScreen</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nd">@Composable</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">DebugMenuScreen</span><span class="p">(</span><span class="n">configValues</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="n">FeatureFlagsDebugScreen</span><span class="p">(</span><span class="n">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">)</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="release-build-optimization-r8-rules">Release build optimization — R8 rules<a class="headerlink" href="#release-build-optimization-r8-rules" title="Permanent link">&para;</a></h2>
-<p>The Gradle plugin generates ProGuard / R8 <code>-assumevalues</code> rules for every <code>@LocalFlag</code>-annotated <code>ConfigParam&lt;Boolean&gt;</code> with <code>defaultValue = false</code>. These rules instruct R8 to treat the flag as a constant <code>false</code> at shrink time, so all code guarded by <code>if (flag.value)</code> is removed from the release APK.</p>
+<p>Navigate to this screen from your in-app debug menu (a drawer, a shake gesture, or a long-press on the app icon shortcut).</p>
+<h2 id="8-proguard-r8-setup">8. ProGuard / R8 setup<a class="headerlink" href="#8-proguard-r8-setup" title="Permanent link">&para;</a></h2>
+<p>The Gradle plugin generates <code>-assumevalues</code> rules for every <code>@LocalFlag</code>-annotated <code>ConfigParam&lt;Boolean&gt;</code> with <code>defaultValue = false</code>. These rules instruct R8 to treat the flag as a compile-time constant <code>false</code>, removing all guarded code from release APKs.</p>
 <p>The task runs automatically when you build a release variant. To run it manually:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>./gradlew<span class="w"> </span>:app:generateProguardRules
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>./gradlew<span class="w"> </span>:app:generateProguardRules
 </code></pre></div>
 <p>Output: <code>app/build/featured/proguard-featured.pro</code></p>
 <p>No extra configuration is needed — the plugin wires the output into the R8 pipeline automatically.</p>
 <h2 id="overriding-and-resetting-at-runtime">Overriding and resetting at runtime<a class="headerlink" href="#overriding-and-resetting-at-runtime" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1">// Write a local override — survives remote fetches</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">configValues</span><span class="p">.</span><span class="na">override</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1">// Revert to the provider&#39;s stored or default value</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">configValues</span><span class="p">.</span><span class="na">resetOverride</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// Write a local override — survives remote fetches</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">configValues</span><span class="p">.</span><span class="na">override</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1">// Revert to the provider&#39;s stored or default value</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">configValues</span><span class="p">.</span><span class="na">resetOverride</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="c1">// Clear all local overrides</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="n">configValues</span><span class="p">.</span><span class="na">clearOverrides</span><span class="p">()</span>
 </code></pre></div>
+<h2 id="reading-flags">Reading flags<a class="headerlink" href="#reading-flags" title="Permanent link">&para;</a></h2>
+<h3 id="one-shot-read">One-shot read<a class="headerlink" href="#one-shot-read" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">configValue</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValue</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">getValue</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">configValue</span><span class="p">.</span><span class="na">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="c1">// feature is active</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="p">}</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="kd">val</span><span class="w"> </span><span class="nv">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValue</span><span class="p">.</span><span class="na">source</span><span class="w"> </span><span class="c1">// DEFAULT, LOCAL, or REMOTE</span>
+</code></pre></div>
+<h3 id="reactive-observation-flow">Reactive observation (Flow)<a class="headerlink" href="#reactive-observation-flow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1">// Emits immediately with the current value, then on every change</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">configValues</span><span class="p">.</span><span class="na">observe</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="p">.</span><span class="na">collect</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">configValue</span><span class="w"> </span><span class="o">-&gt;</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">        </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;new_checkout = </span><span class="si">${</span><span class="n">configValue</span><span class="p">.</span><span class="na">value</span><span class="si">}</span><span class="s"> (source: </span><span class="si">${</span><span class="n">configValue</span><span class="p">.</span><span class="na">source</span><span class="si">}</span><span class="s">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="c1">// Convenience: emit only the raw value, not the ConfigValue wrapper</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="n">configValues</span><span class="p">.</span><span class="na">observe</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">    </span><span class="p">.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">value</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">    </span><span class="p">.</span><span class="na">collect</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">isEnabled</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="cm">/* … */</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../ios/">iOS guide</a> — Swift interop and dead-code elimination</li>
+<li><a href="../jvm/">JVM guide</a> — server and desktop integration</li>
+<li><a href="../providers/">Providers</a> — all built-in providers in detail</li>
+<li><a href="../best-practices/">Best practices</a> — multi-module setup and testing</li>
+</ul>
 
 
 

@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#ios-guide" class="md-skip">
+        <a href="#ios-integration-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -524,31 +524,67 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#swift-package-manager-setup" class="md-nav__link">
+  <a href="#1-swift-package-manager-setup" class="md-nav__link">
     <span class="md-ellipsis">
-      Swift Package Manager setup
+      1. Swift Package Manager setup
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#reading-flags-in-swift" class="md-nav__link">
+  <a href="#2-declare-flags-in-kotlin-shared-module" class="md-nav__link">
     <span class="md-ellipsis">
-      Reading flags in Swift
+      2. Declare flags in Kotlin (shared module)
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#swift-dead-code-elimination-via-xcconfig" class="md-nav__link">
+  <a href="#3-initialize-configvalues-in-swift" class="md-nav__link">
     <span class="md-ellipsis">
-      Swift dead-code elimination via xcconfig
+      3. Initialize ConfigValues in Swift
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Swift dead-code elimination via xcconfig">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-reading-flags-in-swift" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Reading flags in Swift
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-combine-publisher" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Combine publisher
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-swiftui-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. SwiftUI integration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-swift-dead-code-elimination-via-xcconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Swift dead-code elimination via xcconfig
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Swift dead-code elimination via xcconfig">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -607,6 +643,15 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next steps
+    </span>
+  </a>
   
 </li>
       
@@ -845,31 +890,67 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#swift-package-manager-setup" class="md-nav__link">
+  <a href="#1-swift-package-manager-setup" class="md-nav__link">
     <span class="md-ellipsis">
-      Swift Package Manager setup
+      1. Swift Package Manager setup
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#reading-flags-in-swift" class="md-nav__link">
+  <a href="#2-declare-flags-in-kotlin-shared-module" class="md-nav__link">
     <span class="md-ellipsis">
-      Reading flags in Swift
+      2. Declare flags in Kotlin (shared module)
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#swift-dead-code-elimination-via-xcconfig" class="md-nav__link">
+  <a href="#3-initialize-configvalues-in-swift" class="md-nav__link">
     <span class="md-ellipsis">
-      Swift dead-code elimination via xcconfig
+      3. Initialize ConfigValues in Swift
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Swift dead-code elimination via xcconfig">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-reading-flags-in-swift" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Reading flags in Swift
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-combine-publisher" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Combine publisher
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-swiftui-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. SwiftUI integration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-swift-dead-code-elimination-via-xcconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Swift dead-code elimination via xcconfig
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Swift dead-code elimination via xcconfig">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -931,6 +1012,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next steps
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -949,9 +1039,9 @@
   
 
 
-<h1 id="ios-guide">iOS Guide<a class="headerlink" href="#ios-guide" title="Permanent link">&para;</a></h1>
+<h1 id="ios-integration-guide">iOS Integration Guide<a class="headerlink" href="#ios-integration-guide" title="Permanent link">&para;</a></h1>
 <p>Featured exposes its Kotlin API to Swift via <a href="https://skie.touchlab.co/">SKIE</a>, which bridges coroutines, sealed classes, and default arguments automatically.</p>
-<h2 id="swift-package-manager-setup">Swift Package Manager setup<a class="headerlink" href="#swift-package-manager-setup" title="Permanent link">&para;</a></h2>
+<h2 id="1-swift-package-manager-setup">1. Swift Package Manager setup<a class="headerlink" href="#1-swift-package-manager-setup" title="Permanent link">&para;</a></h2>
 <p>Add the package in Xcode (<strong>File › Add Package Dependencies</strong>) or in <code>Package.swift</code>:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">.</span><span class="n">package</span><span class="p">(</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://github.com/AndroidBroadcast/Featured&quot;</span><span class="p">,</span>
@@ -966,33 +1056,124 @@
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="p">]</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="p">)</span>
 </code></pre></div>
-<h2 id="reading-flags-in-swift">Reading flags in Swift<a class="headerlink" href="#reading-flags-in-swift" title="Permanent link">&para;</a></h2>
-<p>The <code>FeatureFlags</code> Swift class wraps <code>CoreConfigValues</code> (the KMP-exported type). Define your flags as <code>FeatureFlag</code> values that reference the shared <code>CoreConfigParam</code> exported from Kotlin:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kd">import</span><span class="w"> </span><span class="nc">FeaturedCore</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1">// Map a Kotlin ConfigParam to a Swift FeatureFlag</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kd">let</span><span class="w"> </span><span class="nv">newCheckoutFlag</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">FeatureFlag</span><span class="p">&lt;</span><span class="nb">Bool</span><span class="p">&gt;(</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">CoreFeatureFlagsCompanion</span><span class="p">().</span><span class="n">newCheckout</span><span class="p">,</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="n">defaultValue</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">)</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="kd">let</span><span class="w"> </span><span class="nv">featureFlags</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">FeatureFlags</span><span class="p">(</span><span class="n">configValues</span><span class="p">)</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1">// Async read</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="kd">let</span><span class="w"> </span><span class="nv">isEnabled</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">featureFlags</span><span class="p">.</span><span class="n">value</span><span class="p">(</span><span class="n">of</span><span class="p">:</span><span class="w"> </span><span class="n">newCheckoutFlag</span><span class="p">)</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="c1">// AsyncStream — use in a Task or async for-await loop</span>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="k">for</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">featureFlags</span><span class="p">.</span><span class="n">stream</span><span class="p">(</span><span class="n">of</span><span class="p">:</span><span class="w"> </span><span class="n">newCheckoutFlag</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">    </span><span class="n">updateUI</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="p">}</span>
-<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>
-<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="c1">// Combine publisher</span>
-<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="n">featureFlags</span><span class="p">.</span><span class="n">publisher</span><span class="p">(</span><span class="k">for</span><span class="p">:</span><span class="w"> </span><span class="n">newCheckoutFlag</span><span class="p">)</span>
-<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">    </span><span class="p">.</span><span class="n">receive</span><span class="p">(</span><span class="n">on</span><span class="p">:</span><span class="w"> </span><span class="n">DispatchQueue</span><span class="p">.</span><span class="n">main</span><span class="p">)</span>
-<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">    </span><span class="p">.</span><span class="n">sink</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">isEnabled</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">updateUI</span><span class="p">(</span><span class="n">isEnabled</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">    </span><span class="p">.</span><span class="n">store</span><span class="p">(</span><span class="k">in</span><span class="p">:</span><span class="w"> </span><span class="p">&amp;</span><span class="n">cancellables</span><span class="p">)</span>
+<h2 id="2-declare-flags-in-kotlin-shared-module">2. Declare flags in Kotlin (shared module)<a class="headerlink" href="#2-declare-flags-in-kotlin-shared-module" title="Permanent link">&para;</a></h2>
+<p>Flags live in the shared Kotlin module and are exported to Swift. Annotate them with <code>@LocalFlag</code> so the Gradle plugin can scan them:</p>
+<div class="highlight"><span class="filename">shared/src/commonMain/kotlin/com/example/FeatureFlags.kt</span><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigParam</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.LocalFlag</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kd">object</span><span class="w"> </span><span class="nc">FeatureFlags</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nd">@LocalFlag</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">newCheckout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="p">(</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;new_checkout&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">        </span><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enable the new checkout flow&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="swift-dead-code-elimination-via-xcconfig">Swift dead-code elimination via xcconfig<a class="headerlink" href="#swift-dead-code-elimination-via-xcconfig" title="Permanent link">&para;</a></h2>
+<h2 id="3-initialize-configvalues-in-swift">3. Initialize <code>ConfigValues</code> in Swift<a class="headerlink" href="#3-initialize-configvalues-in-swift" title="Permanent link">&para;</a></h2>
+<p>Call <code>initialize()</code> at app launch (before serving any screen) to activate values fetched during the previous session. Then trigger a background fetch so the next launch sees fresh values.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">import</span><span class="w"> </span><span class="nc">FeaturedCore</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">@</span><span class="n">main</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kd">struct</span><span class="w"> </span><span class="nc">MyApp</span><span class="p">:</span><span class="w"> </span><span class="n">App</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="p">@</span><span class="n">StateObject</span><span class="w"> </span><span class="kd">private</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">appState</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">AppState</span><span class="p">()</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nv">body</span><span class="p">:</span><span class="w"> </span><span class="n">some</span><span class="w"> </span><span class="n">Scene</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">        </span><span class="n">WindowGroup</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">            </span><span class="n">ContentView</span><span class="p">()</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">                </span><span class="p">.</span><span class="n">task</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">appState</span><span class="p">.</span><span class="n">setup</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="p">}</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="p">@</span><span class="n">MainActor</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="kd">class</span><span class="w"> </span><span class="nc">AppState</span><span class="p">:</span><span class="w"> </span><span class="n">ObservableObject</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">configValues</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValues</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">    </span><span class="kd">init</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">        </span><span class="n">configValues</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">(</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">            </span><span class="n">localProvider</span><span class="p">:</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w">   </span><span class="c1">// add a provider if needed</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">            </span><span class="n">remoteProvider</span><span class="p">:</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w">  </span><span class="c1">// e.g. FirebaseConfigValueProvider()</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">            </span><span class="n">onProviderError</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="bp">print</span><span class="p">(</span><span class="s">&quot;Featured error: </span><span class="si">\(</span><span class="n">error</span><span class="si">)</span><span class="s">&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">        </span><span class="p">)</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">setup</span><span class="p">()</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">        </span><span class="k">do</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">            </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="n">initialize</span><span class="p">()</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="w">            </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="n">fetch</span><span class="p">()</span>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="w">            </span><span class="bp">print</span><span class="p">(</span><span class="s">&quot;Featured setup error: </span><span class="si">\(</span><span class="n">error</span><span class="si">)</span><span class="s">&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span class="p">}</span>
+</code></pre></div>
+<h2 id="4-reading-flags-in-swift">4. Reading flags in Swift<a class="headerlink" href="#4-reading-flags-in-swift" title="Permanent link">&para;</a></h2>
+<p>The SKIE bridge makes the Kotlin <code>ConfigValues</code> API available in Swift with async/await and <code>AsyncStream</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">import</span><span class="w"> </span><span class="nc">FeaturedCore</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1">// One-shot async read</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="kd">let</span><span class="w"> </span><span class="nv">configValue</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="n">getValue</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="n">shared</span><span class="p">.</span><span class="n">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="kd">let</span><span class="w"> </span><span class="nv">isEnabled</span><span class="p">:</span><span class="w"> </span><span class="nb">Bool</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">configValue</span><span class="p">.</span><span class="n">value</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1">// AsyncStream — use in a Task or async for-await loop</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">for</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">configValue</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="n">observe</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="n">shared</span><span class="p">.</span><span class="n">newCheckout</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="n">updateUI</span><span class="p">(</span><span class="n">configValue</span><span class="p">.</span><span class="n">value</span><span class="p">)</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="p">}</span>
+</code></pre></div>
+<h2 id="5-combine-publisher">5. Combine publisher<a class="headerlink" href="#5-combine-publisher" title="Permanent link">&para;</a></h2>
+<p>SKIE wraps the Kotlin <code>Flow</code> as an <code>AsyncStream</code>. Combine publishers can be built on top using <code>AsyncStream.publisher</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">import</span><span class="w"> </span><span class="nc">Combine</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kd">import</span><span class="w"> </span><span class="nc">FeaturedCore</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="kd">class</span><span class="w"> </span><span class="nc">CheckoutViewModel</span><span class="p">:</span><span class="w"> </span><span class="n">ObservableObject</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="p">@</span><span class="n">Published</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">isNewCheckoutEnabled</span><span class="p">:</span><span class="w"> </span><span class="nb">Bool</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="kc">false</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">cancellables</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">Set</span><span class="p">&lt;</span><span class="n">AnyCancellable</span><span class="p">&gt;()</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nv">configValues</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValues</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="kd">init</span><span class="p">(</span><span class="n">configValues</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">        </span><span class="kc">self</span><span class="p">.</span><span class="n">configValues</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">configValues</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">startObserving</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">        </span><span class="c1">// Bridge AsyncStream → Combine publisher</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="nv">stream</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="n">observe</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">FeatureFlags</span><span class="p">.</span><span class="n">shared</span><span class="p">.</span><span class="n">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">        </span><span class="n">Task</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">configValue</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">                </span><span class="k">await</span><span class="w"> </span><span class="n">MainActor</span><span class="p">.</span><span class="n">run</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">                    </span><span class="kc">self</span><span class="p">.</span><span class="n">isNewCheckoutEnabled</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">configValue</span><span class="p">.</span><span class="n">value</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">                </span><span class="p">}</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">            </span><span class="p">}</span>
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="p">}</span>
+</code></pre></div>
+<p>Alternatively, use <code>publisher(for:)</code> if your Swift wrapper exposes it:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">featureFlags</span><span class="p">.</span><span class="n">publisher</span><span class="p">(</span><span class="k">for</span><span class="p">:</span><span class="w"> </span><span class="n">newCheckoutFlag</span><span class="p">)</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="p">.</span><span class="n">receive</span><span class="p">(</span><span class="n">on</span><span class="p">:</span><span class="w"> </span><span class="n">DispatchQueue</span><span class="p">.</span><span class="n">main</span><span class="p">)</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="p">.</span><span class="n">sink</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">isEnabled</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">updateUI</span><span class="p">(</span><span class="n">isEnabled</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="p">.</span><span class="n">store</span><span class="p">(</span><span class="k">in</span><span class="p">:</span><span class="w"> </span><span class="p">&amp;</span><span class="n">cancellables</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="6-swiftui-integration">6. SwiftUI integration<a class="headerlink" href="#6-swiftui-integration" title="Permanent link">&para;</a></h2>
+<p>Collect the flag value in a <code>@StateObject</code> ViewModel and bind it to the view:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">struct</span><span class="w"> </span><span class="nc">CheckoutScreen</span><span class="p">:</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="p">@</span><span class="n">StateObject</span><span class="w"> </span><span class="kd">private</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">viewModel</span><span class="p">:</span><span class="w"> </span><span class="n">CheckoutViewModel</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nv">body</span><span class="p">:</span><span class="w"> </span><span class="n">some</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">        </span><span class="n">Group</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="n">viewModel</span><span class="p">.</span><span class="n">isNewCheckoutEnabled</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">                </span><span class="n">NewCheckoutView</span><span class="p">()</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">                </span><span class="n">LegacyCheckoutView</span><span class="p">()</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">            </span><span class="p">}</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">        </span><span class="p">.</span><span class="n">task</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">viewModel</span><span class="p">.</span><span class="n">startObserving</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="p">}</span>
+</code></pre></div>
+<h2 id="7-swift-dead-code-elimination-via-xcconfig">7. Swift dead-code elimination via xcconfig<a class="headerlink" href="#7-swift-dead-code-elimination-via-xcconfig" title="Permanent link">&para;</a></h2>
 <p>The Gradle plugin generates an xcconfig file that feeds Swift compilation conditions into Xcode. For every <code>@LocalFlag</code>-annotated <code>ConfigParam&lt;Boolean&gt;</code> with <code>defaultValue = false</code>, a <code>DISABLE_&lt;FLAG_KEY&gt;</code> condition is generated.</p>
 <h3 id="key-transformation">Key transformation<a class="headerlink" href="#key-transformation" title="Permanent link">&para;</a></h3>
 <table>
@@ -1014,25 +1195,25 @@
 </tbody>
 </table>
 <h3 id="step-1-generate-the-xcconfig">Step 1 — Generate the xcconfig<a class="headerlink" href="#step-1-generate-the-xcconfig" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>./gradlew<span class="w"> </span>:shared:generateXcconfig
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>./gradlew<span class="w"> </span>:shared:generateXcconfig
 </code></pre></div>
 <p>Output: <code>shared/build/featured/FeatureFlags.generated.xcconfig</code></p>
 <p>Example content:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a># Auto-generated by featured-gradle-plugin — do not edit
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DISABLE_NEW_CHECKOUT DISABLE_EXPERIMENTAL_UI
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a># Auto-generated by featured-gradle-plugin — do not edit
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DISABLE_NEW_CHECKOUT DISABLE_EXPERIMENTAL_UI
 </code></pre></div>
 <h3 id="step-2-make-the-file-available-to-xcode">Step 2 — Make the file available to Xcode<a class="headerlink" href="#step-2-make-the-file-available-to-xcode" title="Permanent link">&para;</a></h3>
 <p>Copy or symlink the file to a stable path inside your Xcode project tree:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Copy (re-run after each generateXcconfig invocation)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>cp<span class="w"> </span>shared/build/featured/FeatureFlags.generated.xcconfig<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">   </span>iosApp/Configuration/FeatureFlags.generated.xcconfig
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># Symlink (resolved automatically)</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>ln<span class="w"> </span>-sf<span class="w"> </span>../../shared/build/featured/FeatureFlags.generated.xcconfig<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">   </span>iosApp/Configuration/FeatureFlags.generated.xcconfig
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Copy (re-run after each generateXcconfig invocation)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>cp<span class="w"> </span>shared/build/featured/FeatureFlags.generated.xcconfig<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">   </span>iosApp/Configuration/FeatureFlags.generated.xcconfig
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="c1"># Symlink (resolved automatically)</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>ln<span class="w"> </span>-sf<span class="w"> </span>../../shared/build/featured/FeatureFlags.generated.xcconfig<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">   </span>iosApp/Configuration/FeatureFlags.generated.xcconfig
 </code></pre></div>
 <p>Add the generated file to <code>.gitignore</code> if you use the copy approach:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>iosApp/Configuration/FeatureFlags.generated.xcconfig
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>iosApp/Configuration/FeatureFlags.generated.xcconfig
 </code></pre></div>
 <h3 id="step-3-configure-xcode-one-time">Step 3 — Configure Xcode (one-time)<a class="headerlink" href="#step-3-configure-xcode-one-time" title="Permanent link">&para;</a></h3>
 <ol>
@@ -1046,30 +1227,36 @@
 <p>Only assign the xcconfig to <strong>Release</strong>. Debug builds intentionally omit it so every feature remains reachable during development.</p>
 </div>
 <h3 id="step-4-guard-swift-entry-points-with-if">Step 4 — Guard Swift entry points with <code>#if</code><a class="headerlink" href="#step-4-guard-swift-entry-points-with-if" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1">// Entry point for the new checkout feature</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="cp">#if</span><span class="w"> </span><span class="o">!</span><span class="cp">DISABLE_NEW_CHECKOUT</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">NewCheckoutButton</span><span class="p">()</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="cp">#endif</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1">// Deep-link handler</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="cp">#if</span><span class="w"> </span><span class="o">!</span><span class="cp">DISABLE_NEW_CHECKOUT</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="k">case</span><span class="w"> </span><span class="p">.</span><span class="n">newCheckout</span><span class="p">:</span><span class="w"> </span><span class="n">NewCheckoutCoordinator</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="cp">#endif</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="c1">// AppDelegate / SceneDelegate</span>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="cp">#if</span><span class="w"> </span><span class="o">!</span><span class="cp">DISABLE_NEW_CHECKOUT</span>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="n">setupNewCheckoutObservers</span><span class="p">()</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="cp">#endif</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// Entry point for the new checkout feature</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="cp">#if</span><span class="w"> </span><span class="o">!</span><span class="cp">DISABLE_NEW_CHECKOUT</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">NewCheckoutButton</span><span class="p">()</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="cp">#endif</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="c1">// Deep-link handler</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="cp">#if</span><span class="w"> </span><span class="o">!</span><span class="cp">DISABLE_NEW_CHECKOUT</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="k">case</span><span class="w"> </span><span class="p">.</span><span class="n">newCheckout</span><span class="p">:</span><span class="w"> </span><span class="n">NewCheckoutCoordinator</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="cp">#endif</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="c1">// AppDelegate / SceneDelegate</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="cp">#if</span><span class="w"> </span><span class="o">!</span><span class="cp">DISABLE_NEW_CHECKOUT</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="n">setupNewCheckoutObservers</span><span class="p">()</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="cp">#endif</span>
 </code></pre></div>
 <p>The Swift compiler removes the entire guarded block from Release binaries — zero runtime overhead.</p>
 <h3 id="automate-with-a-pre-build-run-script-phase">Automate with a pre-build Run Script phase<a class="headerlink" href="#automate-with-a-pre-build-run-script-phase" title="Permanent link">&para;</a></h3>
 <p>Add this script to your Xcode target's Build Phases (before Compile Sources). Set <strong>Based on dependency analysis</strong> to <strong>off</strong>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">SRCROOT</span><span class="si">}</span><span class="s2">/..&quot;</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>./gradlew<span class="w"> </span>:shared:generateXcconfig<span class="w"> </span>--quiet
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>cp<span class="w"> </span>shared/build/featured/FeatureFlags.generated.xcconfig<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">   </span>iosApp/Configuration/FeatureFlags.generated.xcconfig
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">SRCROOT</span><span class="si">}</span><span class="s2">/..&quot;</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>./gradlew<span class="w"> </span>:shared:generateXcconfig<span class="w"> </span>--quiet
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>cp<span class="w"> </span>shared/build/featured/FeatureFlags.generated.xcconfig<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">   </span>iosApp/Configuration/FeatureFlags.generated.xcconfig
 </code></pre></div>
 <p>For more detail, see the full <a href="../../ios-integration/">iOS Integration Guide</a>.</p>
+<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../android/">Android guide</a> — DataStore, Compose integration, and the debug UI</li>
+<li><a href="../jvm/">JVM guide</a> — server and desktop integration</li>
+<li><a href="../providers/">Providers</a> — all built-in providers in detail</li>
+</ul>
 
 
 

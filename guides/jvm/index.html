@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#jvm-guide" class="md-skip">
+        <a href="#jvm-desktop-integration-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -545,63 +545,111 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#1-add-gradle-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
-      Installation
+      1. Add Gradle dependencies
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#declaring-flags" class="md-nav__link">
+  <a href="#2-declare-flags" class="md-nav__link">
     <span class="md-ellipsis">
-      Declaring flags
+      2. Declare flags
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#creating-configvalues" class="md-nav__link">
+  <a href="#3-create-configvalues-with-javapreferencesconfigvalueprovider" class="md-nav__link">
     <span class="md-ellipsis">
-      Creating ConfigValues
+      3. Create ConfigValues with JavaPreferencesConfigValueProvider
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Create ConfigValues with JavaPreferencesConfigValueProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supporting-custom-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supporting custom types
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-initialize-and-fetch-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Initialize and fetch (optional)
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#reading-flags" class="md-nav__link">
+  <a href="#5-read-flags" class="md-nav__link">
     <span class="md-ellipsis">
-      Reading flags
+      5. Read flags
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#reactive-observation" class="md-nav__link">
+  <a href="#6-reactive-observation" class="md-nav__link">
     <span class="md-ellipsis">
-      Reactive observation
+      6. Reactive observation
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#overriding-at-runtime" class="md-nav__link">
+  <a href="#7-override-and-reset-at-runtime" class="md-nav__link">
     <span class="md-ellipsis">
-      Overriding at runtime
+      7. Override and reset at runtime
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#writing-a-custom-provider" class="md-nav__link">
+  <a href="#8-testing-with-fakeconfigvalues" class="md-nav__link">
     <span class="md-ellipsis">
-      Writing a custom provider
+      8. Testing with FakeConfigValues
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Testing with FakeConfigValues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simulating-mid-test-flag-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simulating mid-test flag changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-writing-a-custom-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Writing a custom provider
     </span>
   </a>
   
@@ -830,63 +878,111 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#1-add-gradle-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
-      Installation
+      1. Add Gradle dependencies
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#declaring-flags" class="md-nav__link">
+  <a href="#2-declare-flags" class="md-nav__link">
     <span class="md-ellipsis">
-      Declaring flags
+      2. Declare flags
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#creating-configvalues" class="md-nav__link">
+  <a href="#3-create-configvalues-with-javapreferencesconfigvalueprovider" class="md-nav__link">
     <span class="md-ellipsis">
-      Creating ConfigValues
+      3. Create ConfigValues with JavaPreferencesConfigValueProvider
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Create ConfigValues with JavaPreferencesConfigValueProvider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supporting-custom-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supporting custom types
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-initialize-and-fetch-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Initialize and fetch (optional)
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#reading-flags" class="md-nav__link">
+  <a href="#5-read-flags" class="md-nav__link">
     <span class="md-ellipsis">
-      Reading flags
+      5. Read flags
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#reactive-observation" class="md-nav__link">
+  <a href="#6-reactive-observation" class="md-nav__link">
     <span class="md-ellipsis">
-      Reactive observation
+      6. Reactive observation
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#overriding-at-runtime" class="md-nav__link">
+  <a href="#7-override-and-reset-at-runtime" class="md-nav__link">
     <span class="md-ellipsis">
-      Overriding at runtime
+      7. Override and reset at runtime
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#writing-a-custom-provider" class="md-nav__link">
+  <a href="#8-testing-with-fakeconfigvalues" class="md-nav__link">
     <span class="md-ellipsis">
-      Writing a custom provider
+      8. Testing with FakeConfigValues
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Testing with FakeConfigValues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simulating-mid-test-flag-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simulating mid-test flag changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-writing-a-custom-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Writing a custom provider
     </span>
   </a>
   
@@ -919,20 +1015,31 @@
   
 
 
-<h1 id="jvm-guide">JVM Guide<a class="headerlink" href="#jvm-guide" title="Permanent link">&para;</a></h1>
+<h1 id="jvm-desktop-integration-guide">JVM / Desktop Integration Guide<a class="headerlink" href="#jvm-desktop-integration-guide" title="Permanent link">&para;</a></h1>
 <p>Featured works on plain JVM targets (server, desktop, CLI) without any Android or iOS dependencies.</p>
-<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<p>Add only the <code>core</code> artifact — no Android or platform-specific modules are needed for JVM:</p>
+<h2 id="1-add-gradle-dependencies">1. Add Gradle dependencies<a class="headerlink" href="#1-add-gradle-dependencies" title="Permanent link">&para;</a></h2>
 <div class="highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">plugins</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">id</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="s">&quot;&lt;version&gt;&quot;</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="n">platform</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:featured-bom:&lt;version&gt;&quot;</span><span class="p">))</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:core&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">}</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="c1">// Core runtime — always required</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:core&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="c1">// Persistent local provider backed by java.util.prefs.Preferences</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:javaprefs-provider&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span><span class="c1">// Test helper — add to test scope only</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="n">testImplementation</span><span class="p">(</span><span class="s">&quot;dev.androidbroadcast.featured:featured-testing&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="declaring-flags">Declaring flags<a class="headerlink" href="#declaring-flags" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code>javaprefs-provider</code> artifact is JVM-only. It does not pull in any Android or Apple platform dependencies.</p>
+</div>
+<h2 id="2-declare-flags">2. Declare flags<a class="headerlink" href="#2-declare-flags" title="Permanent link">&para;</a></h2>
 <p>Flags are declared identically to any other platform — <code>ConfigParam</code> is a common (KMP shared) type:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigParam</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.LocalFlag</span>
@@ -953,81 +1060,179 @@
 <a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="p">)</span>
 <a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="creating-configvalues">Creating <code>ConfigValues</code><a class="headerlink" href="#creating-configvalues" title="Permanent link">&para;</a></h2>
-<p>On JVM, use <code>InMemoryConfigValueProvider</code> (built-in, no external dependencies) or write a custom <code>LocalConfigValueProvider</code>:</p>
+<h2 id="3-create-configvalues-with-javapreferencesconfigvalueprovider">3. Create <code>ConfigValues</code> with <code>JavaPreferencesConfigValueProvider</code><a class="headerlink" href="#3-create-configvalues-with-javapreferencesconfigvalueprovider" title="Permanent link">&para;</a></h2>
+<p><code>JavaPreferencesConfigValueProvider</code> persists values using <code>java.util.prefs.Preferences</code>. Storage is OS-specific: the registry on Windows, a plist on macOS, and <code>~/.java</code> on Linux. Values survive process restarts automatically.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigValues</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.InMemoryConfigValueProvider</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">(</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="n">localProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">InMemoryConfigValueProvider</span><span class="p">(),</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.javaprefs.JavaPreferencesConfigValueProvider</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">java.util.prefs.Preferences</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1">// Default: stores under the user root, node &quot;featured&quot;</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="kd">val</span><span class="w"> </span><span class="nv">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JavaPreferencesConfigValueProvider</span><span class="p">()</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1">// Custom node — useful for isolating test data or multiple app instances</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="kd">val</span><span class="w"> </span><span class="nv">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JavaPreferencesConfigValueProvider</span><span class="p">(</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="n">node</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Preferences</span><span class="p">.</span><span class="na">userRoot</span><span class="p">().</span><span class="na">node</span><span class="p">(</span><span class="s">&quot;com/example/myapp/flags&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">)</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">(</span><span class="n">localProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">provider</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="reading-flags">Reading flags<a class="headerlink" href="#reading-flags" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.runBlocking</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1">// One-shot read (from a coroutine or runBlocking in tests/scripts)</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runBlocking</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">getValue</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">darkMode</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">println</span><span class="p">(</span><span class="s">&quot;dark_mode = </span><span class="si">${</span><span class="n">value</span><span class="p">.</span><span class="na">value</span><span class="si">}</span><span class="s"> (source: </span><span class="si">${</span><span class="n">value</span><span class="p">.</span><span class="na">source</span><span class="si">}</span><span class="s">)&quot;</span><span class="p">)</span>
+<h3 id="supporting-custom-types">Supporting custom types<a class="headerlink" href="#supporting-custom-types" title="Permanent link">&para;</a></h3>
+<p>Built-in support covers <code>String</code>, <code>Int</code>, <code>Boolean</code>, <code>Float</code>, <code>Long</code>, and <code>Double</code>. Register a <code>TypeConverter</code> for any additional type before first use:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.TypeConverter</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.javaprefs.registerConverter</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Theme</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">LIGHT</span><span class="p">,</span><span class="w"> </span><span class="n">DARK</span><span class="p">,</span><span class="w"> </span><span class="n">SYSTEM</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">provider</span><span class="p">.</span><span class="na">registerConverter</span><span class="o">&lt;</span><span class="n">Theme</span><span class="o">&gt;</span><span class="p">(</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="n">TypeConverter</span><span class="p">(</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">        </span><span class="n">fromString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Theme</span><span class="p">.</span><span class="na">valueOf</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">        </span><span class="n">toString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">name</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="p">)</span>
 </code></pre></div>
-<h2 id="reactive-observation">Reactive observation<a class="headerlink" href="#reactive-observation" title="Permanent link">&para;</a></h2>
+<h2 id="4-initialize-and-fetch-optional">4. Initialize and fetch (optional)<a class="headerlink" href="#4-initialize-and-fetch-optional" title="Permanent link">&para;</a></h2>
+<p>On JVM there is typically no remote provider, so <code>initialize()</code> and <code>fetch()</code> are not required. If you wire a remote provider (e.g., a custom <code>RemoteConfigValueProvider</code> backed by a feature-flag service), call them once on startup:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.runBlocking</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">runBlocking</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="n">configValues</span><span class="p">.</span><span class="na">initialize</span><span class="p">()</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="n">configValues</span><span class="p">.</span><span class="na">fetch</span><span class="p">()</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">}</span>
+</code></pre></div>
+<h2 id="5-read-flags">5. Read flags<a class="headerlink" href="#5-read-flags" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.runBlocking</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1">// One-shot read — from a coroutine or runBlocking in scripts / tests</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runBlocking</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">getValue</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">darkMode</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">println</span><span class="p">(</span><span class="s">&quot;dark_mode = </span><span class="si">${</span><span class="n">value</span><span class="p">.</span><span class="na">value</span><span class="si">}</span><span class="s"> (source: </span><span class="si">${</span><span class="n">value</span><span class="p">.</span><span class="na">source</span><span class="si">}</span><span class="s">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1">// source is DEFAULT, LOCAL, or REMOTE</span>
+</code></pre></div>
+<h2 id="6-reactive-observation">6. Reactive observation<a class="headerlink" href="#6-reactive-observation" title="Permanent link">&para;</a></h2>
 <p>Featured uses Kotlin Coroutines' <code>Flow</code> for reactive updates on all platforms, including JVM:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.flow.collect</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.runBlocking</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">runBlocking</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="n">configValues</span><span class="p">.</span><span class="na">observe</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">darkMode</span><span class="p">).</span><span class="na">collect</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">configValue</span><span class="w"> </span><span class="o">-&gt;</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;dark_mode changed: </span><span class="si">${</span><span class="n">configValue</span><span class="p">.</span><span class="na">value</span><span class="si">}</span><span class="s">&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.flow.collect</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.runBlocking</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">runBlocking</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="n">configValues</span><span class="p">.</span><span class="na">observe</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">darkMode</span><span class="p">).</span><span class="na">collect</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">configValue</span><span class="w"> </span><span class="o">-&gt;</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;dark_mode changed: </span><span class="si">${</span><span class="n">configValue</span><span class="p">.</span><span class="na">value</span><span class="si">}</span><span class="s">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="overriding-at-runtime">Overriding at runtime<a class="headerlink" href="#overriding-at-runtime" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1">// Apply a local override</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">configValues</span><span class="p">.</span><span class="na">override</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">darkMode</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1">// Reset to default</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">configValues</span><span class="p">.</span><span class="na">resetOverride</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">darkMode</span><span class="p">)</span>
+<p>In a long-lived server process, collect inside a <code>CoroutineScope</code> tied to the application lifecycle:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">applicationScope</span><span class="p">.</span><span class="na">launch</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="n">configValues</span><span class="p">.</span><span class="na">observe</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">darkMode</span><span class="p">).</span><span class="na">collect</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">configValue</span><span class="w"> </span><span class="o">-&gt;</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="c1">// Reconfigure the application when the flag changes</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="n">updateTheme</span><span class="p">(</span><span class="n">configValue</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="writing-a-custom-provider">Writing a custom provider<a class="headerlink" href="#writing-a-custom-provider" title="Permanent link">&para;</a></h2>
+<h2 id="7-override-and-reset-at-runtime">7. Override and reset at runtime<a class="headerlink" href="#7-override-and-reset-at-runtime" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1">// Apply a local override — useful for admin overrides or staged rollouts</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">configValues</span><span class="p">.</span><span class="na">override</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">darkMode</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1">// Reset to the stored or default value</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">configValues</span><span class="p">.</span><span class="na">resetOverride</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">darkMode</span><span class="p">)</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1">// Clear all local overrides</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="n">configValues</span><span class="p">.</span><span class="na">clearOverrides</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="8-testing-with-fakeconfigvalues">8. Testing with <code>FakeConfigValues</code><a class="headerlink" href="#8-testing-with-fakeconfigvalues" title="Permanent link">&para;</a></h2>
+<p>The <code>featured-testing</code> artifact provides <code>fakeConfigValues</code> — a suspend factory function that builds a <code>ConfigValues</code> backed by an in-memory provider. No real <code>Preferences</code> storage is involved.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.testing.fakeConfigValues</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.testing.fake</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.test.runTest</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="kd">class</span><span class="w"> </span><span class="nc">FeatureFlagTest</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span><span class="nd">@Test</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">`new checkout is enabled when flag is on`</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runTest</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fakeConfigValues</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">            </span><span class="k">set</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">getValue</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">)</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">        </span><span class="n">assertTrue</span><span class="p">(</span><span class="n">value</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">    </span><span class="nd">@Test</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">`defaults are used when no override is set`</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runTest</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fakeConfigValues</span><span class="p">()</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">configValues</span><span class="p">.</span><span class="na">getValue</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">darkMode</span><span class="p">)</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="w">        </span><span class="n">assertEquals</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">darkMode</span><span class="p">.</span><span class="na">defaultValue</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">.</span><span class="na">value</span><span class="p">)</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="p">}</span>
+</code></pre></div>
+<p>You can also use the companion extension for a more idiomatic call site:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigValues</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.testing.fake</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">.</span><span class="na">fake</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="k">set</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">pageSize</span><span class="p">,</span><span class="w"> </span><span class="m">50</span><span class="p">)</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="simulating-mid-test-flag-changes">Simulating mid-test flag changes<a class="headerlink" href="#simulating-mid-test-flag-changes" title="Permanent link">&para;</a></h3>
+<p><code>fakeConfigValues</code> returns a real <code>ConfigValues</code> instance — you can call <code>override</code> to simulate remote pushes or user-triggered overrides:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nd">@Test</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">`UI updates when flag changes at runtime`</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runTest</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">configValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fakeConfigValues</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">        </span><span class="k">set</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">collected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mutableListOf</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="p">()</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">job</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">launch</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">        </span><span class="n">configValues</span><span class="p">.</span><span class="na">observe</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">).</span><span class="na">collect</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">collected</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="nb">it</span><span class="p">.</span><span class="na">value</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="n">configValues</span><span class="p">.</span><span class="na">override</span><span class="p">(</span><span class="n">FeatureFlags</span><span class="p">.</span><span class="na">newCheckout</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="n">advanceUntilIdle</span><span class="p">()</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">    </span><span class="n">job</span><span class="p">.</span><span class="na">cancel</span><span class="p">()</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">    </span><span class="n">assertEquals</span><span class="p">(</span><span class="n">listOf</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">),</span><span class="w"> </span><span class="n">collected</span><span class="p">)</span>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="p">}</span>
+</code></pre></div>
+<h2 id="9-writing-a-custom-provider">9. Writing a custom provider<a class="headerlink" href="#9-writing-a-custom-provider" title="Permanent link">&para;</a></h2>
 <p>Implement <code>LocalConfigValueProvider</code> to back flags with any storage (database, config file, etc.):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigParam</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigValue</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.LocalConfigValueProvider</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.flow.Flow</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.flow.MutableStateFlow</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="kd">class</span><span class="w"> </span><span class="nc">PropertiesConfigValueProvider</span><span class="p">(</span>
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">file</span><span class="p">:</span><span class="w"> </span><span class="n">java</span><span class="p">.</span><span class="na">io</span><span class="p">.</span><span class="na">File</span><span class="p">,</span>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">LocalConfigValueProvider</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">props</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">java</span><span class="p">.</span><span class="na">util</span><span class="p">.</span><span class="na">Properties</span><span class="p">().</span><span class="na">also</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">exists</span><span class="p">())</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">reader</span><span class="p">())</span>
-<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>
-<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">getValue</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">ConfigValue</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;?</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">raw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">props</span><span class="p">.</span><span class="na">getProperty</span><span class="p">(</span><span class="n">param</span><span class="p">.</span><span class="na">key</span><span class="p">)</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span>
-<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">        </span><span class="nd">@Suppress</span><span class="p">(</span><span class="s">&quot;UNCHECKED_CAST&quot;</span><span class="p">)</span>
-<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">raw</span><span class="w"> </span><span class="k">as?</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span>
-<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">ConfigValue</span><span class="p">(</span><span class="n">param</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">ConfigValue</span><span class="p">.</span><span class="na">Source</span><span class="p">.</span><span class="na">LOCAL</span><span class="p">)</span>
-<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>
-<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">observe</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">Flow</span><span class="o">&lt;</span><span class="n">ConfigValue</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;?&gt;</span><span class="w"> </span><span class="o">=</span>
-<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="w">        </span><span class="n">MutableStateFlow</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="c1">// simplified — add file watching for full reactivity</span>
-<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>
-<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">setValue</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="n">T</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="w">        </span><span class="n">props</span><span class="p">.</span><span class="na">setProperty</span><span class="p">(</span><span class="n">param</span><span class="p">.</span><span class="na">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">.</span><span class="na">toString</span><span class="p">())</span>
-<a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a><span class="w">        </span><span class="n">props</span><span class="p">.</span><span class="na">store</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">writer</span><span class="p">(),</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span>
-<a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a>
-<a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">removeValue</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a><span class="w">        </span><span class="n">props</span><span class="p">.</span><span class="na">remove</span><span class="p">(</span><span class="n">param</span><span class="p">.</span><span class="na">key</span><span class="p">)</span>
-<a id="__codelineno-6-32" name="__codelineno-6-32" href="#__codelineno-6-32"></a><span class="w">        </span><span class="n">props</span><span class="p">.</span><span class="na">store</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">writer</span><span class="p">(),</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span>
-<a id="__codelineno-6-33" name="__codelineno-6-33" href="#__codelineno-6-33"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-6-34" name="__codelineno-6-34" href="#__codelineno-6-34"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigParam</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigValue</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.LocalConfigValueProvider</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.flow.Flow</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">import</span><span class="w"> </span><span class="nn">kotlinx.coroutines.flow.MutableStateFlow</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="kd">class</span><span class="w"> </span><span class="nc">PropertiesConfigValueProvider</span><span class="p">(</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">file</span><span class="p">:</span><span class="w"> </span><span class="n">java</span><span class="p">.</span><span class="na">io</span><span class="p">.</span><span class="na">File</span><span class="p">,</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">LocalConfigValueProvider</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">props</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">java</span><span class="p">.</span><span class="na">util</span><span class="p">.</span><span class="na">Properties</span><span class="p">().</span><span class="na">also</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">exists</span><span class="p">())</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">reader</span><span class="p">())</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">ConfigValue</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;?</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">raw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">props</span><span class="p">.</span><span class="na">getProperty</span><span class="p">(</span><span class="n">param</span><span class="p">.</span><span class="na">key</span><span class="p">)</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="w">        </span><span class="nd">@Suppress</span><span class="p">(</span><span class="s">&quot;UNCHECKED_CAST&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="w">        </span><span class="kd">val</span><span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">raw</span><span class="w"> </span><span class="k">as?</span><span class="w"> </span><span class="n">T</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">ConfigValue</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">ConfigValue</span><span class="p">.</span><span class="na">Source</span><span class="p">.</span><span class="na">LOCAL</span><span class="p">)</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">observe</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">Flow</span><span class="o">&lt;</span><span class="n">ConfigValue</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="o">=</span>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a><span class="w">        </span><span class="n">MutableStateFlow</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="c1">// simplified — add file watching for full reactivity</span>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>
+<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="n">T</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a><span class="w">        </span><span class="n">props</span><span class="p">.</span><span class="na">setProperty</span><span class="p">(</span><span class="n">param</span><span class="p">.</span><span class="na">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">.</span><span class="na">toString</span><span class="p">())</span>
+<a id="__codelineno-12-27" name="__codelineno-12-27" href="#__codelineno-12-27"></a><span class="w">        </span><span class="n">props</span><span class="p">.</span><span class="na">store</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">writer</span><span class="p">(),</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span>
+<a id="__codelineno-12-28" name="__codelineno-12-28" href="#__codelineno-12-28"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-12-29" name="__codelineno-12-29" href="#__codelineno-12-29"></a>
+<a id="__codelineno-12-30" name="__codelineno-12-30" href="#__codelineno-12-30"></a><span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">resetOverride</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-12-31" name="__codelineno-12-31" href="#__codelineno-12-31"></a><span class="w">        </span><span class="n">props</span><span class="p">.</span><span class="na">remove</span><span class="p">(</span><span class="n">param</span><span class="p">.</span><span class="na">key</span><span class="p">)</span>
+<a id="__codelineno-12-32" name="__codelineno-12-32" href="#__codelineno-12-32"></a><span class="w">        </span><span class="n">props</span><span class="p">.</span><span class="na">store</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">writer</span><span class="p">(),</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span>
+<a id="__codelineno-12-33" name="__codelineno-12-33" href="#__codelineno-12-33"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-12-34" name="__codelineno-12-34" href="#__codelineno-12-34"></a><span class="p">}</span>
 </code></pre></div>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../providers/">Providers</a> — all built-in providers in detail</li>
 <li><a href="../best-practices/">Best practices</a> — multi-module setup and testing</li>
+<li><a href="../android/">Android guide</a> — DataStore, Compose integration, and the debug UI</li>
 </ul>
 
 
