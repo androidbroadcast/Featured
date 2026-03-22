@@ -1,8 +1,8 @@
-# iOS Guide
+# iOS Integration Guide
 
 Featured exposes its Kotlin API to Swift via [SKIE](https://skie.touchlab.co/), which bridges coroutines, sealed classes, and default arguments automatically.
 
-## Swift Package Manager setup
+## 1. Swift Package Manager setup
 
 Add the package in Xcode (**File › Add Package Dependencies**) or in `Package.swift`:
 
@@ -24,46 +24,156 @@ Then add `FeaturedCore` as a target dependency:
 )
 ```
 
-## Reading flags in Swift
+## 2. Declare flags in Kotlin (shared module)
 
-The `FeatureFlags` Swift class wraps `CoreConfigValues` (the KMP-exported type). Define your flags as `FeatureFlag` values that reference the shared `CoreConfigParam` exported from Kotlin:
+Flags live in the shared Kotlin module and are exported to Swift. Annotate them with `@LocalFlag` so the Gradle plugin can scan them:
+
+```kotlin title="shared/src/commonMain/kotlin/com/example/FeatureFlags.kt"
+import dev.androidbroadcast.featured.ConfigParam
+import dev.androidbroadcast.featured.LocalFlag
+
+object FeatureFlags {
+    @LocalFlag
+    val newCheckout = ConfigParam<Boolean>(
+        key = "new_checkout",
+        defaultValue = false,
+        description = "Enable the new checkout flow",
+    )
+}
+```
+
+## 3. Initialize `ConfigValues` in Swift
+
+Call `initialize()` at app launch (before serving any screen) to activate values fetched during the previous session. Then trigger a background fetch so the next launch sees fresh values.
 
 ```swift
 import FeaturedCore
 
-// Map a Kotlin ConfigParam to a Swift FeatureFlag
-let newCheckoutFlag = FeatureFlag<Bool>(
-    param: CoreFeatureFlagsCompanion().newCheckout,
-    defaultValue: false
-)
+@main
+struct MyApp: App {
+    @StateObject private var appState = AppState()
 
-let featureFlags = FeatureFlags(configValues)
-
-// Async read
-let isEnabled = try await featureFlags.value(of: newCheckoutFlag)
-
-// AsyncStream — use in a Task or async for-await loop
-for await value in featureFlags.stream(of: newCheckoutFlag) {
-    updateUI(value)
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .task { await appState.setup() }
+        }
+    }
 }
 
-// Combine publisher
+@MainActor
+class AppState: ObservableObject {
+    let configValues: ConfigValues
+
+    init() {
+        configValues = ConfigValues(
+            localProvider: nil,   // add a provider if needed
+            remoteProvider: nil,  // e.g. FirebaseConfigValueProvider()
+            onProviderError: { error in print("Featured error: \(error)") }
+        )
+    }
+
+    func setup() async {
+        do {
+            try await configValues.initialize()
+            try await configValues.fetch()
+        } catch {
+            print("Featured setup error: \(error)")
+        }
+    }
+}
+```
+
+## 4. Reading flags in Swift
+
+The SKIE bridge makes the Kotlin `ConfigValues` API available in Swift with async/await and `AsyncStream`.
+
+```swift
+import FeaturedCore
+
+// One-shot async read
+let configValue = try await configValues.getValue(param: FeatureFlags.shared.newCheckout)
+let isEnabled: Bool = configValue.value
+
+// AsyncStream — use in a Task or async for-await loop
+for await configValue in configValues.observe(param: FeatureFlags.shared.newCheckout) {
+    updateUI(configValue.value)
+}
+```
+
+## 5. Combine publisher
+
+SKIE wraps the Kotlin `Flow` as an `AsyncStream`. Combine publishers can be built on top using `AsyncStream.publisher`:
+
+```swift
+import Combine
+import FeaturedCore
+
+class CheckoutViewModel: ObservableObject {
+    @Published var isNewCheckoutEnabled: Bool = false
+
+    private var cancellables = Set<AnyCancellable>()
+    private let configValues: ConfigValues
+
+    init(configValues: ConfigValues) {
+        self.configValues = configValues
+    }
+
+    func startObserving() {
+        // Bridge AsyncStream → Combine publisher
+        let stream = configValues.observe(param: FeatureFlags.shared.newCheckout)
+
+        Task {
+            for await configValue in stream {
+                await MainActor.run {
+                    self.isNewCheckoutEnabled = configValue.value
+                }
+            }
+        }
+    }
+}
+```
+
+Alternatively, use `publisher(for:)` if your Swift wrapper exposes it:
+
+```swift
 featureFlags.publisher(for: newCheckoutFlag)
     .receive(on: DispatchQueue.main)
     .sink { isEnabled in updateUI(isEnabled) }
     .store(in: &cancellables)
 ```
 
-## Swift dead-code elimination via xcconfig
+## 6. SwiftUI integration
+
+Collect the flag value in a `@StateObject` ViewModel and bind it to the view:
+
+```swift
+struct CheckoutScreen: View {
+    @StateObject private var viewModel: CheckoutViewModel
+
+    var body: some View {
+        Group {
+            if viewModel.isNewCheckoutEnabled {
+                NewCheckoutView()
+            } else {
+                LegacyCheckoutView()
+            }
+        }
+        .task { viewModel.startObserving() }
+    }
+}
+```
+
+## 7. Swift dead-code elimination via xcconfig
 
 The Gradle plugin generates an xcconfig file that feeds Swift compilation conditions into Xcode. For every `@LocalFlag`-annotated `ConfigParam<Boolean>` with `defaultValue = false`, a `DISABLE_<FLAG_KEY>` condition is generated.
 
 ### Key transformation
 
-| Kotlin flag key | Generated condition |
-|-----------------|---------------------|
-| `new_checkout` | `DISABLE_NEW_CHECKOUT` |
-| `experimentalUi` | `DISABLE_EXPERIMENTAL_UI` |
+| Kotlin flag key   | Generated condition      |
+|-------------------|--------------------------|
+| `new_checkout`    | `DISABLE_NEW_CHECKOUT`   |
+| `experimentalUi`  | `DISABLE_EXPERIMENTAL_UI`|
 
 ### Step 1 — Generate the xcconfig
 
@@ -143,3 +253,9 @@ cp shared/build/featured/FeatureFlags.generated.xcconfig \
 ```
 
 For more detail, see the full [iOS Integration Guide](../ios-integration.md).
+
+## Next steps
+
+- [Android guide](android.md) — DataStore, Compose integration, and the debug UI
+- [JVM guide](jvm.md) — server and desktop integration
+- [Providers](providers.md) — all built-in providers in detail
