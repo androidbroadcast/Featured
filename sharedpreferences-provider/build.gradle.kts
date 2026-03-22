@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.kover)
     alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
@@ -38,6 +37,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
+
+
 
     testOptions {
         unitTests {
@@ -80,10 +81,6 @@ mavenPublishing {
     }
 }
 
-kotlin {
-    explicitApi()
-    jvmToolchain(21)
-}
 
 dependencies {
     implementation(project(":core"))
@@ -100,6 +97,12 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.androidx.testExt.junit)
     testImplementation(libs.turbine)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.add("-Xexplicit-api=strict")
+    }
 }
 
 kover {
