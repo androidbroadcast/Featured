@@ -31,6 +31,9 @@ theme:
     - content.code.copy
     - content.tabs.link
 
+exclude_docs: |
+  superpowers/
+
 plugins:
   - search
 
@@ -57,5 +60,8 @@ nav:
       - JVM: guides/jvm.md
       - Providers: guides/providers.md
       - Best Practices: guides/best-practices.md
+      - iOS Dead-Code Elimination: ios-integration.md
   - API Reference: api/index.md
   - Changelog: changelog.md
+  - ADRs:
+      - "ADR 001: ConfigValues Multi-Module": adr/001-configvalues-multi-module.md

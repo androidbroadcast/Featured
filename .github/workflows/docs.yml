@@ -31,11 +31,6 @@ jobs:
       - name: Generate Dokka HTML
         run: ./gradlew --no-daemon dokkaHtmlMultiModule
 
-      - name: Copy Dokka output into docs/api
-        run: |
-          mkdir -p docs/api
-          cp -r build/dokka/htmlMultiModule/. docs/api/
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -46,6 +41,11 @@ jobs:
 
       - name: Build MkDocs site
         run: mkdocs build --strict
+
+      - name: Embed Dokka output into site/api
+        # Runs after mkdocs build so Dokka HTML does not conflict with
+        # docs/api/index.md during MkDocs processing.
+        run: cp -r build/dokka/htmlMultiModule/. site/api/
 
       - name: Upload site artifact
         uses: actions/upload-artifact@v4

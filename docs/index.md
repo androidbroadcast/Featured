@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/AndroidBroadcast/Featured/actions/workflows/ci.yml/badge.svg)](https://github.com/AndroidBroadcast/Featured/actions/workflows/ci.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/dev.androidbroadcast.featured/core.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dev.androidbroadcast.featured)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/AndroidBroadcast/Featured/blob/main/LICENSE)
 
 **Featured** is a type-safe, reactive feature-flag and configuration management library for Kotlin Multiplatform (Android, iOS, JVM). Declare flags in shared Kotlin code, read them at runtime from local or remote providers, and let the Gradle plugin dead-code-eliminate disabled flags from your production binaries.
 
