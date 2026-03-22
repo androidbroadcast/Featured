@@ -1,0 +1,14 @@
+public final class dev/androidbroadcast/featured/testing/ConfigValuesFakeExtensionsKt {
+	public static final fun fake (Ldev/androidbroadcast/featured/ConfigValues$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun fake$default (Ldev/androidbroadcast/featured/ConfigValues$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class dev/androidbroadcast/featured/testing/FakeConfigValuesKt {
+	public static final fun fakeConfigValues (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun fakeConfigValues$default (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class dev/androidbroadcast/featured/testing/FakeConfigValuesScope {
+	public final fun set (Ldev/androidbroadcast/featured/ConfigParam;Ljava/lang/Object;)V
+}
+

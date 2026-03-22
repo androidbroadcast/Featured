@@ -26,6 +26,10 @@ class BuildDebugItemsTest {
                     value: T,
                 ) = Unit
 
+                override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) = Unit
+
+                override suspend fun clear() = Unit
+
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
                     flowOf(ConfigValue(value = value as T, source = source))

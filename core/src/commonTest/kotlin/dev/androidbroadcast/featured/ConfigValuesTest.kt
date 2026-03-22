@@ -33,6 +33,55 @@ class ConfigValuesTest {
     }
 
     @Test
+    fun testObserveEmitsNewValueAfterRemoteFetch() =
+        runTest {
+            val remoteProvider = MockRemoteProvider()
+            val configValues = ConfigValues(remoteProvider = remoteProvider)
+            val param = ConfigParam("remote_flag", "default")
+
+            remoteProvider.setMockValue("remote_flag", "initial_remote")
+
+            configValues.observe(param).test {
+                // Should emit current remote value first
+                val firstEmission = awaitItem()
+                assertEquals("initial_remote", firstEmission.value)
+                assertEquals(ConfigValue.Source.REMOTE, firstEmission.source)
+
+                // Simulate remote update and fetch
+                remoteProvider.setMockValue("remote_flag", "updated_remote")
+                configValues.fetch()
+
+                // Should emit new value after fetch
+                val secondEmission = awaitItem()
+                assertEquals("updated_remote", secondEmission.value)
+                assertEquals(ConfigValue.Source.REMOTE, secondEmission.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun testObserveDoesNotEmitWhenFetchDoesNotChangeValue() =
+        runTest {
+            val remoteProvider = MockRemoteProvider()
+            val configValues = ConfigValues(remoteProvider = remoteProvider)
+            val param = ConfigParam("remote_flag", "default")
+
+            remoteProvider.setMockValue("remote_flag", "same_value")
+
+            configValues.observe(param).test {
+                val firstEmission = awaitItem()
+                assertEquals("same_value", firstEmission.value)
+
+                // Fetch without changing the remote value — should not emit again
+                configValues.fetch()
+                expectNoEvents()
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
     fun testConfigValuesRequiresAtLeastOneProvider() {
         assertFailsWith<IllegalArgumentException> {
             ConfigValues(localProvider = null, remoteProvider = null)
@@ -195,8 +244,8 @@ class ConfigValuesTest {
                 assertEquals("remote_value", emission.value)
                 assertEquals(ConfigValue.Source.REMOTE, emission.source)
 
-                // Flow will complete since there's no local provider to observe changes
-                awaitComplete()
+                // Flow stays open — future fetch() calls can deliver updated remote values
+                cancelAndIgnoreRemainingEvents()
             }
         }
 
@@ -247,5 +296,37 @@ class ConfigValuesTest {
 
                 cancelAndIgnoreRemainingEvents()
             }
+        }
+
+    @Test
+    fun clearOverrides_removesAllLocalOverrides_andFallsBackToDefault() =
+        runTest {
+            val localProvider = InMemoryConfigValueProvider()
+            val configValues = ConfigValues(localProvider = localProvider)
+            val param1 = ConfigParam("flag1", "default1")
+            val param2 = ConfigParam("flag2", 0)
+            configValues.override(param1, "overridden1")
+            configValues.override(param2, 42)
+
+            configValues.clearOverrides()
+
+            val result1 = configValues.getValue(param1)
+            val result2 = configValues.getValue(param2)
+            assertEquals("default1", result1.value)
+            assertEquals(ConfigValue.Source.DEFAULT, result1.source)
+            assertEquals(0, result2.value)
+            assertEquals(ConfigValue.Source.DEFAULT, result2.source)
+        }
+
+    @Test
+    fun clearOverrides_withNoLocalProvider_doesNotThrow() =
+        runTest {
+            val configValues = ConfigValues(remoteProvider = MockRemoteProvider())
+            val param = ConfigParam("x", 0)
+
+            // Should be a no-op, not throw
+            configValues.clearOverrides()
+
+            assertEquals(0, configValues.getValue(param).value)
         }
 }

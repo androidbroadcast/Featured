@@ -1,6 +1,7 @@
 package dev.androidbroadcast.featured.sharedpreferences
 
 import android.content.SharedPreferences
+import dev.androidbroadcast.featured.TypeConverter
 
 internal class StringValueSaver : ValueSaver<String> {
     override fun write(
@@ -104,5 +105,31 @@ internal class DoubleValueSaver : ValueSaver<Double> {
     ): Double? {
         if (key !in pref) return null
         return Double.fromBits(pref.getLong(key, 0L))
+    }
+}
+
+/**
+ * A [ValueSaver] that serializes values of type [T] to/from [String] using a [TypeConverter].
+ *
+ * Used internally by [SharedPreferencesProviderConfig.registerConverter] to support custom
+ * types (e.g. enums) that do not have a native SharedPreferences storage type.
+ */
+internal class TypeConverterValueSaver<T : Any>(
+    private val converter: TypeConverter<T>,
+) : ValueSaver<T> {
+    override fun write(
+        editor: SharedPreferences.Editor,
+        key: String,
+        value: T,
+    ) {
+        editor.putString(key, converter.toString(value))
+    }
+
+    override fun read(
+        pref: SharedPreferences,
+        key: String,
+    ): T? {
+        val raw = pref.getString(key, null) ?: return null
+        return converter.fromString(raw)
     }
 }

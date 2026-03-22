@@ -47,3 +47,69 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_KEY_PASSWORD }}
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
         run: ./gradlew --no-daemon publishAllPublicationsToMavenCentralRepository
+
+  publish-xcframework:
+    name: Publish XCFramework to GitHub Release
+    # Only runs for version tags — not for SNAPSHOT pushes to main.
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: macos-latest
+    permissions:
+      contents: write  # Required to upload release assets and update Package.swift
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Build XCFramework
+        run: ./gradlew --no-daemon :core:zipXCFramework
+
+      - name: Compute checksum
+        id: checksum
+        run: |
+          CHECKSUM=$(swift package compute-checksum core/build/xcframeworks/FeaturedCore.xcframework.zip)
+          echo "CHECKSUM=${CHECKSUM}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Create or update GitHub Release and upload XCFramework
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create the release if it doesn't already exist (idempotent)
+          gh release create "${{ github.ref_name }}" \
+            --title "${{ github.ref_name }}" \
+            --generate-notes \
+            2>/dev/null || true
+          gh release upload "${{ github.ref_name }}" \
+            core/build/xcframeworks/FeaturedCore.xcframework.zip \
+            --clobber
+
+      - name: Update Package.swift checksum and URL
+        env:
+          TAG: ${{ github.ref_name }}
+          CHECKSUM: ${{ steps.checksum.outputs.CHECKSUM }}
+        run: |
+          ASSET_URL="https://github.com/AndroidBroadcast/Featured/releases/download/${TAG}/FeaturedCore.xcframework.zip"
+          sed -i '' \
+            -e "s|url: \".*FeaturedCore.xcframework.zip\"|url: \"${ASSET_URL}\"|" \
+            -e "s|checksum: \"[0-9a-f]*\"|checksum: \"${CHECKSUM}\"|" \
+            Package.swift
+
+      - name: Commit updated Package.swift
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Package.swift
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "chore: update Package.swift checksum for ${{ github.ref_name }}"
+          # Fetch latest main first to reduce push conflicts
+          git fetch origin main
+          git push origin HEAD:main

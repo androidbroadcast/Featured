@@ -23,6 +23,14 @@ class ConfigValueProviderTest {
             storage[param.key] = value
         }
 
+        override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
+            storage.remove(param.key)
+        }
+
+        override suspend fun clear() {
+            storage.clear()
+        }
+
         override fun <T : Any> observe(param: ConfigParam<T>) = throw NotImplementedError()
     }
 
@@ -50,6 +58,21 @@ class ConfigValueProviderTest {
             lastActivateValue = activate
         }
     }
+
+    @Test
+    fun clear_removesAllLocalOverrides_soGetReturnsNullForEachParam() =
+        runTest {
+            val provider = TestLocalProvider()
+            val param1 = ConfigParam("key1", "default1")
+            val param2 = ConfigParam("key2", 0)
+            provider.set(param1, "value1")
+            provider.set(param2, 42)
+
+            provider.clear()
+
+            assertNull(provider.get(param1))
+            assertNull(provider.get(param2))
+        }
 
     @Test
     fun testLocalProviderBasicOperations() =

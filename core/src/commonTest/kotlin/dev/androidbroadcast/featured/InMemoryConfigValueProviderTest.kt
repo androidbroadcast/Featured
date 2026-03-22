@@ -83,6 +83,34 @@ class InMemoryConfigValueProviderTest {
         }
 
     @Test
+    fun clear_removesAllStoredOverrides() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param1 = ConfigParam("key1", "default1")
+            val param2 = ConfigParam("key2", 99)
+            provider.set(param1, "value1")
+            provider.set(param2, 42)
+
+            provider.clear()
+
+            assertNull(provider.get(param1))
+            assertNull(provider.get(param2))
+        }
+
+    @Test
+    fun clear_asLocalConfigValueProvider_removesAllOverrides() =
+        runTest {
+            // Verify clear() is callable through the interface
+            val provider: LocalConfigValueProvider = InMemoryConfigValueProvider()
+            val param = ConfigParam("key", false)
+            provider.set(param, true)
+
+            provider.clear()
+
+            assertNull(provider.get(param))
+        }
+
+    @Test
     fun testObserveInitialValue() =
         runTest {
             val provider = InMemoryConfigValueProvider()

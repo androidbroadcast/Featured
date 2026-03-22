@@ -12,7 +12,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -21,8 +20,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun FeaturedSample(
+    configValues: ConfigValues,
     modifier: Modifier = Modifier,
-    configValues: ConfigValues = createDefaultConfigValues(),
 ) {
     val viewModel: SampleViewModel = viewModel { SampleViewModel(configValues) }
     val activate by viewModel.flagActive.collectAsStateWithLifecycle()
@@ -69,7 +68,3 @@ fun MainButton(
         )
     }
 }
-
-// Helper function to create default ConfigValues for demonstration
-@Composable
-fun createDefaultConfigValues(): ConfigValues = remember { ConfigValues(localProvider = InMemoryConfigValueProvider()) }
