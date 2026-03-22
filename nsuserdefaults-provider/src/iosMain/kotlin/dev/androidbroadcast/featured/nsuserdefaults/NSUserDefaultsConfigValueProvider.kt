@@ -34,12 +34,12 @@ import platform.Foundation.NSUserDefaults
 public class NSUserDefaultsConfigValueProvider(
     private val suiteName: String? = null,
 ) : LocalConfigValueProvider {
-
-    private val defaults: NSUserDefaults = if (suiteName != null) {
-        NSUserDefaults(suiteName = suiteName)
-    } else {
-        NSUserDefaults.standardUserDefaults
-    }
+    private val defaults: NSUserDefaults =
+        if (suiteName != null) {
+            NSUserDefaults(suiteName = suiteName)
+        } else {
+            NSUserDefaults.standardUserDefaults
+        }
 
     private val changedKeyFlow = MutableSharedFlow<String>(extraBufferCapacity = Int.MAX_VALUE)
 
@@ -57,15 +57,16 @@ public class NSUserDefaultsConfigValueProvider(
         // check object(forKey:) to distinguish "not set" from "set to default value".
         val rawObject = defaults.objectForKey(key) ?: return null
 
-        val value: T = when (param.valueType) {
-            Boolean::class -> defaults.boolForKey(key) as T
-            Int::class -> defaults.integerForKey(key).toInt() as T
-            Long::class -> defaults.integerForKey(key) as T
-            Double::class -> defaults.doubleForKey(key) as T
-            Float::class -> defaults.floatForKey(key) as T
-            String::class -> (rawObject as? String ?: return null) as T
-            else -> throw IllegalArgumentException("Unsupported type: ${param.valueType}")
-        }
+        val value: T =
+            when (param.valueType) {
+                Boolean::class -> defaults.boolForKey(key) as T
+                Int::class -> defaults.integerForKey(key).toInt() as T
+                Long::class -> defaults.integerForKey(key) as T
+                Double::class -> defaults.doubleForKey(key) as T
+                Float::class -> defaults.floatForKey(key) as T
+                String::class -> (rawObject as? String ?: return null) as T
+                else -> throw IllegalArgumentException("Unsupported type: ${param.valueType}")
+            }
         return ConfigValue(value, ConfigValue.Source.LOCAL)
     }
 
@@ -76,7 +77,10 @@ public class NSUserDefaultsConfigValueProvider(
      * @param value The value to persist.
      * @throws IllegalArgumentException if the type of [param] is not supported.
      */
-    override suspend fun <T : Any> set(param: ConfigParam<T>, value: T) {
+    override suspend fun <T : Any> set(
+        param: ConfigParam<T>,
+        value: T,
+    ) {
         val key = param.key
         when (value) {
             is Boolean -> defaults.setBool(value, forKey = key)
