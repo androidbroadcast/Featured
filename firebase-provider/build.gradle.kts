@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.kover)
     alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
@@ -73,10 +72,6 @@ mavenPublishing {
     }
 }
 
-kotlin {
-    explicitApi()
-}
-
 dependencies {
     implementation(project(":core"))
 
@@ -90,6 +85,14 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    if (!name.contains("Test")) {
+        compilerOptions {
+            freeCompilerArgs.add("-Xexplicit-api=strict")
+        }
+    }
 }
 
 kover {

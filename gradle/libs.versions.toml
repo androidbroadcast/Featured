@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.0"
+agp = "9.1.0"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
@@ -29,7 +29,7 @@ ktlint = "1.8.0"
 bcv = "0.18.1"
 turbine = "1.2.1"
 mavenPublish = "0.32.0"
-dokka = "2.0.0"
+dokka = "2.1.0"
 detekt = "1.23.8"
 configcat = "5.1.0"
 
@@ -85,3 +85,4 @@ spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 bcv = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "bcv" }
 mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }

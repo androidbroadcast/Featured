@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.kover)
     alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
@@ -46,6 +45,12 @@ android {
     }
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
 mavenPublishing {
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
@@ -80,11 +85,6 @@ mavenPublishing {
     }
 }
 
-kotlin {
-    explicitApi()
-    jvmToolchain(21)
-}
-
 dependencies {
     implementation(project(":core"))
 
@@ -100,6 +100,14 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.androidx.testExt.junit)
     testImplementation(libs.turbine)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    if (!name.contains("Test")) {
+        compilerOptions {
+            freeCompilerArgs.add("-Xexplicit-api=strict")
+        }
+    }
 }
 
 kover {
