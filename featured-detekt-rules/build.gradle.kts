@@ -1,27 +1,18 @@
 plugins {
-    `java-platform`
+    alias(libs.plugins.kotlinJvm)
+    alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
 }
 
-javaPlatform {
-    allowDependencies()
+kotlin {
+    explicitApi()
+    jvmToolchain(21)
 }
 
 dependencies {
-    constraints {
-        api(project(":core"))
-        api(project(":datastore-provider"))
-        api(project(":firebase-provider"))
-        api(project(":sharedpreferences-provider"))
-        api(project(":javaprefs-provider"))
-        api(project(":featured-compose"))
-        api(project(":featured-registry"))
-        api(project(":featured-debug-ui"))
-        api(project(":featured-gradle-plugin"))
-        api(project(":nsuserdefaults-provider"))
-        api(project(":featured-platform"))
-        api(project(":featured-detekt-rules"))
-    }
+    compileOnly(libs.detekt.api)
+    testImplementation(libs.detekt.test)
+    testImplementation(libs.kotlin.testJunit)
 }
 
 mavenPublishing {
@@ -29,11 +20,11 @@ mavenPublishing {
     signAllPublications()
     coordinates(
         groupId = "dev.androidbroadcast.featured",
-        artifactId = "featured-bom",
+        artifactId = "featured-detekt-rules",
     )
     pom {
-        name.set("Featured BOM")
-        description.set("Bill of Materials for Featured – type-safe, reactive KMP configuration management")
+        name.set("Featured Detekt Rules")
+        description.set("Custom Detekt rules for Featured – enforce correct feature flag usage")
         inceptionYear.set("2024")
         url.set("https://github.com/AndroidBroadcast/Featured")
         licenses {
