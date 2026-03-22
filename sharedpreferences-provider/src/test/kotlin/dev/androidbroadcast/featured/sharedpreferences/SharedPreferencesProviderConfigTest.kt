@@ -8,6 +8,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
+import dev.androidbroadcast.featured.TypeConverter
+import dev.androidbroadcast.featured.enumConverter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -20,6 +22,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+
+enum class CheckoutVariant { LEGACY, NEW_SINGLE_PAGE, NEW_MULTI_STEP }
 
 @RunWith(AndroidJUnit4::class)
 @Config(manifest = Config.NONE)
@@ -313,5 +317,69 @@ class SharedPreferencesProviderConfigTest {
             } catch (e: IllegalArgumentException) {
                 assertTrue(e.message!!.contains("Unsupported type"))
             }
+        }
+
+    // --- Enum support via TypeConverter ---
+
+    @Test
+    fun `test set and get enum value with registered converter`() =
+        runTest {
+            val enumParam = ConfigParam("checkout_variant", CheckoutVariant.LEGACY)
+            provider.registerConverter(enumConverter<CheckoutVariant>())
+
+            provider.set(enumParam, CheckoutVariant.NEW_SINGLE_PAGE)
+            val result = provider.get(enumParam)
+
+            assertNotNull(result)
+            assertEquals(CheckoutVariant.NEW_SINGLE_PAGE, result!!.value)
+            assertEquals(ConfigValue.Source.LOCAL, result.source)
+        }
+
+    @Test
+    fun `test enum round-trip persists by name`() =
+        runTest {
+            val enumParam = ConfigParam("checkout_variant", CheckoutVariant.LEGACY)
+            provider.registerConverter(enumConverter<CheckoutVariant>())
+
+            provider.set(enumParam, CheckoutVariant.NEW_MULTI_STEP)
+            val result = provider.get(enumParam)
+
+            assertEquals(CheckoutVariant.NEW_MULTI_STEP, result?.value)
+        }
+
+    @Test
+    fun `test enum get returns null when not set`() =
+        runTest {
+            val enumParam = ConfigParam("checkout_variant", CheckoutVariant.LEGACY)
+            provider.registerConverter(enumConverter<CheckoutVariant>())
+
+            val result = provider.get(enumParam)
+            assertNull(result)
+        }
+
+    @Test
+    fun `test enum throws on unsupported type without converter`() =
+        runTest {
+            val enumParam = ConfigParam("checkout_variant", CheckoutVariant.LEGACY)
+            // No converter registered
+            try {
+                provider.set(enumParam, CheckoutVariant.LEGACY)
+                fail("Expected IllegalArgumentException")
+            } catch (e: IllegalArgumentException) {
+                assertTrue(e.message!!.contains("Unsupported type"))
+            }
+        }
+
+    @Test
+    fun `clear via LocalConfigValueProvider interface removes all values`() =
+        runTest {
+            val localProvider: dev.androidbroadcast.featured.LocalConfigValueProvider = provider
+            localProvider.set(stringParam, "value1")
+            localProvider.set(intParam, 99)
+
+            localProvider.clear()
+
+            assertNull(localProvider.get(stringParam))
+            assertNull(localProvider.get(intParam))
         }
 }

@@ -3,7 +3,25 @@ package dev.androidbroadcast.featured.firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue
 import kotlin.ranges.contains
 
+/**
+ * Converts a raw [FirebaseRemoteConfigValue] to a typed value [T].
+ *
+ * Implement this functional interface to add support for custom types in
+ * [FirebaseConfigValueProvider.converters]:
+ * ```kotlin
+ * provider.converters.put<Theme>(Converter { Theme.fromKey(it.asString()) })
+ * ```
+ *
+ * @param T The non-null target type produced by [convert].
+ */
 public fun interface Converter<T : Any> {
+    /**
+     * Converts [value] from Firebase to a typed [T].
+     *
+     * @param value The raw Firebase Remote Config value.
+     * @return The converted value.
+     * @throws IllegalArgumentException if the raw value cannot be converted to [T].
+     */
     public fun convert(value: FirebaseRemoteConfigValue): T
 }
 

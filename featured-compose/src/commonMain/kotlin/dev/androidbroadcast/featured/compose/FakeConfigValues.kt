@@ -73,6 +73,10 @@ private class FakeLocalConfigValueProvider(
         // no-op: fake provider does not support runtime mutations
     }
 
+    override suspend fun clear() {
+        // no-op: fake provider does not support runtime mutations
+    }
+
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> {
         val override = overrides[param.key] as? T

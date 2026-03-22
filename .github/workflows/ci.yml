@@ -55,7 +55,6 @@ jobs:
       - run: ./gradlew spotlessCheck
       - name: Check public API
         run: ./gradlew apiCheck
-        continue-on-error: true  # Non-blocking until first release
 
   build-ios:
     name: Build iOS
