@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.androidbroadcast.featured.fireabase"
+    namespace = "dev.androidbroadcast.featured.firebase"
     compileSdk =
         libs.versions.android.compileSdk
             .get()
