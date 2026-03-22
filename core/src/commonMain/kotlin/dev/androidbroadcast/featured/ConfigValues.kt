@@ -20,19 +20,27 @@ import kotlinx.coroutines.flow.merge
  *
  * At least one provider must be supplied; passing `null` for both throws [IllegalArgumentException].
  *
+ * Provider calls inside [getValue] and [observe] are wrapped in try/catch. If a provider throws,
+ * the error is reported to [onProviderError] (if set) and the next provider in the chain is tried.
+ * This means [getValue] and [observe] never propagate provider exceptions to callers.
+ *
+ * [fetch] is **not** guarded — the caller explicitly triggers a network operation and is
+ * responsible for handling any exceptions it throws.
+ *
  * ```kotlin
  * val configValues = ConfigValues(
  *     localProvider  = InMemoryConfigValueProvider(),
  *     remoteProvider = FirebaseConfigValueProvider(),
+ *     onProviderError = { error -> log.warn("Provider failed", error) },
  * )
  *
  * // Load cached remote values at app start (no network call)
  * configValues.initialize()
  *
- * // One-shot read
+ * // One-shot read — never throws due to provider failure
  * val value: ConfigValue<Boolean> = configValues.getValue(DarkModeParam)
  *
- * // Reactive observation
+ * // Reactive observation — flow does not terminate on provider error
  * configValues.observe(DarkModeParam).collect { configValue ->
  *     applyTheme(configValue.value)
  * }
@@ -40,11 +48,14 @@ import kotlinx.coroutines.flow.merge
  *
  * @param localProvider Optional provider for locally persisted overrides.
  * @param remoteProvider Optional provider for remote configuration values.
+ * @param onProviderError Optional callback invoked whenever a provider throws during
+ *   [getValue] or [observe]. Use this for logging or observability. Defaults to no-op.
  * @throws IllegalArgumentException if both [localProvider] and [remoteProvider] are `null`.
  */
 public class ConfigValues(
     private val localProvider: LocalConfigValueProvider? = null,
     private val remoteProvider: RemoteConfigValueProvider? = null,
+    private val onProviderError: (Throwable) -> Unit = {},
 ) {
     init {
         require(localProvider != null || remoteProvider != null) {
@@ -59,13 +70,29 @@ public class ConfigValues(
      *
      * Priority order: local provider → remote provider → [ConfigParam.defaultValue].
      *
+     * Provider exceptions are caught and forwarded to [onProviderError]; this function
+     * never throws due to provider failure.
+     *
      * @param param The configuration parameter to read.
      * @return The resolved [ConfigValue], never `null`.
      */
-    public suspend fun <T : Any> getValue(param: ConfigParam<T>): ConfigValue<T> =
-        localProvider?.get(param)
-            ?: remoteProvider?.get(param)
-            ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+    public suspend fun <T : Any> getValue(param: ConfigParam<T>): ConfigValue<T> {
+        val localValue =
+            localProvider?.runCatching { get(param) }?.getOrElse { error ->
+                onProviderError(error)
+                null
+            }
+        if (localValue != null) return localValue
+
+        val remoteValue =
+            remoteProvider?.runCatching { get(param) }?.getOrElse { error ->
+                onProviderError(error)
+                null
+            }
+        if (remoteValue != null) return remoteValue
+
+        return ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+    }
 
     /**
      * Overrides the configuration value for the given parameter with a local value.
