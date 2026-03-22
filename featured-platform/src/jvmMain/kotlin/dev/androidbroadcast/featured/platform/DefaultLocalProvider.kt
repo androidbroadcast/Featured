@@ -3,6 +3,8 @@ package dev.androidbroadcast.featured.platform
 import dev.androidbroadcast.featured.InMemoryConfigValueProvider
 import dev.androidbroadcast.featured.LocalConfigValueProvider
 
+// TODO(#66): Replace with JavaPreferencesConfigValueProvider once available.
+
 /**
  * Returns an [InMemoryConfigValueProvider] on JVM.
  *

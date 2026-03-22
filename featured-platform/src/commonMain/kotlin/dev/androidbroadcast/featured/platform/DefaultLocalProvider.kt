@@ -8,11 +8,12 @@ import dev.androidbroadcast.featured.LocalConfigValueProvider
  * | Platform | Implementation |
  * |----------|----------------|
  * | iOS      | [dev.androidbroadcast.featured.nsuserdefaults.NSUserDefaultsConfigValueProvider] |
- * | JVM      | [dev.androidbroadcast.featured.InMemoryConfigValueProvider] |
- * | Android  | [dev.androidbroadcast.featured.InMemoryConfigValueProvider] (in-memory fallback) |
+ * | JVM      | [dev.androidbroadcast.featured.InMemoryConfigValueProvider] (persistent provider pending #66) |
+ * | Android  | [dev.androidbroadcast.featured.InMemoryConfigValueProvider] (non-persistent, deprecated) |
  *
- * **Android note:** For persistent storage on Android, prefer the overload that accepts a
- * `Context`:
+ * **Android note:** On Android this overload is deprecated and returns a non-persistent
+ * in-memory provider. Use the platform-specific overload that accepts a `Context` to get
+ * a DataStore-backed persistent provider:
  * ```kotlin
  * val provider = defaultLocalProvider(context) // returns DataStoreConfigValueProvider
  * ```
