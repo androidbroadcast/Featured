@@ -8,5 +8,19 @@ object SampleFeatureFlags {
             description = "Enable red color for the main button",
         )
 
-    // Add more feature flags as needed
+    /**
+     * Demonstrates the [@ExpiresAt] annotation workflow:
+     *
+     * 1. Flag introduced with a future expiry date.
+     * 2. Once the date passes, the Detekt `ExpiresAtRule` warns at build time.
+     * 3. Team removes the flag and its associated remote config entry.
+     */
+    @LocalFlag
+    @ExpiresAt("2026-06-01")
+    val newCheckout =
+        ConfigParam<Boolean>(
+            key = "new_checkout",
+            defaultValue = false,
+            description = "Enable the redesigned checkout flow",
+        )
 }
