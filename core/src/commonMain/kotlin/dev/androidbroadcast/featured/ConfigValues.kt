@@ -121,4 +121,7 @@ public class ConfigValues(
             merged.collect { emit(it) }
         }.distinctUntilChanged()
     }
+
+    /** Companion object used as a receiver for extension factories (e.g. ConfigValues.fake). */
+    public companion object
 }
