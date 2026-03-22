@@ -1,5 +1,6 @@
 package dev.androidbroadcast.featured.nsuserdefaults
 
+import app.cash.turbine.test
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
 import kotlinx.coroutines.flow.first
@@ -119,14 +120,15 @@ class NSUserDefaultsConfigValueProviderTest {
         val param = ConfigParam("observe_update_key", 0)
         provider.set(param, 1)
 
-        val flow = provider.observe(param)
-        // First emission should be current value
-        val first: ConfigValue<Int> = flow.first()
-        assertEquals(ConfigValue(1, ConfigValue.Source.LOCAL), first)
+        provider.observe(param).test {
+            // First emission: current stored value
+            assertEquals(ConfigValue(1, ConfigValue.Source.LOCAL), awaitItem())
 
-        // After set, flow should emit new value
-        provider.set(param, 99)
-        val second: ConfigValue<Int> = flow.first()
-        assertEquals(ConfigValue(99, ConfigValue.Source.LOCAL), second)
+            // Reactive emission: new value after set
+            provider.set(param, 99)
+            assertEquals(ConfigValue(99, ConfigValue.Source.LOCAL), awaitItem())
+
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }

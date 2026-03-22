@@ -21,7 +21,8 @@ import platform.Foundation.NSUserDefaults
  * Supported value types: [String], [Int], [Long], [Float], [Double], [Boolean].
  * Attempting to read or write an unsupported type throws [IllegalArgumentException].
  *
- * Active [observe] flows receive updates whenever [set], [resetOverride], or [clear] is called.
+ * Active [observe] flows receive updates whenever [set] or [resetOverride] is called for the
+ * observed key. [clear] does not emit change signals — see its KDoc for details.
  *
  * ```kotlin
  * val provider = NSUserDefaultsConfigValueProvider(suiteName = "com.example.app.flags")
@@ -107,6 +108,10 @@ public class NSUserDefaultsConfigValueProvider(
      *
      * After this call, [get] returns `null` for every parameter that was previously set,
      * and [ConfigValues] falls back to the remote provider or [ConfigParam.defaultValue].
+     *
+     * Unlike [resetOverride], this does **not** emit change signals to active [observe] flows.
+     * Callers that need reactive updates after a bulk clear should call [resetOverride]
+     * per parameter instead.
      */
     override suspend fun clear() {
         val dict = defaults.dictionaryRepresentation()
@@ -141,7 +146,7 @@ public class NSUserDefaultsConfigValueProvider(
      * Primarily intended for use in tests to ensure a clean state between test cases.
      * Has no effect when [suiteName] is `null`.
      */
-    public fun removeSuite() {
+    internal fun removeSuite() {
         if (suiteName != null) {
             NSUserDefaults.standardUserDefaults.removeSuiteNamed(suiteName)
         }
