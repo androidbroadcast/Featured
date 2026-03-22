@@ -19,10 +19,16 @@ plugins {
 kotlin {
     explicitApi()
 
-    androidLibrary {
+    android {
         namespace = "dev.androidbroadcast.featured.core"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        compileSdk =
+            libs.versions.android.compileSdk
+                .get()
+                .toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
         }

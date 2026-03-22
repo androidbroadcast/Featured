@@ -38,8 +38,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-
-
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -87,7 +85,6 @@ mavenPublishing {
     }
 }
 
-
 dependencies {
     implementation(project(":core"))
 
@@ -106,8 +103,10 @@ dependencies {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    compilerOptions {
-        freeCompilerArgs.add("-Xexplicit-api=strict")
+    if (!name.contains("Test")) {
+        compilerOptions {
+            freeCompilerArgs.add("-Xexplicit-api=strict")
+        }
     }
 }
 
