@@ -23,6 +23,23 @@ public object SampleFeatureFlags {
         )
 
     /**
+     * Demonstrates the [ExpiresAt] annotation workflow:
+     *
+     * 1. Flag introduced with a future expiry date.
+     * 2. Once the date passes, static analysis tooling (for example, a Detekt rule
+     *    such as `ExpiresAtRule`) can be configured to warn at build time.
+     * 3. Team removes the flag and its associated remote config entry.
+     */
+    @LocalFlag
+    @ExpiresAt("2026-06-01")
+    public val newCheckout: ConfigParam<Boolean> =
+        ConfigParam(
+            key = "new_checkout",
+            defaultValue = false,
+            description = "Enable the redesigned checkout flow",
+        )
+
+    /**
      * Demonstrates multivariate (enum) feature flags.
      * Declare the param with an enum default; observe via [ConfigValues].
      *
