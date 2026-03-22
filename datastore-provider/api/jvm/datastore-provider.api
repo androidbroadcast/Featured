@@ -2,6 +2,7 @@ public final class dev/androidbroadcast/featured/datastore/DataStoreConfigValueP
 	public static final field Companion Ldev/androidbroadcast/featured/datastore/DataStoreConfigValueProvider$Companion;
 	public static final field ID Ljava/lang/String;
 	public fun <init> (Landroidx/datastore/core/DataStore;)V
+	public fun clear (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun get (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun observe (Ldev/androidbroadcast/featured/ConfigParam;)Lkotlinx/coroutines/flow/Flow;
 	public final fun registerConverter (Lkotlin/reflect/KClass;Ldev/androidbroadcast/featured/TypeConverter;)V

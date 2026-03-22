@@ -77,7 +77,7 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
      * Unlike [resetOverride], this does **not** emit change signals. Callers that need
      * reactive updates after a bulk clear should call [resetOverride] per param instead.
      */
-    public fun clear() {
+    public override suspend fun clear() {
         storage = emptyMap()
     }
 
