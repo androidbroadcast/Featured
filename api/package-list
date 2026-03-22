@@ -1,0 +1,17 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+
+module:core
+dev.androidbroadcast.featured
+module:datastore-provider
+dev.androidbroadcast.featured.datastore
+module:featured-compose
+dev.androidbroadcast.featured.compose
+module:featured-debug-ui
+dev.androidbroadcast.featured.debugui
+module:featured-registry
+dev.androidbroadcast.featured.registry
+module:firebase-provider
+dev.androidbroadcast.featured.firebase
+module:sharedpreferences-provider
+dev.androidbroadcast.featured.sharedpreferences
