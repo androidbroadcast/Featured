@@ -4,6 +4,8 @@ import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
 import dev.androidbroadcast.featured.LocalConfigValueProvider
 import dev.androidbroadcast.featured.TypeConverter
+import dev.androidbroadcast.featured.TypeConverters
+import dev.androidbroadcast.featured.put
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,6 +26,13 @@ import kotlin.reflect.KClass
  *
  * Storage is OS-specific: registry on Windows, plist on macOS, `~/.java` on Linux.
  *
+ * All Preferences I/O is dispatched on [Dispatchers.IO].
+ *
+ * **Type support:** All primitive types (String, Int, Boolean, Float, Long, Double) are supported
+ * out of the box. Register a [TypeConverter] via [registerConverter] for any additional type
+ * **before** calling [get], [set], or [observe] for that type. Converters must be registered
+ * on a single thread before concurrent use begins.
+ *
  * @param node The [Preferences] node to use for storage. Defaults to `featured` under the user root.
  * @param context Additional [CoroutineContext] elements merged with [Dispatchers.IO].
  */
@@ -33,6 +42,7 @@ public class JavaPreferencesConfigValueProvider(
 ) : LocalConfigValueProvider {
     private val coroutineContext: CoroutineContext = Dispatchers.IO + context
     private val changedKeysFlow = MutableSharedFlow<String>(extraBufferCapacity = Int.MAX_VALUE)
+    private val converters = TypeConverters()
 
     @Suppress("UNCHECKED_CAST")
     private val readers: Map<KClass<*>, (Preferences, String) -> Any?> =
@@ -67,10 +77,12 @@ public class JavaPreferencesConfigValueProvider(
             Double::class to { prefs, key, value -> prefs.putDouble(key, value as Double) },
         )
 
-    private val converters = mutableMapOf<KClass<*>, TypeConverter<*>>()
-
     /**
-     * Registers a [TypeConverter] for a custom type [T], enabling get/set/observe for that type.
+     * Registers a [TypeConverter] for a custom type [T], enabling [get], [set], and [observe] for
+     * that type.
+     *
+     * Must be called **before** any [get]/[set]/[observe] call for [klass]. Registering converters
+     * after concurrent use has started is not thread-safe.
      */
     public fun <T : Any> registerConverter(
         klass: KClass<T>,
@@ -90,7 +102,7 @@ public class JavaPreferencesConfigValueProvider(
         val converter = converters[klass]
         if (converter != null) {
             val raw = node.get(param.key, null) ?: return null
-            val value = (converter as TypeConverter<T>).fromString(raw)
+            val value = converter.fromString(raw)
             return ConfigValue(value, ConfigValue.Source.LOCAL)
         }
         val reader =
@@ -118,7 +130,7 @@ public class JavaPreferencesConfigValueProvider(
         val klass = param.valueType
         val converter = converters[klass]
         if (converter != null) {
-            node.put(param.key, (converter as TypeConverter<T>).toString(value))
+            node.put(param.key, converter.toString(value))
             return
         }
         val writer =
@@ -154,6 +166,9 @@ public class JavaPreferencesConfigValueProvider(
 
 /**
  * Registers a [TypeConverter] for a custom type [T] using a reified type parameter.
+ *
+ * Must be called **before** any [JavaPreferencesConfigValueProvider.get]/[JavaPreferencesConfigValueProvider.set]/
+ * [JavaPreferencesConfigValueProvider.observe] call for [T].
  */
 public inline fun <reified T : Any> JavaPreferencesConfigValueProvider.registerConverter(converter: TypeConverter<T>) {
     registerConverter(T::class, converter)
