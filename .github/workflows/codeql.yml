@@ -34,6 +34,6 @@ jobs:
 
       - name: Build for CodeQL
         # autobuild looks for 'testClasses' which doesn't exist in KMP; build manually instead
-        run: ./gradlew assembleDebug -x :sample:assembleDebug
+        run: ./gradlew assembleDebug
 
       - uses: github/codeql-action/analyze@v4
