@@ -12,12 +12,13 @@ plugins {
 
 kotlin {
     explicitApi()
+    jvmToolchain(21)
 
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
-    android {
+    androidLibrary {
         namespace = "dev.androidbroadcast.featured.registry"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()

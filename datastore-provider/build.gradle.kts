@@ -14,7 +14,7 @@ kotlin {
     jvmToolchain(21)
     explicitApi()
 
-    android {
+    androidLibrary {
         namespace = "dev.androidbroadcast.featured.datastore"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
