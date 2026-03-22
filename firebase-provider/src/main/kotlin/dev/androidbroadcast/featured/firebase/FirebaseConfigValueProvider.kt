@@ -62,11 +62,21 @@ public class FirebaseConfigValueProvider(
         }
 
     private fun <T : Any> FirebaseRemoteConfigValue.asTyped(type: KClass<T>): T {
-        val converter =
-            requireNotNull(converters[type]) {
-                "No converter registered for type: $type"
+        converters[type]?.let { return it.convert(this) }
+
+        // Auto-convert enums by name when no explicit converter is registered.
+        @Suppress("UNCHECKED_CAST")
+        if (type.java.isEnum) {
+            val name = asString()
+            val constants = requireNotNull(type.java.enumConstants) { "No enum constants for $type" }
+            val match = constants.firstOrNull { (it as Enum<*>).name == name }
+            return requireNotNull(match as T?) {
+                "Unknown enum constant '$name' for $type. " +
+                    "Valid values: ${constants.map { (it as Enum<*>).name }}"
             }
-        return converter.convert(this)
+        }
+
+        throw IllegalStateException("No converter registered for type: $type")
     }
 
     /**

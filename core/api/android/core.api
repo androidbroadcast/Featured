@@ -99,3 +99,15 @@ public final class dev/androidbroadcast/featured/RemoteConfigValueProvider$Defau
 	public static synthetic fun fetch$default (Ldev/androidbroadcast/featured/RemoteConfigValueProvider;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
+public abstract interface class dev/androidbroadcast/featured/TypeConverter {
+	public abstract fun fromString (Ljava/lang/String;)Ljava/lang/Object;
+	public abstract fun toString (Ljava/lang/Object;)Ljava/lang/String;
+}
+
+public final class dev/androidbroadcast/featured/TypeConverters {
+	public fun <init> ()V
+	public final fun contains (Lkotlin/reflect/KClass;)Z
+	public final fun get (Lkotlin/reflect/KClass;)Ldev/androidbroadcast/featured/TypeConverter;
+	public final fun set (Lkotlin/reflect/KClass;Ldev/androidbroadcast/featured/TypeConverter;)V
+}
+

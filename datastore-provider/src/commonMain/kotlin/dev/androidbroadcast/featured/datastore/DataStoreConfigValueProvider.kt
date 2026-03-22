@@ -12,9 +12,12 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
 import dev.androidbroadcast.featured.LocalConfigValueProvider
+import dev.androidbroadcast.featured.TypeConverter
+import dev.androidbroadcast.featured.TypeConverters
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlin.reflect.KClass
 
 /**
  * A [LocalConfigValueProvider] backed by AndroidX [DataStore] with [Preferences].
@@ -37,6 +40,26 @@ import kotlinx.coroutines.flow.map
 public class DataStoreConfigValueProvider(
     private val dataStore: DataStore<Preferences>,
 ) : LocalConfigValueProvider {
+    private val typeConverters = TypeConverters()
+
+    /**
+     * Registers a [TypeConverter] for [klass], enabling [set] and [get] for custom types
+     * (e.g. enums) that are serialized as strings in DataStore.
+     *
+     * Must be called before any [set] or [get] call for the corresponding type.
+     * Prefer the inline overload [registerConverter] to avoid passing [KClass] explicitly.
+     *
+     * @param T The non-null type to register.
+     * @param klass The [KClass] of the type.
+     * @param converter The [TypeConverter] that serializes/deserializes [T] as a [String].
+     */
+    public fun <T : Any> registerConverter(
+        klass: KClass<T>,
+        converter: TypeConverter<T>,
+    ) {
+        typeConverters[klass] = converter
+    }
+
     /**
      * Returns the persisted value for [param], or `null` if it has not been set.
      *
@@ -45,20 +68,26 @@ public class DataStoreConfigValueProvider(
      * @throws IllegalArgumentException if the type of [param] is not supported.
      */
     override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T>? {
+        val converter = typeConverters.get(param.valueType)
+        return if (converter != null) {
+            getWithConverter(param, converter)
+        } else {
+            val preferences = dataStore.data.first()
+            val key = createPreferencesKey(param)
+            preferences[key]?.let { value ->
+                ConfigValue(value = value, source = ConfigValue.Source.LOCAL)
+            }
+        }
+    }
+
+    private suspend fun <T : Any> getWithConverter(
+        param: ConfigParam<T>,
+        converter: TypeConverter<T>,
+    ): ConfigValue<T>? {
         val preferences = dataStore.data.first()
-        val key = createPreferencesKey(param)
-
-        return when (val value = preferences[key]) {
-            null -> {
-                null
-            }
-
-            else -> {
-                ConfigValue(
-                    value = value,
-                    source = ConfigValue.Source.LOCAL,
-                )
-            }
+        val key = stringPreferencesKey(param.key)
+        return preferences[key]?.let { raw ->
+            ConfigValue(value = converter.fromString(raw), source = ConfigValue.Source.LOCAL)
         }
     }
 
@@ -76,8 +105,15 @@ public class DataStoreConfigValueProvider(
         param: ConfigParam<T>,
         value: T,
     ) {
-        dataStore.edit { preferences ->
-            preferences[createPreferencesKey(param)] = value
+        val converter = typeConverters.get(param.valueType)
+        if (converter != null) {
+            dataStore.edit { preferences ->
+                preferences[stringPreferencesKey(param.key)] = converter.toString(value)
+            }
+        } else {
+            dataStore.edit { preferences ->
+                preferences[createPreferencesKey(param)] = value
+            }
         }
     }
 
@@ -91,8 +127,15 @@ public class DataStoreConfigValueProvider(
      * @throws IllegalArgumentException if the type of [param] is not supported.
      */
     override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
-        dataStore.edit { preferences ->
-            preferences.remove(createPreferencesKey(param))
+        val converter = typeConverters.get(param.valueType)
+        if (converter != null) {
+            dataStore.edit { preferences ->
+                preferences.remove(stringPreferencesKey(param.key))
+            }
+        } else {
+            dataStore.edit { preferences ->
+                preferences.remove(createPreferencesKey(param))
+            }
         }
     }
 
@@ -106,20 +149,23 @@ public class DataStoreConfigValueProvider(
      * @return A [Flow] backed by the DataStore; completes when the collector's scope is cancelled.
      * @throws IllegalArgumentException if the type of [param] is not supported.
      */
-    override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
-        dataStore.data.map { preferences ->
-            val key = createPreferencesKey(param)
-
-            preferences[key]?.let { value ->
-                ConfigValue(
-                    value = value,
-                    source = ConfigValue.Source.LOCAL,
-                )
-            } ?: ConfigValue(
-                value = param.defaultValue,
-                source = ConfigValue.Source.DEFAULT,
-            )
+    override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> {
+        val converter = typeConverters.get(param.valueType)
+        return if (converter != null) {
+            dataStore.data.map { preferences ->
+                preferences[stringPreferencesKey(param.key)]?.let { raw ->
+                    ConfigValue(value = converter.fromString(raw), source = ConfigValue.Source.LOCAL)
+                } ?: ConfigValue(value = param.defaultValue, source = ConfigValue.Source.DEFAULT)
+            }
+        } else {
+            dataStore.data.map { preferences ->
+                val key = createPreferencesKey(param)
+                preferences[key]?.let { value ->
+                    ConfigValue(value = value, source = ConfigValue.Source.LOCAL)
+                } ?: ConfigValue(value = param.defaultValue, source = ConfigValue.Source.DEFAULT)
+            }
         }
+    }
 
     public companion object {
         /**
@@ -127,6 +173,23 @@ public class DataStoreConfigValueProvider(
          */
         public const val ID: String = "dev.androidbroadcast.featured.datastore"
     }
+}
+
+/**
+ * Registers a [TypeConverter] for the reified type [T] on this [DataStoreConfigValueProvider],
+ * enabling [DataStoreConfigValueProvider.set] and [DataStoreConfigValueProvider.get] for custom
+ * types (e.g. enums) that are serialized as strings in DataStore.
+ *
+ * Inline convenience wrapper that avoids passing [kotlin.reflect.KClass] explicitly:
+ * ```kotlin
+ * provider.registerConverter(enumConverter<CheckoutVariant>())
+ * ```
+ *
+ * @param T The non-null custom type to register.
+ * @param converter The [TypeConverter] that serializes/deserializes [T] as a [String].
+ */
+public inline fun <reified T : Any> DataStoreConfigValueProvider.registerConverter(converter: TypeConverter<T>) {
+    registerConverter(T::class, converter)
 }
 
 @Suppress("UNCHECKED_CAST")
