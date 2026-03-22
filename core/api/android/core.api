@@ -66,6 +66,8 @@ public final class dev/androidbroadcast/featured/ConfigValues$Companion {
 public final class dev/androidbroadcast/featured/ConfigValuesExtensionsKt {
 	public static final fun asStateFlow (Ldev/androidbroadcast/featured/ConfigValues;Ldev/androidbroadcast/featured/ConfigParam;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/SharingStarted;)Lkotlinx/coroutines/flow/StateFlow;
 	public static synthetic fun asStateFlow$default (Ldev/androidbroadcast/featured/ConfigValues;Ldev/androidbroadcast/featured/ConfigParam;Lkotlinx/coroutines/CoroutineScope;Lkotlinx/coroutines/flow/SharingStarted;ILjava/lang/Object;)Lkotlinx/coroutines/flow/StateFlow;
+	public static final fun isEnabled (Ldev/androidbroadcast/featured/ConfigValues;Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun observeEnabled (Ldev/androidbroadcast/featured/ConfigValues;Ldev/androidbroadcast/featured/ConfigParam;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun observeValue (Ldev/androidbroadcast/featured/ConfigValues;Ldev/androidbroadcast/featured/ConfigParam;)Lkotlinx/coroutines/flow/Flow;
 }
 

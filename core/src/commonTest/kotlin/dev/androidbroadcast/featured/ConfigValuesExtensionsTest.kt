@@ -64,4 +64,62 @@ class ConfigValuesExtensionsTest {
                 cancelAndIgnoreRemainingEvents()
             }
         }
+
+    @Test
+    fun testIsEnabledReturnsProviderValue() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val configValues = ConfigValues(localProvider = provider)
+            provider.set(darkModeParam, true)
+
+            assertEquals(true, configValues.isEnabled(darkModeParam))
+        }
+
+    @Test
+    fun testIsEnabledReturnsDefaultWhenNoOverride() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val configValues = ConfigValues(localProvider = provider)
+
+            assertEquals(false, configValues.isEnabled(darkModeParam))
+        }
+
+    @Test
+    fun testObserveEnabledEmitsCurrentValue() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val configValues = ConfigValues(localProvider = provider)
+            provider.set(darkModeParam, true)
+
+            configValues.observeEnabled(darkModeParam).test {
+                assertEquals(true, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun testObserveEnabledEmitsDefault() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val configValues = ConfigValues(localProvider = provider)
+
+            configValues.observeEnabled(darkModeParam).test {
+                assertEquals(false, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun testObserveEnabledEmitsUpdates() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val configValues = ConfigValues(localProvider = provider)
+
+            configValues.observeEnabled(darkModeParam).test {
+                assertEquals(false, awaitItem())
+                provider.set(darkModeParam, true)
+                assertEquals(true, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
 }

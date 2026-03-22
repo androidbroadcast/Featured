@@ -44,6 +44,41 @@ public fun <T : Any> ConfigValues.observeValue(param: ConfigParam<T>): Flow<T> =
  *   [SharingStarted.WhileSubscribed] with a 5-second replay timeout.
  * @return A [StateFlow] whose value is always the latest unwrapped configuration value.
  */
+/**
+ * Returns `true` if the Boolean configuration parameter [param] is currently enabled.
+ *
+ * This is a convenience wrapper around [ConfigValues.getValue] for [Boolean] parameters,
+ * eliminating the need to unwrap the [ConfigValue] envelope at every call site.
+ *
+ * ```kotlin
+ * if (configValues.isEnabled(MyFeatureParam)) {
+ *     enableMyFeature()
+ * }
+ * ```
+ *
+ * @param param The Boolean configuration parameter to read.
+ * @return The current value of [param], or [ConfigParam.defaultValue] when no provider returns one.
+ */
+public suspend fun ConfigValues.isEnabled(param: ConfigParam<Boolean>): Boolean =
+    getValue(param).value
+
+/**
+ * Returns a [Flow] that emits the current enabled-state for [param] and updates on every change.
+ *
+ * This is a convenience wrapper around [observeValue] for [Boolean] parameters.
+ *
+ * ```kotlin
+ * configValues.observeEnabled(MyFeatureParam).collect { enabled ->
+ *     if (enabled) showFeature() else hideFeature()
+ * }
+ * ```
+ *
+ * @param param The Boolean configuration parameter to observe.
+ * @return A [Flow] of [Boolean] values; emits immediately and on every subsequent change.
+ */
+public fun ConfigValues.observeEnabled(param: ConfigParam<Boolean>): Flow<Boolean> =
+    observeValue(param)
+
 public fun <T : Any> ConfigValues.asStateFlow(
     param: ConfigParam<T>,
     scope: CoroutineScope,
