@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class ProviderErrorHandlingTest {
     private val testParam = ConfigParam("test_key", "default_value")
@@ -90,7 +89,7 @@ class ProviderErrorHandlingTest {
                 )
             configValues.getValue(testParam)
             assertEquals(1, capturedErrors.size)
-            assertNotNull(capturedErrors[0])
+            assertEquals("remote failure", capturedErrors[0].message)
         }
 
     @Test
