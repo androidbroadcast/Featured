@@ -72,7 +72,7 @@ public abstract class ScanLocalFlagsTask : DefaultTask() {
         out.parentFile?.mkdirs()
         out.writeText(
             entries.joinToString("\n") { e ->
-                "${e.key}|${e.defaultValue}|${e.type}|${e.moduleName}"
+                "${e.key}|${e.defaultValue}|${e.type}|${e.moduleName}|${e.propertyName}|${e.ownerName ?: ""}"
             },
         )
 

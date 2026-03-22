@@ -18,7 +18,9 @@ package dev.androidbroadcast.featured.gradle
 public object LocalFlagScanner {
     /**
      * Matches `@LocalFlag` followed by a `val`/`var` with a `ConfigParam(...)` call.
-     * Captures the full argument list so we can parse key and defaultValue separately.
+     * Captures:
+     * - Group 1: the property name (identifier after `val`/`var`)
+     * - Group 2: the full argument list inside `ConfigParam(...)`
      *
      * Supports:
      * - Optional generic type parameter: `ConfigParam<T>(...)`
@@ -28,8 +30,21 @@ public object LocalFlagScanner {
      */
     private val ANNOTATED_PARAM_REGEX =
         Regex(
-            """@LocalFlag\s+(?:val|var)\s+\w+\s*=\s*ConfigParam(?:<[^>]+>)?\s*\(([^)]+)\)""",
+            """@LocalFlag\s+(?:val|var)\s+(\w+)\s*=\s*ConfigParam(?:<[^>]+>)?\s*\(([^)]+)\)""",
             setOf(RegexOption.MULTILINE, RegexOption.DOT_MATCHES_ALL),
+        )
+
+    /**
+     * Matches the simple name of an enclosing `object` or `companion object` declaration.
+     * Used to find the nearest enclosing owner of a `@LocalFlag` property.
+     *
+     * Group 1: object name (e.g. `"NewCheckoutFlags"` from `object NewCheckoutFlags {`).
+     * `companion object` is matched but yields an empty group 1.
+     */
+    private val OBJECT_DECL_REGEX =
+        Regex(
+            """(?:companion\s+object|object\s+(\w+))\s*(?::[^{]*)?\{""",
+            setOf(RegexOption.MULTILINE),
         )
 
     // Matches the key in positional form: first argument is a string literal
@@ -45,17 +60,24 @@ public object LocalFlagScanner {
      * Scans [source] text and returns one [LocalFlagEntry] per `@LocalFlag`-annotated
      * `ConfigParam` declaration found.
      *
+     * In addition to key, defaultValue, and type the scanner also captures:
+     * - [LocalFlagEntry.propertyName] — the Kotlin property identifier.
+     * - [LocalFlagEntry.ownerName] — the simple name of the nearest enclosing
+     *   `object` or `companion object`, or `null` for top-level declarations.
+     *
      * @param source Raw Kotlin source code to scan.
      * @param moduleName Gradle module name to embed in each [LocalFlagEntry].
      */
     public fun scan(
         source: String,
         moduleName: String,
-    ): List<LocalFlagEntry> =
-        ANNOTATED_PARAM_REGEX
+    ): List<LocalFlagEntry> {
+        val ownerIndex = buildOwnerIndex(source)
+        return ANNOTATED_PARAM_REGEX
             .findAll(source)
             .mapNotNull { match ->
-                val args = match.groupValues[1]
+                val propertyName = match.groupValues[1]
+                val args = match.groupValues[2]
                 val key = parseKey(args) ?: return@mapNotNull null
                 val rawDefault = parseDefaultValue(args)?.trim() ?: return@mapNotNull null
                 LocalFlagEntry(
@@ -63,8 +85,35 @@ public object LocalFlagScanner {
                     defaultValue = extractDefaultValue(rawDefault),
                     type = inferType(rawDefault),
                     moduleName = moduleName,
+                    propertyName = propertyName,
+                    ownerName = ownerIndex.resolveOwner(match.range.first),
                 )
             }.toList()
+    }
+
+    /**
+     * Builds a sorted list of (startOffset, ownerName?) pairs representing each
+     * `object` or `companion object` block found in [source].
+     * Used by [resolveOwner] to determine the enclosing owner of a property.
+     */
+    private fun buildOwnerIndex(source: String): List<Pair<Int, String?>> =
+        OBJECT_DECL_REGEX
+            .findAll(source)
+            .map { m ->
+                val name = m.groupValues[1].takeIf { it.isNotEmpty() }
+                m.range.first to name
+            }.sortedBy { it.first }
+            .toList()
+
+    /**
+     * Returns the name of the nearest `object` or `companion object` whose opening `{`
+     * appears before [offset], or `null` if no such enclosing object is found.
+     *
+     * This is a heuristic: it picks the last object declaration whose start offset is
+     * less than [offset], which covers the common pattern where `@LocalFlag` properties
+     * are declared directly inside a single-level `object` block.
+     */
+    private fun List<Pair<Int, String?>>.resolveOwner(offset: Int): String? = lastOrNull { (start, _) -> start < offset }?.second
 
     private fun parseKey(args: String): String? =
         NAMED_KEY_REGEX.find(args)?.groupValues?.get(1)
