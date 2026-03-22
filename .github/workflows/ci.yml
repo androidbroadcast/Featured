@@ -21,7 +21,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build-env
-      - run: ./gradlew test :core:koverVerify
+      - run: >-
+          ./gradlew test
+          :core:koverVerify
+          :datastore-provider:koverVerify
+          :sharedpreferences-provider:koverVerify
+          :firebase-provider:koverVerify
+          :featured-compose:koverVerify
+          :featured-registry:koverVerify
+          :featured-testing:koverVerify
       - uses: actions/upload-artifact@v4
         if: always()
         with:
