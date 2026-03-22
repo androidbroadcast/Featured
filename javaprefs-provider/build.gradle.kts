@@ -1,25 +1,27 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    `java-platform`
+    alias(libs.plugins.kotlinJvm)
+    alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
+    alias(libs.plugins.dokka)
 }
 
-javaPlatform {
-    allowDependencies()
+kotlin {
+    explicitApi()
+    jvmToolchain(21)
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
+    }
 }
 
 dependencies {
-    constraints {
-        api(project(":core"))
-        api(project(":datastore-provider"))
-        api(project(":firebase-provider"))
-        api(project(":sharedpreferences-provider"))
-        api(project(":javaprefs-provider"))
-        api(project(":featured-compose"))
-        api(project(":featured-registry"))
-        api(project(":featured-debug-ui"))
-        api(project(":featured-gradle-plugin"))
-        api(project(":nsuserdefaults-provider"))
-    }
+    implementation(project(":core"))
+    implementation(libs.kotlinx.coroutines.core)
+
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
 }
 
 mavenPublishing {
@@ -27,11 +29,13 @@ mavenPublishing {
     signAllPublications()
     coordinates(
         groupId = "dev.androidbroadcast.featured",
-        artifactId = "featured-bom",
+        artifactId = "featured-javaprefs-provider",
     )
     pom {
-        name.set("Featured BOM")
-        description.set("Bill of Materials for Featured – type-safe, reactive KMP configuration management")
+        name.set("Featured Java Preferences Provider")
+        description.set(
+            "Java Preferences provider for Featured – persists configuration flags via java.util.prefs.Preferences for JVM/Desktop targets",
+        )
         inceptionYear.set("2024")
         url.set("https://github.com/AndroidBroadcast/Featured")
         licenses {
