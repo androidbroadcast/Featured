@@ -506,6 +506,50 @@ Declare a single shared `ConfigValues` in your app module and inject it into fea
 
 ---
 
+## Running the sample app
+
+The `sample` module is a Kotlin Multiplatform app (Android + iOS + Desktop) that demonstrates
+all provider options available in Featured.
+
+### Default (DataStore)
+
+No extra configuration needed. The sample uses `defaultLocalProvider(context)` from
+`:featured-platform`, which returns a `DataStoreConfigValueProvider` on Android. Flag overrides
+written via the debug UI persist across app restarts.
+
+```bash
+./gradlew :sample:assembleDebug
+```
+
+### SharedPreferences provider
+
+To see how `SharedPreferencesProviderConfig` is wired up, look at `buildConfigValues()` in
+`SampleApplication.kt`. Swap the commented-out `localProvider` assignment for the active one.
+
+### Running with Firebase Remote Config
+
+Firebase Remote Config requires a `google-services.json` file from the Firebase console.
+
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com).
+2. Register the Android app with package name `dev.androidbroadcast.featured`.
+3. Download `google-services.json` and place it at `sample/google-services.json`.
+4. Build the sample with the `hasFirebase` flag:
+
+```bash
+./gradlew :sample:assembleDebug -PhasFirebase=true
+```
+
+The build system detects `sample/google-services.json` automatically, so step 4 can also be
+run without `-PhasFirebase=true` once the file is present.
+
+5. In `SampleApplication.kt`, uncomment the `FirebaseConfigValueProvider` lines inside
+   `buildConfigValues()` and rebuild.
+
+> **Note:** `google-services.json` is excluded from version control (`.gitignore`). Never commit
+> credentials to the repository.
+
+---
+
 ## API reference
 
 Full KDoc-generated API reference is published to GitHub Pages:
