@@ -1,0 +1,140 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>defaultLocalProvider</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../index.html">
+                    Featured
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":featured-platform:dokkaHtmlPartial/androidMain">android</button>
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":featured-platform:dokkaHtmlPartial/commonMain">common</button>
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":featured-platform:dokkaHtmlPartial/iosMain">ios</button>
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":featured-platform:dokkaHtmlPartial/jvmMain">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":featured-platform:dokkaHtmlPartial/androidMain" data-filter=":featured-platform:dokkaHtmlPartial/androidMain">
+                                <span class="checkbox--icon"></span>
+                                android
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":featured-platform:dokkaHtmlPartial/commonMain" data-filter=":featured-platform:dokkaHtmlPartial/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":featured-platform:dokkaHtmlPartial/iosMain" data-filter=":featured-platform:dokkaHtmlPartial/iosMain">
+                                <span class="checkbox--icon"></span>
+                                ios
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":featured-platform:dokkaHtmlPartial/jvmMain" data-filter=":featured-platform:dokkaHtmlPartial/jvmMain">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    Featured
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="member" id="content" pageids="featured-platform::dev.androidbroadcast.featured.platform//defaultLocalProvider/#android.content.Context/PointingToDeclaration//-2101309550">
+  <div class="breadcrumbs"><a href="../index.html">featured-platform</a><span class="delimiter">/</span><a href="index.html">dev.androidbroadcast.featured.platform</a><span class="delimiter">/</span><span class="current">defaultLocalProvider</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>default</span><wbr><span>Local</span><wbr><span><span>Provider</span></span></h1>
+  </div>
+  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":featured-platform:dokkaHtmlPartial/androidMain" data-filterable-set=":featured-platform:dokkaHtmlPartial/androidMain" data-active="" data-toggle=":featured-platform:dokkaHtmlPartial/androidMain">android</button><button class="platform-bookmark" data-filterable-current=":featured-platform:dokkaHtmlPartial/commonMain" data-filterable-set=":featured-platform:dokkaHtmlPartial/commonMain" data-toggle=":featured-platform:dokkaHtmlPartial/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":featured-platform:dokkaHtmlPartial/iosMain" data-filterable-set=":featured-platform:dokkaHtmlPartial/iosMain" data-toggle=":featured-platform:dokkaHtmlPartial/iosMain">ios</button><button class="platform-bookmark" data-filterable-current=":featured-platform:dokkaHtmlPartial/jvmMain" data-filterable-set=":featured-platform:dokkaHtmlPartial/jvmMain" data-toggle=":featured-platform:dokkaHtmlPartial/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":featured-platform:dokkaHtmlPartial/androidMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="default-local-provider.html"><span class="token function">defaultLocalProvider</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../core/dev.androidbroadcast.featured/-local-config-value-provider/index.html">LocalConfigValueProvider</a></div><p class="paragraph">Returns a <a href="../../datastore-provider/dev.androidbroadcast.featured.datastore/-data-store-config-value-provider/index.html">DataStoreConfigValueProvider</a> backed by Jetpack DataStore (Preferences).</p><p class="paragraph">Values are stored in a DataStore file named <code class="lang-kotlin">featured_flags</code> within the app's data directory and persist across process restarts.</p><p class="paragraph"><strong>Preferred Android overload</strong> — use this instead of the no-arg variant when you have a <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a> available (e.g. from <code class="lang-kotlin">Activity</code>, <code class="lang-kotlin">Application</code>, or a DI graph):</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val configValues = ConfigValues(<br>    localProvider = defaultLocalProvider(context),<br>)</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph"><strong>Note:</strong> The underlying DataStore instance is tied to <a href="https://developer.android.com/reference/kotlin/android/content/Context.html#getapplicationcontext">Context.getApplicationContext</a>. Create only one <a href="../../datastore-provider/dev.androidbroadcast.featured.datastore/-data-store-config-value-provider/index.html">DataStoreConfigValueProvider</a> per DataStore file per process — typically at <code class="lang-kotlin">Application</code> scope or via a DI singleton. Creating multiple instances pointing at the same file (e.g. once per <code class="lang-kotlin">Activity</code> without caching) will cause a <code class="lang-kotlin">DataStore</code> conflict crash at runtime.</p><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":featured-platform:dokkaHtmlPartial/androidMain" data-filterable-set=":featured-platform:dokkaHtmlPartial/androidMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>context</span></span></u></div></span></div><div><div class="title"><p class="paragraph">An Android <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a> used to locate the DataStore file. <a href="https://developer.android.com/reference/kotlin/android/content/Context.html#getapplicationcontext">Context.getApplicationContext</a> is used internally, so any <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a> subtype is safe to pass.</p></div></div></div></div></div><hr><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">fun </span><a href="default-local-provider.html"><span class="token function"><strike>defaultLocalProvider</strike></span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/<Error class: unknown class>///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><div class="deprecation-content"><h3 class="">Deprecated</h3><p class="paragraph">On Android, pass a Context to get a persistent DataStore-backed provider: defaultLocalProvider(context).</p><h4 class="">Replace with</h4><div class="sample-container"><pre><code class="monospace block lang-kotlin" theme="idea">defaultLocalProvider(context)</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div><p class="paragraph">Returns an <a href="../../core/dev.androidbroadcast.featured/-in-memory-config-value-provider/index.html">InMemoryConfigValueProvider</a> on Android.</p><p class="paragraph"><strong>Warning:</strong> This overload does <strong>not</strong> persist values across process restarts on Android. For persistent storage backed by DataStore, use <a href="default-local-provider.html">defaultLocalProvider</a> with a <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val provider = defaultLocalProvider(context) // returns DataStoreConfigValueProvider</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph">This no-arg overload exists only to satisfy the <code class="lang-kotlin">expect</code>/<code class="lang-kotlin">actual</code> contract so that common code compiles on all platforms. Prefer the <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a> overload whenever a <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a> is available.</p></div><div class="content sourceset-dependent-content" data-togglable=":featured-platform:dokkaHtmlPartial/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="default-local-provider.html"><span class="token function">defaultLocalProvider</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/<Error class: unknown class>///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><p class="paragraph">Returns the platform-appropriate persistent LocalConfigValueProvider.</p><table><thead><tr><th>Platform</th><th>Implementation</th></tr></thead><tbody><tr><td>iOS</td><td>dev.androidbroadcast.featured.nsuserdefaults.NSUserDefaultsConfigValueProvider</td></tr><tr><td>JVM</td><td>dev.androidbroadcast.featured.InMemoryConfigValueProvider (persistent provider pending #66)</td></tr><tr><td>Android</td><td>dev.androidbroadcast.featured.InMemoryConfigValueProvider (non-persistent, deprecated)</td></tr></tbody></table><p class="paragraph"><strong>Android note:</strong> On Android this overload is deprecated and returns a non-persistent in-memory provider. Use the platform-specific overload that accepts a <code class="lang-kotlin">Context</code> to get a DataStore-backed persistent provider:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val provider = defaultLocalProvider(context) // returns DataStoreConfigValueProvider</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div><p class="paragraph"><strong>Usage (all platforms):</strong></p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val configValues = ConfigValues(localProvider = defaultLocalProvider())</code></pre><span class="top-right-position"><span class="copy-icon"></span><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div></span></div></div><div class="content sourceset-dependent-content" data-togglable=":featured-platform:dokkaHtmlPartial/iosMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">fun </span><a href="default-local-provider.html"><span class="token function">defaultLocalProvider</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/<Error class: unknown class>///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><p class="paragraph">Returns an NSUserDefaultsConfigValueProvider backed by the standard iOS user defaults.</p><p class="paragraph">Values are persisted in <code class="lang-kotlin">NSUserDefaults.standardUserDefaults</code> and survive app restarts.</p></div><div class="content sourceset-dependent-content" data-togglable=":featured-platform:dokkaHtmlPartial/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">fun </span><a href="default-local-provider.html"><span class="token function">defaultLocalProvider</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/<Error class: unknown class>///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div><p class="paragraph">Returns an <a href="../../core/dev.androidbroadcast.featured/-in-memory-config-value-provider/index.html">InMemoryConfigValueProvider</a> on JVM.</p><p class="paragraph">A persistent JVM provider (Java Preferences-backed) is tracked in issue #66. Until that module ships, this returns an in-memory provider so integrators can adopt the <code class="lang-kotlin">defaultLocalProvider()</code> call site today and benefit from persistence automatically once #66 lands.</p></div>  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2026 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

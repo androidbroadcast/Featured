@@ -9,6 +9,8 @@ module:featured-compose
 dev.androidbroadcast.featured.compose
 module:featured-debug-ui
 dev.androidbroadcast.featured.debugui
+module:featured-platform
+dev.androidbroadcast.featured.platform
 module:featured-registry
 dev.androidbroadcast.featured.registry
 module:firebase-provider
