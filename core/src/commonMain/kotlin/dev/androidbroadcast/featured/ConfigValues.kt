@@ -91,6 +91,22 @@ public class ConfigValues(
     }
 
     /**
+     * Loads previously cached remote values into memory without performing a network fetch.
+     *
+     * Call this once at an appropriate moment during app startup — before any [getValue] calls
+     * that require meaningful values — to populate in-memory state from a local cache.
+     * After [initialize] completes, [getValue] returns cached values immediately.
+     *
+     * Has no effect when the remote provider does not implement [InitializableConfigValueProvider],
+     * or when no remote provider is configured.
+     *
+     * Does **not** perform a network fetch; use [fetch] for that.
+     */
+    public suspend fun initialize() {
+        (remoteProvider as? InitializableConfigValueProvider)?.initialize()
+    }
+
+    /**
      * Fetches the latest configuration values from the remote provider and activates them.
      * Any active [observe] flows will re-emit the updated value for the observed parameter.
      * Has no effect when no remote provider is configured.
