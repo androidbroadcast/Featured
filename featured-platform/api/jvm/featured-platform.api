@@ -1,0 +1,4 @@
+public final class dev/androidbroadcast/featured/platform/DefaultLocalProviderKt {
+	public static final fun defaultLocalProvider ()Ldev/androidbroadcast/featured/LocalConfigValueProvider;
+}
+

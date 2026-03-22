@@ -18,6 +18,7 @@ dependencies {
         api(project(":featured-debug-ui"))
         api(project(":featured-gradle-plugin"))
         api(project(":nsuserdefaults-provider"))
+        api(project(":featured-platform"))
     }
 }
 

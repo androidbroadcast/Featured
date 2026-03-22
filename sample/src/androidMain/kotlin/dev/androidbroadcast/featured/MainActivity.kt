@@ -4,16 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import dev.androidbroadcast.featured.platform.defaultLocalProvider
 
 // ConfigValues is constructed once here and passed explicitly — the recommended
 // pattern for multi-module apps using any DI framework (Hilt, Koin, manual).
 // In a real app this instance would come from your DI graph rather than being
 // created directly in onCreate.
 class MainActivity : ComponentActivity() {
-    private val configValues: ConfigValues =
+    private val configValues: ConfigValues by lazy {
         ConfigValues(
-            localProvider = InMemoryConfigValueProvider(),
+            localProvider = defaultLocalProvider(this),
         )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()

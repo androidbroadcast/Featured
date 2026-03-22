@@ -39,6 +39,7 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(project(":featured-compose"))
+            implementation(project(":featured-platform"))
         }
         commonMain.dependencies {
             implementation(compose.runtime)
