@@ -44,6 +44,17 @@ public fun <T : Any> ConfigValues.observeValue(param: ConfigParam<T>): Flow<T> =
  *   [SharingStarted.WhileSubscribed] with a 5-second replay timeout.
  * @return A [StateFlow] whose value is always the latest unwrapped configuration value.
  */
+public fun <T : Any> ConfigValues.asStateFlow(
+    param: ConfigParam<T>,
+    scope: CoroutineScope,
+    started: SharingStarted = SharingStarted.WhileSubscribed(5_000),
+): StateFlow<T> =
+    observeValue(param).stateIn(
+        scope = scope,
+        started = started,
+        initialValue = param.defaultValue,
+    )
+
 /**
  * Returns `true` if the Boolean configuration parameter [param] is currently enabled.
  *
@@ -59,8 +70,7 @@ public fun <T : Any> ConfigValues.observeValue(param: ConfigParam<T>): Flow<T> =
  * @param param The Boolean configuration parameter to read.
  * @return The current value of [param], or [ConfigParam.defaultValue] when no provider returns one.
  */
-public suspend fun ConfigValues.isEnabled(param: ConfigParam<Boolean>): Boolean =
-    getValue(param).value
+public suspend fun ConfigValues.isEnabled(param: ConfigParam<Boolean>): Boolean = getValue(param).value
 
 /**
  * Returns a [Flow] that emits the current enabled-state for [param] and updates on every change.
@@ -76,16 +86,4 @@ public suspend fun ConfigValues.isEnabled(param: ConfigParam<Boolean>): Boolean 
  * @param param The Boolean configuration parameter to observe.
  * @return A [Flow] of [Boolean] values; emits immediately and on every subsequent change.
  */
-public fun ConfigValues.observeEnabled(param: ConfigParam<Boolean>): Flow<Boolean> =
-    observeValue(param)
-
-public fun <T : Any> ConfigValues.asStateFlow(
-    param: ConfigParam<T>,
-    scope: CoroutineScope,
-    started: SharingStarted = SharingStarted.WhileSubscribed(5_000),
-): StateFlow<T> =
-    observeValue(param).stateIn(
-        scope = scope,
-        started = started,
-        initialValue = param.defaultValue,
-    )
+public fun ConfigValues.observeEnabled(param: ConfigParam<Boolean>): Flow<Boolean> = observeValue(param)
