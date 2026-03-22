@@ -1,0 +1,6 @@
+public final class dev/androidbroadcast/featured/configcat/ConfigCatConfigValueProvider : dev/androidbroadcast/featured/RemoteConfigValueProvider {
+	public fun <init> (Lcom/configcat/ConfigCatClient;)V
+	public fun fetch (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun get (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
