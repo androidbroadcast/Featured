@@ -26,6 +26,9 @@ import kotlinx.coroutines.flow.merge
  *     remoteProvider = FirebaseConfigValueProvider(),
  * )
  *
+ * // Load cached remote values at app start (no network call)
+ * configValues.initialize()
+ *
  * // One-shot read
  * val value: ConfigValue<Boolean> = configValues.getValue(DarkModeParam)
  *
@@ -88,6 +91,22 @@ public class ConfigValues(
      */
     public suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
         localProvider?.resetOverride(param)
+    }
+
+    /**
+     * Loads previously cached remote values into memory without performing a network fetch.
+     *
+     * Call this once at an appropriate moment during app startup — before any [getValue] calls
+     * that require meaningful values — to populate in-memory state from a local cache.
+     * After [initialize] completes, [getValue] returns cached values immediately.
+     *
+     * Has no effect when the remote provider does not implement [InitializableConfigValueProvider],
+     * or when no remote provider is configured.
+     *
+     * Does **not** perform a network fetch; use [fetch] for that.
+     */
+    public suspend fun initialize() {
+        (remoteProvider as? InitializableConfigValueProvider)?.initialize()
     }
 
     /**
