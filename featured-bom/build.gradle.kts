@@ -21,6 +21,7 @@ dependencies {
         api(project(":nsuserdefaults-provider"))
         api(project(":featured-platform"))
         api(project(":featured-detekt-rules"))
+        api(project(":configcat-provider"))
     }
 }
 
