@@ -219,6 +219,37 @@ class LocalFlagScannerTest {
     }
 
     @Test
+    fun `scanner ignores RemoteFlag-annotated ConfigParam`() {
+        val source =
+            """
+            package com.example
+            @RemoteFlag
+            val remoteFeature = ConfigParam("remote_feature", false)
+            @LocalFlag
+            val localFeature = ConfigParam("local_feature", false)
+            """.trimIndent()
+
+        val result = LocalFlagScanner.scan(source, moduleName = "app")
+
+        assertEquals(1, result.size)
+        assertEquals("local_feature", result[0].key)
+    }
+
+    @Test
+    fun `scanner ignores RemoteFlag-annotated ConfigParam and produces no entries`() {
+        val source =
+            """
+            package com.example
+            @RemoteFlag
+            val remoteOnly = ConfigParam("remote_only", false)
+            """.trimIndent()
+
+        val result = LocalFlagScanner.scan(source, moduleName = "app")
+
+        assertTrue(result.isEmpty(), "Expected no entries for @RemoteFlag-annotated params")
+    }
+
+    @Test
     fun `LocalFlagEntry data class equality works correctly`() {
         val entry1 = LocalFlagEntry("k", "v", "String", "mod")
         val entry2 = LocalFlagEntry("k", "v", "String", "mod")
