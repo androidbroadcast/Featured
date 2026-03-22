@@ -106,6 +106,36 @@ class ProguardRulesGeneratorTest {
     }
 
     @Test
+    fun `generates no rules when RemoteFlag entries are absent from input`() {
+        // @RemoteFlag params are never scanned into LocalFlagEntry — the scanner
+        // only recognises @LocalFlag. Passing an empty list simulates the result
+        // of a project that has only @RemoteFlag declarations.
+        val rules = ProguardRulesGenerator.generate(emptyList())
+        assertTrue(
+            rules.isBlank(),
+            "Expected no rules when no @LocalFlag entries are present (e.g. only @RemoteFlag), got: '$rules'",
+        )
+    }
+
+    @Test
+    fun `generates rules for boolean false flags from three modules`() {
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "flag_core", defaultValue = "false", type = "Boolean", moduleName = ":core"),
+                LocalFlagEntry(key = "flag_feature", defaultValue = "false", type = "Boolean", moduleName = ":feature"),
+                LocalFlagEntry(key = "flag_app", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+            )
+        val rules = ProguardRulesGenerator.generate(entries)
+        assertContains(rules, "flag_core")
+        assertContains(rules, "flag_feature")
+        assertContains(rules, "flag_app")
+        assertContains(rules, ":core")
+        assertContains(rules, ":feature")
+        assertContains(rules, ":app")
+        assertFalse(rules.isBlank(), "Expected rules to be generated for all three modules")
+    }
+
+    @Test
     fun `generated rule contains return false for the method`() {
         val entries =
             listOf(
