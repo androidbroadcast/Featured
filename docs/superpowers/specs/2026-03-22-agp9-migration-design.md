@@ -226,7 +226,7 @@ which continues to live in `sample/`. The XCFramework artifact name and path do 
 `androidApp` declares a dependency on `sample`:
 ```kotlin
 dependencies {
-    implementation(projects.sample)
+    implementation(project(":sample"))
 }
 ```
 
