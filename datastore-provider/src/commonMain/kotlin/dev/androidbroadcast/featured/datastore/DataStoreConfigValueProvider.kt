@@ -22,9 +22,12 @@ import kotlin.reflect.KClass
 /**
  * A [LocalConfigValueProvider] backed by AndroidX [DataStore] with [Preferences].
  *
- * Values are persisted across process restarts using the Preferences DataStore. Only the
- * following types are supported: [String], [Int], [Long], [Float], [Double], [Boolean].
- * Attempting to read or write an unsupported type throws [IllegalArgumentException].
+ * Values are persisted across process restarts using the Preferences DataStore.
+ * Built-in types [String], [Int], [Long], [Float], [Double], and [Boolean] are supported
+ * natively. Custom types (e.g. enums) are supported by registering a [TypeConverter] via
+ * [registerConverter] before the first [get] or [set] call for that type.
+ * Attempting to read or write a type with no built-in support and no registered converter
+ * throws [IllegalArgumentException].
  *
  * All write operations ([set], [resetOverride]) trigger a DataStore update, which in turn
  * causes any active [observe] flow to re-emit.
