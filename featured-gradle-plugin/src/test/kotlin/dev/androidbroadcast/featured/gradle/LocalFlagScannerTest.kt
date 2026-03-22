@@ -219,7 +219,10 @@ class LocalFlagScannerTest {
     }
 
     @Test
-    fun `scanner ignores RemoteFlag-annotated ConfigParam`() {
+    fun `scanner ignores RemoteFlag-annotated ConfigParam - not included in xcconfig or const val generation`() {
+        // @RemoteFlag declarations must never appear in LocalFlagEntry results;
+        // XcconfigGenerator and IosConstValGenerator only receive LocalFlagEntry lists,
+        // so excluding @RemoteFlag at scan time guarantees nothing is generated for them.
         val source =
             """
             package com.example
@@ -231,22 +234,32 @@ class LocalFlagScannerTest {
 
         val result = LocalFlagScanner.scan(source, moduleName = "app")
 
-        assertEquals(1, result.size)
+        assertEquals(1, result.size, "Expected only @LocalFlag entry, not @RemoteFlag")
         assertEquals("local_feature", result[0].key)
     }
 
     @Test
-    fun `scanner ignores RemoteFlag-annotated ConfigParam and produces no entries`() {
+    fun `scanner ignores RemoteFlag-only source - generators produce no iOS output`() {
         val source =
             """
             package com.example
             @RemoteFlag
-            val remoteOnly = ConfigParam("remote_only", false)
+            val newCheckoutFlow = ConfigParam("new_checkout_flow", false)
+            @RemoteFlag
+            val darkMode = ConfigParam("dark_mode", true)
             """.trimIndent()
 
-        val result = LocalFlagScanner.scan(source, moduleName = "app")
+        val entries = LocalFlagScanner.scan(source, moduleName = "app")
 
-        assertTrue(result.isEmpty(), "Expected no entries for @RemoteFlag-annotated params")
+        assertTrue(entries.isEmpty(), "Expected no entries from @RemoteFlag-only source")
+        assertTrue(
+            XcconfigGenerator.generate(entries).isBlank(),
+            "Expected no xcconfig output for @RemoteFlag flags",
+        )
+        assertTrue(
+            IosConstValGenerator.generate(entries).isBlank(),
+            "Expected no const val output for @RemoteFlag flags",
+        )
     }
 
     @Test
