@@ -2,6 +2,11 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+// Set to true (or pass -PhasFirebase=true) when google-services.json is present.
+val hasFirebase =
+    project.findProperty("hasFirebase") == "true" ||
+        rootProject.file("sample/google-services.json").exists()
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
@@ -39,6 +44,13 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(project(":featured-compose"))
+            implementation(project(":featured-platform"))
+            // SharedPreferences-backed local provider (alternative to DataStore)
+            implementation(project(":sharedpreferences-provider"))
+            if (hasFirebase) {
+                // Firebase Remote Config provider — requires google-services.json
+                implementation(project(":firebase-provider"))
+            }
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -51,6 +63,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             implementation(project(":core"))
+            implementation(project(":featured-registry"))
         }
 
         jvmMain.dependencies {
@@ -75,6 +88,10 @@ android {
                 .toInt()
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("boolean", "HAS_FIREBASE", "$hasFirebase")
+    }
+    buildFeatures {
+        buildConfig = true
     }
     packaging {
         resources {
@@ -95,6 +112,12 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
     debugImplementation(project(":featured-debug-ui"))
+    if (hasFirebase) {
+        // Firebase BOM must live in the legacy dependencies block in KMP projects
+        // because platform() is not available inside kotlin { sourceSets { } }.
+        add("androidMainImplementation", platform(libs.firebase.bom))
+        add("androidMainImplementation", libs.firebase.config)
+    }
 }
 
 compose.desktop {

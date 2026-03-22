@@ -40,15 +40,15 @@ import kotlin.reflect.KClass
  * ```
  *
  * @param sharedPreferences The [SharedPreferences] instance used for persistence.
- * @param context Additional [CoroutineContext] elements merged with [kotlinx.coroutines.Dispatchers.IO]
+ * @param additionalContext Additional [CoroutineContext] elements merged with [kotlinx.coroutines.Dispatchers.IO]
  *   for all IO-bound operations. Defaults to [EmptyCoroutineContext].
  */
 public class SharedPreferencesProviderConfig(
     private val sharedPreferences: SharedPreferences,
-    context: CoroutineContext = EmptyCoroutineContext,
+    additionalContext: CoroutineContext = EmptyCoroutineContext,
 ) : LocalConfigValueProvider {
     private val savers: ValueSavers = ValueSavers()
-    private val context: CoroutineContext = Dispatchers.IO + context
+    private val context: CoroutineContext = Dispatchers.IO + additionalContext
     private val changedKeysFlow = MutableSharedFlow<String>(extraBufferCapacity = Int.MAX_VALUE)
 
     init {

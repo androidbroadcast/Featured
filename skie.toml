@@ -2,37 +2,37 @@
 # https://skie.touchlab.co/configuration
 
 [features]
-# Улучшение работы с корутинами
+# Improved coroutines interop
 coroutines_interop = true
 
-# Улучшение работы с Flow
+# Improved Flow interop
 flows = true
 
-# Улучшение работы с sealed классами  
+# Improved sealed class interop
 sealed_enums = true
 
-# Улучшение работы с suspend функциями
+# Improved suspend function interop
 suspend_functions = true
 
-# Добавление completion handlers для suspend функций
+# Add completion handlers for suspend functions
 suspend_functions_completion_handlers = true
 
 [features.coroutines_interop]
-# Настройки для корутин
+# Coroutines settings
 enabled = true
 
 [features.flows]
-# Настройки для Flow
+# Flow settings
 enabled = true
 
 [features.sealed_enums]
-# Настройки для sealed классов
+# Sealed class settings
 enabled = true
 
 [features.suspend_functions]
-# Настройки для suspend функций
+# Suspend function settings
 enabled = true
 
 [features.suspend_functions_completion_handlers]
-# Добавление completion handlers
+# Completion handlers settings
 enabled = true

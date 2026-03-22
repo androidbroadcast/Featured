@@ -13,11 +13,14 @@ dependencies {
         api(project(":datastore-provider"))
         api(project(":firebase-provider"))
         api(project(":sharedpreferences-provider"))
+        api(project(":javaprefs-provider"))
         api(project(":featured-compose"))
         api(project(":featured-registry"))
         api(project(":featured-debug-ui"))
         api(project(":featured-gradle-plugin"))
         api(project(":nsuserdefaults-provider"))
+        api(project(":featured-platform"))
+        api(project(":featured-detekt-rules"))
     }
 }
 

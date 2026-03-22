@@ -1,0 +1,12 @@
+public final class dev/androidbroadcast/featured/javaprefs/JavaPreferencesConfigValueProvider : dev/androidbroadcast/featured/LocalConfigValueProvider {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/prefs/Preferences;Lkotlin/coroutines/CoroutineContext;)V
+	public synthetic fun <init> (Ljava/util/prefs/Preferences;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun clear (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun get (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun observe (Ldev/androidbroadcast/featured/ConfigParam;)Lkotlinx/coroutines/flow/Flow;
+	public final fun registerConverter (Lkotlin/reflect/KClass;Ldev/androidbroadcast/featured/TypeConverter;)V
+	public fun resetOverride (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun set (Ldev/androidbroadcast/featured/ConfigParam;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
