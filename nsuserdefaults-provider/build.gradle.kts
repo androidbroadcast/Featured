@@ -1,24 +1,36 @@
 plugins {
-    `java-platform`
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
+    alias(libs.plugins.dokka)
 }
 
-javaPlatform {
-    allowDependencies()
-}
+kotlin {
+    jvmToolchain(21)
+    explicitApi()
 
-dependencies {
-    constraints {
-        api(project(":core"))
-        api(project(":datastore-provider"))
-        api(project(":firebase-provider"))
-        api(project(":sharedpreferences-provider"))
-        api(project(":javaprefs-provider"))
-        api(project(":featured-compose"))
-        api(project(":featured-registry"))
-        api(project(":featured-debug-ui"))
-        api(project(":featured-gradle-plugin"))
-        api(project(":nsuserdefaults-provider"))
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "FeaturedNSUserDefaultsProvider"
+            isStatic = true
+        }
+    }
+
+    sourceSets {
+        iosMain.dependencies {
+            implementation(project(":core"))
+            implementation(libs.kotlinx.coroutines.core)
+        }
+
+        iosTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.turbine)
+        }
     }
 }
 
@@ -27,11 +39,11 @@ mavenPublishing {
     signAllPublications()
     coordinates(
         groupId = "dev.androidbroadcast.featured",
-        artifactId = "featured-bom",
+        artifactId = "featured-nsuserdefaults-provider",
     )
     pom {
-        name.set("Featured BOM")
-        description.set("Bill of Materials for Featured – type-safe, reactive KMP configuration management")
+        name.set("Featured NSUserDefaults Provider")
+        description.set("NSUserDefaults provider for Featured – persists configuration flags via iOS NSUserDefaults")
         inceptionYear.set("2024")
         url.set("https://github.com/AndroidBroadcast/Featured")
         licenses {
