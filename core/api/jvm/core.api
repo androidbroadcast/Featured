@@ -69,6 +69,10 @@ public final class dev/androidbroadcast/featured/ConfigValuesExtensionsKt {
 	public static final fun observeValue (Ldev/androidbroadcast/featured/ConfigValues;Ldev/androidbroadcast/featured/ConfigParam;)Lkotlinx/coroutines/flow/Flow;
 }
 
+public abstract interface annotation class dev/androidbroadcast/featured/ExpiresAt : java/lang/annotation/Annotation {
+	public abstract fun date ()Ljava/lang/String;
+}
+
 public final class dev/androidbroadcast/featured/InMemoryConfigValueProvider : dev/androidbroadcast/featured/LocalConfigValueProvider {
 	public fun <init> ()V
 	public fun clear (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -99,6 +103,9 @@ public abstract interface class dev/androidbroadcast/featured/RemoteConfigValueP
 
 public final class dev/androidbroadcast/featured/RemoteConfigValueProvider$DefaultImpls {
 	public static synthetic fun fetch$default (Ldev/androidbroadcast/featured/RemoteConfigValueProvider;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface annotation class dev/androidbroadcast/featured/RemoteFlag : java/lang/annotation/Annotation {
 }
 
 public abstract interface class dev/androidbroadcast/featured/TypeConverter {
