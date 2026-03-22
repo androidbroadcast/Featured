@@ -8,10 +8,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class SampleViewModel(
+public class SampleViewModel(
     private val configValues: ConfigValues,
 ) : ViewModel() {
-    val flagActive: StateFlow<Boolean> =
+    // --- @LocalFlag: main_button_red ---
+
+    public val flagActive: StateFlow<Boolean> =
         configValues
             .observe(SampleFeatureFlags.mainButtonRed)
             .map { it.value }
@@ -21,29 +23,77 @@ class SampleViewModel(
                 started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
             )
 
-    val mainButtonColor =
+    public val mainButtonColor: StateFlow<MainButtonColor> =
         flagActive
-            .map { flagActive ->
-                if (flagActive) MainButtonColor.Red else MainButtonColor.Blue
+            .map { isRed ->
+                if (isRed) MainButtonColor.Red else MainButtonColor.Blue
             }.stateIn(
                 initialValue = MainButtonColor.Default,
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
             )
 
-    fun setMainButtonColorFlag(value: Boolean) {
+    public fun setMainButtonColorFlag(value: Boolean) {
         viewModelScope.launch {
             configValues.override(SampleFeatureFlags.mainButtonRed, value)
         }
     }
 
-    sealed interface MainButtonColor {
-        data object Red : MainButtonColor
+    // --- @LocalFlag: new_feature_section_enabled (isEnabled guard pattern) ---
 
-        data object Blue : MainButtonColor
+    /**
+     * Controls visibility of the "New Feature" section.
+     * Demonstrates the [ConfigParam.isEnabled] guard pattern for entry-point gating.
+     */
+    public val newFeatureSectionEnabled: StateFlow<Boolean> =
+        configValues
+            .observe(SampleFeatureFlags.newFeatureSectionEnabled)
+            .map { it.value }
+            .stateIn(
+                initialValue = SampleFeatureFlags.newFeatureSectionEnabled.defaultValue,
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
+            )
 
-        companion object Companion {
-            val Default = Blue
+    // --- @RemoteFlag: promo_banner_enabled ---
+
+    /**
+     * Whether the promotional banner should be shown.
+     * In production this would be driven by Firebase Remote Config.
+     */
+    public val promoBannerEnabled: StateFlow<Boolean> =
+        configValues
+            .observe(SampleFeatureFlags.promoBannerEnabled)
+            .map { it.value }
+            .stateIn(
+                initialValue = SampleFeatureFlags.promoBannerEnabled.defaultValue,
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
+            )
+
+    // --- @RemoteFlag: checkout_variant ---
+
+    /**
+     * The active checkout variant, driven remotely.
+     * Demonstrates multivariate enum flags resolved from a remote provider.
+     */
+    public val checkoutVariant: StateFlow<CheckoutVariant> =
+        configValues
+            .observe(SampleFeatureFlags.checkoutVariant)
+            .map { it.value }
+            .stateIn(
+                initialValue = SampleFeatureFlags.checkoutVariant.defaultValue,
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
+            )
+
+    public sealed interface MainButtonColor {
+        public data object Red : MainButtonColor
+
+        public data object Blue : MainButtonColor
+
+        public companion object Companion {
+            public val Default: MainButtonColor = Blue
         }
     }
 }
