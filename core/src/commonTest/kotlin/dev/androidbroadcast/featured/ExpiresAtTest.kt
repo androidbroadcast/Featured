@@ -5,9 +5,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
 /**
- * Verifies that [@ExpiresAt] can be applied to [ConfigParam] properties.
+ * Verifies that [ExpiresAt] can be applied to [ConfigParam] properties.
  *
- * Because [@ExpiresAt] has SOURCE retention there is nothing to inspect at runtime.
+ * Because [ExpiresAt] has SOURCE retention there is nothing to inspect at runtime.
  * These tests exist solely to ensure the annotation compiles correctly and is usable
  * in the expected positions without affecting the runtime behaviour of [ConfigParam].
  */

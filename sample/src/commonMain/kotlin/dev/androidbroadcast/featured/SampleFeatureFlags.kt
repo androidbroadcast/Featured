@@ -9,10 +9,11 @@ object SampleFeatureFlags {
         )
 
     /**
-     * Demonstrates the [@ExpiresAt] annotation workflow:
+     * Demonstrates the [ExpiresAt] annotation workflow:
      *
      * 1. Flag introduced with a future expiry date.
-     * 2. Once the date passes, the Detekt `ExpiresAtRule` warns at build time.
+     * 2. Once the date passes, static analysis tooling (for example, a Detekt rule
+     *    such as `ExpiresAtRule`) can be configured to warn at build time.
      * 3. Team removes the flag and its associated remote config entry.
      */
     @LocalFlag
