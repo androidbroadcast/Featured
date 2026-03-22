@@ -66,7 +66,7 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Build XCFramework
         run: ./gradlew --no-daemon :core:zipXCFramework
