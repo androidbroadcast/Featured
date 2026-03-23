@@ -36,6 +36,8 @@ class LocalFlagScannerTest {
                 defaultValue = "false",
                 type = "Boolean",
                 moduleName = "app",
+                propertyName = "darkMode",
+                ownerName = null,
             ),
             result[0],
         )
@@ -59,6 +61,8 @@ class LocalFlagScannerTest {
                 defaultValue = "https://example.com",
                 type = "String",
                 moduleName = "network",
+                propertyName = "serverUrl",
+                ownerName = null,
             ),
             result[0],
         )
@@ -82,6 +86,8 @@ class LocalFlagScannerTest {
                 defaultValue = "3",
                 type = "Int",
                 moduleName = "core",
+                propertyName = "retryCount",
+                ownerName = null,
             ),
             result[0],
         )
@@ -105,6 +111,8 @@ class LocalFlagScannerTest {
                 defaultValue = "0.5",
                 type = "Double",
                 moduleName = "ml",
+                propertyName = "threshold",
+                ownerName = null,
             ),
             result[0],
         )
@@ -160,6 +168,8 @@ class LocalFlagScannerTest {
                 defaultValue = "30",
                 type = "Int",
                 moduleName = "network",
+                propertyName = "timeout",
+                ownerName = null,
             ),
             result[0],
         )

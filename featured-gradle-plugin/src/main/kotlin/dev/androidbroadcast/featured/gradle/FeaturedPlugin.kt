@@ -14,6 +14,9 @@ internal const val SCAN_TASK_NAME = "scanLocalFlags"
 /** Name of the root-level aggregation task that depends on all module scan tasks. */
 internal const val SCAN_ALL_TASK_NAME = "scanAllLocalFlags"
 
+/** Name of the per-module FlagRegistrar generation task registered by this plugin. */
+internal const val GENERATE_FLAG_REGISTRAR_TASK_NAME = "generateFlagRegistrar"
+
 /** Name of the per-module ProGuard rules generation task registered by this plugin. */
 internal const val GENERATE_PROGUARD_TASK_NAME = "generateProguardRules"
 
@@ -26,6 +29,7 @@ internal const val GENERATE_XCCONFIG_TASK_NAME = "generateXcconfig"
 public class FeaturedPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         val scanTask = registerModuleScanTask(target)
+        registerFlagRegistrarGenerationTask(target, scanTask)
         registerProguardGenerationTask(target, scanTask)
         registerIosConstValGenerationTask(target, scanTask)
         registerXcconfigGenerationTask(target, scanTask)
@@ -47,6 +51,24 @@ public class FeaturedPlugin : Plugin<Project> {
                 target.provider { target.kotlinSourceFiles() },
             )
         }
+
+    private fun registerFlagRegistrarGenerationTask(
+        target: Project,
+        scanTask: TaskProvider<ScanLocalFlagsTask>,
+    ) {
+        target.tasks.register(GENERATE_FLAG_REGISTRAR_TASK_NAME, GenerateFlagRegistrarTask::class.java) { task ->
+            task.group = "featured"
+            task.description =
+                "Generates a GeneratedFlagRegistrar.kt source file that registers all " +
+                "@LocalFlag-annotated ConfigParams from '${target.path}' with FlagRegistry."
+            task.scanResultFile.set(scanTask.flatMap { it.outputFile })
+            task.packageName.set("dev.androidbroadcast.featured.generated")
+            task.outputFile.set(
+                target.layout.buildDirectory.file("generated/featured/GeneratedFlagRegistrar.kt"),
+            )
+            task.dependsOn(scanTask)
+        }
+    }
 
     private fun registerProguardGenerationTask(
         target: Project,
