@@ -9,7 +9,9 @@ import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.Severity
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
 import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
 
 /**
@@ -38,14 +40,17 @@ public class InvalidFlagReference(
     config: Config = Config.empty,
 ) : Rule(config) {
 
-    override val issue: Issue = Issue(
-        id = "InvalidFlagReference",
-        severity = Severity.Warning,
-        description = "@BehindFlag or @AssumesFlag references an unknown flag name.",
-        debt = Debt.FIVE_MINS,
-    )
+    override val issue: Issue =
+        Issue(
+            id = "InvalidFlagReference",
+            severity = Severity.Warning,
+            description = "@BehindFlag or @AssumesFlag references an unknown flag name.",
+            debt = Debt.FIVE_MINS,
+        )
 
     override fun visit(root: KtFile) {
+        super.visit(root)
+
         // Pass 1: collect @LocalFlag / @RemoteFlag property names in this file
         val knownFlags = root.collectDescendantsOfType<KtProperty>()
             .filter { property ->
@@ -66,8 +71,12 @@ public class InvalidFlagReference(
                 val flagName = annotation.valueArguments
                     .firstOrNull()
                     ?.getArgumentExpression()
-                    ?.text
-                    ?.trim('"')
+                    ?.let { expr ->
+                        val template = expr as? KtStringTemplateExpression ?: return@forEach
+                        val entries = template.entries
+                        if (entries.size != 1) return@forEach  // skip string templates like "${someVar}"
+                        (entries[0] as? KtLiteralStringTemplateEntry)?.text
+                    }
                     ?: return@forEach
 
                 if (flagName !in knownFlags) {
