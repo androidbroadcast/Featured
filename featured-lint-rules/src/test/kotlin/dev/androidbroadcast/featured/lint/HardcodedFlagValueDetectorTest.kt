@@ -52,9 +52,9 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
                     """
                     import dev.androidbroadcast.featured.ConfigParam
 
-                    fun check() {
-                        val flag = ConfigParam("flag", false)
-                        println(flag.defaultValue)
+                    fun check(flag: ConfigParam<Boolean>) {
+                        val value: Boolean = flag.defaultValue
+                        println(value)
                     }
                     """,
                 ).indented(),
@@ -151,14 +151,17 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
     }
 
     @Test
-    fun `does not report when no ConfigParam stub on classpath`() {
-        // Sanity: without the stub, the type is unresolvable — detector stays silent.
+    fun `does not report defaultValue on unrelated type with same property name`() {
+        // A class named 'Wrapper' that also has a 'defaultValue' property must not fire.
+        // Confirms the detector is gated on type identity, not just property name.
         lint()
             .files(
                 kotlin(
                     """
-                    fun check(x: Any) {
-                        println(x.defaultValue)
+                    class Wrapper(val defaultValue: Boolean)
+
+                    fun check(w: Wrapper) {
+                        println(w.defaultValue)
                     }
                     """,
                 ).indented(),

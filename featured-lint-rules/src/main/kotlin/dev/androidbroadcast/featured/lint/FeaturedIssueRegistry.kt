@@ -5,6 +5,13 @@ import com.android.tools.lint.client.api.Vendor
 import com.android.tools.lint.detector.api.CURRENT_API
 import com.android.tools.lint.detector.api.Issue
 
+/**
+ * Registers all Featured Android Lint rules with the Lint infrastructure.
+ *
+ * Discovered via the `Lint-Registry-v2` JAR manifest attribute.
+ * [minApi] is set to 10 (not [CURRENT_API]) so the registry loads on older AGP/Lint
+ * hosts without silently dropping all rules.
+ */
 public class FeaturedIssueRegistry : IssueRegistry() {
 
     override val issues: List<Issue> = listOf(HardcodedFlagValueDetector.ISSUE)

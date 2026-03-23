@@ -11,6 +11,7 @@ kotlin {
 
 dependencies {
     compileOnly(libs.lint.api)
+    // lint-tests does not transitively expose lint-api on the test classpath
     testImplementation(libs.lint.api)
     testImplementation(libs.lint.tests)
     testImplementation(libs.kotlin.testJunit)
