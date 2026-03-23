@@ -22,6 +22,8 @@ import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
 import org.jetbrains.kotlin.psi.KtNameReferenceExpression
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
+import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 import org.jetbrains.kotlin.psi.KtWhenEntry
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -72,6 +74,32 @@ public class UncheckedFlagAccess(
             debt = Debt.TWENTY_MINS,
         )
 
+    override fun visitSimpleNameExpression(expression: KtSimpleNameExpression) {
+        super.visitSimpleNameExpression(expression)
+        if (bindingContext == BindingContext.EMPTY) return
+        // Skip call targets — those are handled by visitCallExpression
+        if (expression.parent is KtCallExpression) return
+
+        val descriptor = bindingContext[BindingContext.REFERENCE_TARGET, expression]
+            ?: return
+
+        val flagName = descriptor.behindFlagNameViaDescriptor()
+            ?: descriptor.behindFlagNameViaPsi()
+            ?: return
+
+        if (!expression.isInValidFlagContext(flagName)) {
+            report(
+                CodeSmell(
+                    issue = issue,
+                    entity = Entity.from(expression),
+                    message = "Access to '${descriptor.name}' is not guarded by flag '$flagName'. " +
+                        "Wrap in if/when checking '$flagName', or annotate the containing scope " +
+                        "with @BehindFlag(\"$flagName\") or @AssumesFlag(\"$flagName\").",
+                )
+            )
+        }
+    }
+
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
         if (bindingContext == BindingContext.EMPTY) return
@@ -118,6 +146,7 @@ public class UncheckedFlagAccess(
         return when (psi) {
             is KtNamedFunction -> psi.annotationEntries.behindFlagName()
             is KtClassOrObject -> psi.annotationEntries.behindFlagName()
+            is KtProperty -> psi.annotationEntries.behindFlagName()
             else -> null
         }
     }
