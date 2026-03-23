@@ -3,10 +3,11 @@ package dev.androidbroadcast.featured.lint
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.Vendor
 import com.android.tools.lint.detector.api.CURRENT_API
+import com.android.tools.lint.detector.api.Issue
 
 public class FeaturedIssueRegistry : IssueRegistry() {
 
-    override val issues = listOf(HardcodedFlagValueDetector.ISSUE)
+    override val issues: List<Issue> = listOf(HardcodedFlagValueDetector.ISSUE)
 
     override val api: Int = CURRENT_API
 
