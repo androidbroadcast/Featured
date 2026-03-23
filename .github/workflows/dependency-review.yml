@@ -14,5 +14,5 @@ jobs:
     # Requires "Dependency graph" enabled in repo Security settings
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/dependency-review-action@v4
