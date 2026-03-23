@@ -31,6 +31,7 @@ public class FeaturedRuleSetProvider : RuleSetProvider {
                     ExpiredFeatureFlagRule(config),
                     HardcodedFlagValueRule(config),
                     MissingFlagAnnotationRule(config),
+                    UncheckedFlagAccess(config),
                 ),
         )
 }
