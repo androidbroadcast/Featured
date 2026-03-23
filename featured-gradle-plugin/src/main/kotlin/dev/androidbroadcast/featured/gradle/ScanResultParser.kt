@@ -11,8 +11,8 @@ import org.gradle.api.file.RegularFileProperty
  * - 6-field: `key|defaultValue|type|moduleName|propertyName|ownerName`
  *   where `ownerName` may be empty (top-level declaration).
  *
- * Returns an empty list when the file does not exist, is empty, or contains
- * lines that do not conform to either expected format.
+ * Returns an empty list when the file does not exist or is empty.
+ * Ignores lines that do not conform to either expected format.
  */
 internal fun RegularFileProperty.parseLocalFlagEntries(): List<LocalFlagEntry> {
     val file = get().asFile

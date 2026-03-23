@@ -55,7 +55,7 @@ public object FlagRegistrarGenerator {
             appendLine("     * [dev.androidbroadcast.featured.ConfigParam] declarations from this module")
             appendLine("     * with [FlagRegistry].")
             appendLine("     *")
-            appendLine("     * Call this once at application startup, e.g. from `Application.onCreate()`.")
+            appendLine("     * Call this once during app startup.")
             appendLine("     */")
             appendLine("    public fun register() {")
             entries.forEach { entry ->

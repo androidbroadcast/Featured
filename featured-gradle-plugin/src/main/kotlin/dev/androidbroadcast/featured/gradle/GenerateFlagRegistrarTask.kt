@@ -18,7 +18,7 @@ import org.gradle.api.tasks.TaskAction
  *
  * The generated file is KMP-safe — it uses only APIs available in `commonMain`.
  *
- * Wire the generated source directory into the Kotlin compilation:
+ * Wire the generated source directory into the Kotlin compilation manually:
  * ```kotlin
  * kotlin {
  *     sourceSets.commonMain.get().kotlin.srcDir(
@@ -26,8 +26,6 @@ import org.gradle.api.tasks.TaskAction
  *     )
  * }
  * ```
- *
- * The [FeaturedPlugin] performs this wiring automatically for all registered Kotlin source sets.
  */
 public abstract class GenerateFlagRegistrarTask : DefaultTask() {
     /**
