@@ -16,7 +16,7 @@ import kotlin.test.assertNull
 class DataStoreConfigValueProviderTest {
     private val testScope = TestScope()
 
-    private fun createProvider(name: String = "test_${System.currentTimeMillis()}"): DataStoreConfigValueProvider {
+    private fun createProvider(name: String = "test_${kotlin.random.Random.nextLong()}"): DataStoreConfigValueProvider {
         val dataStore =
             PreferenceDataStoreFactory.createWithPath(
                 scope = testScope,

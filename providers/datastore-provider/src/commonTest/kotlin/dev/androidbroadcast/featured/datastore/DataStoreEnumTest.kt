@@ -22,7 +22,7 @@ class DataStoreEnumTest {
         val dataStore =
             PreferenceDataStoreFactory.createWithPath(
                 scope = testScope,
-                produceFile = { "test_${System.currentTimeMillis()}.preferences_pb".toPath() },
+                produceFile = { "test_${kotlin.random.Random.nextLong()}.preferences_pb".toPath() },
             )
         return DataStoreConfigValueProvider(dataStore)
     }
