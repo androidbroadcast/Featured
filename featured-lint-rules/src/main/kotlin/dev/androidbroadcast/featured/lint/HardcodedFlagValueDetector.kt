@@ -13,32 +13,34 @@ import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
 
-public class HardcodedFlagValueDetector : Detector(), Detector.UastScanner {
-
+public class HardcodedFlagValueDetector :
+    Detector(),
+    Detector.UastScanner {
     public companion object {
-        public val ISSUE: Issue = Issue.create(
-            id = "HardcodedFlagValue",
-            briefDescription = "Accessing `ConfigParam.defaultValue` directly bypasses providers",
-            explanation = """
+        public val ISSUE: Issue =
+            Issue.create(
+                id = "HardcodedFlagValue",
+                briefDescription = "Accessing `ConfigParam.defaultValue` directly bypasses providers",
+                explanation = """
                 Accessing `defaultValue` directly bypasses any local or remote provider \
                 overrides, making the flag effectively hardcoded. \
                 Use `ConfigValues` to read the live value instead.
             """,
-            category = Category.CORRECTNESS,
-            priority = 6,
-            severity = Severity.WARNING,
-            implementation = Implementation(
-                HardcodedFlagValueDetector::class.java,
-                Scope.JAVA_FILE_SCOPE,
-            ),
-        )
+                category = Category.CORRECTNESS,
+                priority = 6,
+                severity = Severity.WARNING,
+                implementation =
+                    Implementation(
+                        HardcodedFlagValueDetector::class.java,
+                        Scope.JAVA_FILE_SCOPE,
+                    ),
+            )
 
         private const val CONFIG_PARAM_FQN = "dev.androidbroadcast.featured.ConfigParam"
         private const val DEFAULT_VALUE_PROPERTY = "defaultValue"
     }
 
-    override fun getApplicableUastTypes(): List<Class<out UElement>> =
-        listOf(USimpleNameReferenceExpression::class.java)
+    override fun getApplicableUastTypes(): List<Class<out UElement>> = listOf(USimpleNameReferenceExpression::class.java)
 
     override fun createUastHandler(context: JavaContext): UElementHandler =
         object : UElementHandler() {
@@ -47,7 +49,11 @@ public class HardcodedFlagValueDetector : Detector(), Detector.UastScanner {
                 if (node.identifier != DEFAULT_VALUE_PROPERTY) return
 
                 // Must be the selector of a qualified expression: receiver.defaultValue
+                // Guard: node must be the selector, not the receiver, to avoid false positives
+                // when a ConfigParam-typed variable is itself named "defaultValue" and used as a
+                // receiver (e.g. `defaultValue.key`).
                 val parent = node.uastParent as? UQualifiedReferenceExpression ?: return
+                if (parent.selector != node) return
 
                 // Resolve the receiver's type
                 val receiverType = parent.receiver.getExpressionType() as? PsiClassType ?: return
@@ -60,8 +66,9 @@ public class HardcodedFlagValueDetector : Detector(), Detector.UastScanner {
                     issue = ISSUE,
                     scope = node,
                     location = context.getLocation(node),
-                    message = "Accessing `defaultValue` directly on a `ConfigParam` bypasses " +
-                        "provider overrides. Use `ConfigValues` to read the live value instead.",
+                    message =
+                        "Accessing `defaultValue` directly on a `ConfigParam` bypasses " +
+                            "provider overrides. Use `ConfigValues` to read the live value instead.",
                 )
             }
         }

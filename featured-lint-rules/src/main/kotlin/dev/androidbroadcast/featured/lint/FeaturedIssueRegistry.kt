@@ -13,7 +13,6 @@ import com.android.tools.lint.detector.api.Issue
  * hosts without silently dropping all rules.
  */
 public class FeaturedIssueRegistry : IssueRegistry() {
-
     override val issues: List<Issue> = listOf(HardcodedFlagValueDetector.ISSUE)
 
     override val api: Int = CURRENT_API
@@ -22,8 +21,9 @@ public class FeaturedIssueRegistry : IssueRegistry() {
     // Setting it to CURRENT_API would silently drop all rules for older hosts.
     override val minApi: Int = 10
 
-    override val vendor: Vendor = Vendor(
-        vendorName = "Featured",
-        feedbackUrl = "https://github.com/AndroidBroadcast/Featured/issues",
-    )
+    override val vendor: Vendor =
+        Vendor(
+            vendorName = "Featured",
+            feedbackUrl = "https://github.com/AndroidBroadcast/Featured/issues",
+        )
 }

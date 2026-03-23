@@ -9,7 +9,6 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class HardcodedFlagValueDetectorTest : LintDetectorTest() {
-
     override fun getDetector(): Detector = HardcodedFlagValueDetector()
 
     override fun getIssues(): List<Issue> = listOf(HardcodedFlagValueDetector.ISSUE)
@@ -17,12 +16,13 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
     // Minimal stub — primary constructor of the real ConfigParam is internal,
     // so we provide a simplified version with matching val defaultValue: T.
     // T : Any matches the real non-nullable upper bound.
-    private val configParamStub = kotlin(
-        """
+    private val configParamStub =
+        kotlin(
+            """
         package dev.androidbroadcast.featured
         class ConfigParam<T : Any>(val key: String, val defaultValue: T)
         """,
-    ).indented()
+        ).indented()
 
     @Test
     fun `reports defaultValue access on ConfigParam parameter`() {
@@ -38,8 +38,7 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
                     }
                     """,
                 ).indented(),
-            )
-            .run()
+            ).run()
             .expectWarningCount(1)
     }
 
@@ -58,8 +57,7 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
                     }
                     """,
                 ).indented(),
-            )
-            .run()
+            ).run()
             .expectWarningCount(1)
     }
 
@@ -81,8 +79,7 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
                     }
                     """,
                 ).indented(),
-            )
-            .run()
+            ).run()
             .expectWarningCount(1)
     }
 
@@ -98,8 +95,7 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
                     }
                     """,
                 ).indented(),
-            )
-            .run()
+            ).run()
             .expectClean()
     }
 
@@ -117,8 +113,7 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
                     }
                     """,
                 ).indented(),
-            )
-            .run()
+            ).run()
             .expectClean()
     }
 
@@ -146,8 +141,7 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
                     }
                     """,
                 ).indented(),
-            )
-            .run()
+            ).run()
             .expectClean()
     }
 
@@ -166,8 +160,32 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
                     }
                     """,
                 ).indented(),
-            )
-            .run()
+            ).run()
+            .expectClean()
+    }
+
+    @Test
+    fun `does not report when ConfigParam-typed variable named defaultValue is used as receiver`() {
+        // Regression test: a variable/property of type ConfigParam that happens to be *named*
+        // "defaultValue" must not trigger the rule when it is used as a receiver
+        // (e.g. `defaultValue.key`). The detector visits all USimpleNameReferenceExpressions
+        // named "defaultValue", so without an explicit selector-position guard it would resolve
+        // the receiver's type as ConfigParam and fire incorrectly.
+        lint()
+            .files(
+                configParamStub,
+                kotlin(
+                    """
+                    import dev.androidbroadcast.featured.ConfigParam
+
+                    val defaultValue: ConfigParam<Boolean> = ConfigParam("flag", false)
+
+                    fun check() {
+                        println(defaultValue.key)
+                    }
+                    """,
+                ).indented(),
+            ).run()
             .expectClean()
     }
 }
