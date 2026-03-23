@@ -39,7 +39,6 @@ import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
 public class InvalidFlagReference(
     config: Config = Config.empty,
 ) : Rule(config) {
-
     override val issue: Issue =
         Issue(
             id = "InvalidFlagReference",
@@ -52,41 +51,45 @@ public class InvalidFlagReference(
         super.visit(root)
 
         // Pass 1: collect @LocalFlag / @RemoteFlag property names in this file
-        val knownFlags = root.collectDescendantsOfType<KtProperty>()
-            .filter { property ->
-                property.annotationEntries.any {
-                    it.shortName?.asString() in setOf("LocalFlag", "RemoteFlag")
-                }
-            }
-            .mapNotNull { it.name }
-            .toSet()
+        val knownFlags =
+            root
+                .collectDescendantsOfType<KtProperty>()
+                .filter { property ->
+                    property.annotationEntries.any {
+                        it.shortName?.asString() in setOf("LocalFlag", "RemoteFlag")
+                    }
+                }.mapNotNull { it.name }
+                .toSet()
 
         // No local flag declarations — nothing to validate against, skip to avoid false positives
         if (knownFlags.isEmpty()) return
 
         // Pass 2: validate @BehindFlag / @AssumesFlag annotation arguments
-        root.collectDescendantsOfType<KtAnnotationEntry>()
+        root
+            .collectDescendantsOfType<KtAnnotationEntry>()
             .filter { it.shortName?.asString() in setOf("BehindFlag", "AssumesFlag") }
             .forEach { annotation ->
-                val flagName = annotation.valueArguments
-                    .firstOrNull()
-                    ?.getArgumentExpression()
-                    ?.let { expr ->
-                        val template = expr as? KtStringTemplateExpression ?: return@forEach
-                        val entries = template.entries
-                        if (entries.size != 1) return@forEach  // skip string templates like "${someVar}"
-                        (entries[0] as? KtLiteralStringTemplateEntry)?.text
-                    }
-                    ?: return@forEach
+                val flagName =
+                    annotation.valueArguments
+                        .firstOrNull()
+                        ?.getArgumentExpression()
+                        ?.let { expr ->
+                            val template = expr as? KtStringTemplateExpression ?: return@forEach
+                            val entries = template.entries
+                            if (entries.size != 1) return@forEach // skip string templates like "${someVar}"
+                            (entries[0] as? KtLiteralStringTemplateEntry)?.text
+                        }
+                        ?: return@forEach
 
                 if (flagName !in knownFlags) {
                     report(
                         CodeSmell(
                             issue = issue,
                             entity = Entity.from(annotation),
-                            message = "Flag name '$flagName' does not match any @LocalFlag or " +
-                                "@RemoteFlag property in this file.",
-                        )
+                            message =
+                                "Flag name '$flagName' does not match any @LocalFlag or " +
+                                    "@RemoteFlag property in this file.",
+                        ),
                     )
                 }
             }

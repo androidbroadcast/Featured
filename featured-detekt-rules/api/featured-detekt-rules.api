@@ -20,11 +20,28 @@ public final class dev/androidbroadcast/featured/detekt/HardcodedFlagValueRule :
 	public fun visitDotQualifiedExpression (Lorg/jetbrains/kotlin/psi/KtDotQualifiedExpression;)V
 }
 
+public final class dev/androidbroadcast/featured/detekt/InvalidFlagReference : io/gitlab/arturbosch/detekt/api/Rule {
+	public fun <init> ()V
+	public fun <init> (Lio/gitlab/arturbosch/detekt/api/Config;)V
+	public synthetic fun <init> (Lio/gitlab/arturbosch/detekt/api/Config;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getIssue ()Lio/gitlab/arturbosch/detekt/api/Issue;
+	public fun visit (Lorg/jetbrains/kotlin/psi/KtFile;)V
+}
+
 public final class dev/androidbroadcast/featured/detekt/MissingFlagAnnotationRule : io/gitlab/arturbosch/detekt/api/Rule {
 	public fun <init> ()V
 	public fun <init> (Lio/gitlab/arturbosch/detekt/api/Config;)V
 	public synthetic fun <init> (Lio/gitlab/arturbosch/detekt/api/Config;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun getIssue ()Lio/gitlab/arturbosch/detekt/api/Issue;
 	public fun visitProperty (Lorg/jetbrains/kotlin/psi/KtProperty;)V
+}
+
+public final class dev/androidbroadcast/featured/detekt/UncheckedFlagAccess : io/gitlab/arturbosch/detekt/api/Rule {
+	public fun <init> ()V
+	public fun <init> (Lio/gitlab/arturbosch/detekt/api/Config;)V
+	public synthetic fun <init> (Lio/gitlab/arturbosch/detekt/api/Config;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getIssue ()Lio/gitlab/arturbosch/detekt/api/Issue;
+	public fun visitCallExpression (Lorg/jetbrains/kotlin/psi/KtCallExpression;)V
+	public fun visitSimpleNameExpression (Lorg/jetbrains/kotlin/psi/KtSimpleNameExpression;)V
 }
 

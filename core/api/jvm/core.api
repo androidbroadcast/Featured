@@ -1,3 +1,11 @@
+public abstract interface annotation class dev/androidbroadcast/featured/AssumesFlag : java/lang/annotation/Annotation {
+	public abstract fun flagName ()Ljava/lang/String;
+}
+
+public abstract interface annotation class dev/androidbroadcast/featured/BehindFlag : java/lang/annotation/Annotation {
+	public abstract fun flagName ()Ljava/lang/String;
+}
+
 public final class dev/androidbroadcast/featured/ConfigParam {
 	public fun <init> (Ljava/lang/String;Ljava/lang/Object;Lkotlin/reflect/KClass;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Object;Lkotlin/reflect/KClass;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

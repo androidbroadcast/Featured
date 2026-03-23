@@ -64,7 +64,6 @@ private const val ASSUMES_FLAG_SHORT = "AssumesFlag"
 public class UncheckedFlagAccess(
     config: Config = Config.empty,
 ) : Rule(config) {
-
     override val issue: Issue =
         Issue(
             id = "UncheckedFlagAccess",
@@ -81,22 +80,25 @@ public class UncheckedFlagAccess(
         // a @BehindFlag declaration via reference outside a guard is itself a violation.
         if (expression.parent is KtCallExpression) return
 
-        val descriptor = bindingContext[BindingContext.REFERENCE_TARGET, expression]
-            ?: return
+        val descriptor =
+            bindingContext[BindingContext.REFERENCE_TARGET, expression]
+                ?: return
 
-        val flagName = descriptor.behindFlagNameViaDescriptor()
-            ?: descriptor.behindFlagNameViaPsi()
-            ?: return
+        val flagName =
+            descriptor.behindFlagNameViaDescriptor()
+                ?: descriptor.behindFlagNameViaPsi()
+                ?: return
 
         if (!expression.isInValidFlagContext(flagName)) {
             report(
                 CodeSmell(
                     issue = issue,
                     entity = Entity.from(expression),
-                    message = "Access to '${descriptor.name}' is not guarded by flag '$flagName'. " +
-                        "Wrap in if/when checking '$flagName', or annotate the containing scope " +
-                        "with @BehindFlag(\"$flagName\") or @AssumesFlag(\"$flagName\").",
-                )
+                    message =
+                        "Access to '${descriptor.name}' is not guarded by flag '$flagName'. " +
+                            "Wrap in if/when checking '$flagName', or annotate the containing scope " +
+                            "with @BehindFlag(\"$flagName\") or @AssumesFlag(\"$flagName\").",
+                ),
             )
         }
     }
@@ -111,19 +113,21 @@ public class UncheckedFlagAccess(
         // Primary: resolve flag name via BindingContext (works cross-module in production).
         // Fallback: read PSI annotation by short name (works in unit tests where the
         // annotation class itself is not on the test classpath).
-        val flagName = descriptor.behindFlagNameViaDescriptor()
-            ?: descriptor.behindFlagNameViaPsi()
-            ?: return
+        val flagName =
+            descriptor.behindFlagNameViaDescriptor()
+                ?: descriptor.behindFlagNameViaPsi()
+                ?: return
 
         if (!expression.isInValidFlagContext(flagName)) {
             report(
                 CodeSmell(
                     issue = issue,
                     entity = Entity.from(expression),
-                    message = "Call to '${descriptor.name}' is not guarded by flag '$flagName'. " +
-                        "Wrap in if/when checking '$flagName', or annotate the containing scope " +
-                        "with @BehindFlag(\"$flagName\") or @AssumesFlag(\"$flagName\").",
-                )
+                    message =
+                        "Call to '${descriptor.name}' is not guarded by flag '$flagName'. " +
+                            "Wrap in if/when checking '$flagName', or annotate the containing scope " +
+                            "with @BehindFlag(\"$flagName\") or @AssumesFlag(\"$flagName\").",
+                ),
             )
         }
     }
@@ -132,7 +136,8 @@ public class UncheckedFlagAccess(
 
     /** Reads `@BehindFlag` from the descriptor's annotation list (requires annotation on classpath). */
     private fun DeclarationDescriptor.behindFlagNameViaDescriptor(): String? =
-        annotations.findAnnotation(BEHIND_FLAG_FQN)
+        annotations
+            .findAnnotation(BEHIND_FLAG_FQN)
             ?.allValueArguments
             ?.get(FLAG_NAME_PARAM)
             ?.value as? String
@@ -142,8 +147,9 @@ public class UncheckedFlagAccess(
      * Used when the annotation class is not on the classpath (e.g. in unit tests).
      */
     private fun DeclarationDescriptor.behindFlagNameViaPsi(): String? {
-        val psi = ((this as? DeclarationDescriptorWithSource)?.source as? KotlinSourceElement)?.psi
-            ?: return null
+        val psi =
+            ((this as? DeclarationDescriptorWithSource)?.source as? KotlinSourceElement)?.psi
+                ?: return null
         return when (psi) {
             is KtNamedFunction -> psi.annotationEntries.behindFlagName()
             is KtClassOrObject -> psi.annotationEntries.behindFlagName()
@@ -166,9 +172,11 @@ public class UncheckedFlagAccess(
                 node is KtIfExpression && node.condition.containsFlagReference(flagName) -> return true
 
                 // when { flagName -> { call() } }
-                node is KtWhenEntry && node.conditions.any { cond ->
-                    cond.containsFlagReference(flagName)
-                } -> return true
+                node is KtWhenEntry &&
+                    node.conditions.any { cond ->
+                        cond.containsFlagReference(flagName)
+                    }
+                -> return true
 
                 // Enclosing function with @BehindFlag("X") or @AssumesFlag("X")
                 node is KtNamedFunction && node.hasGuardAnnotation(flagName) -> return true
@@ -176,8 +184,8 @@ public class UncheckedFlagAccess(
                 // Enclosing class/object with @BehindFlag("X") or @AssumesFlag("X")
                 // KtClassOrObject covers both `class` and `object`; companion objects are
                 // already short-circuited by the branch below, so exclude them here.
-                node is KtClassOrObject && !(node is KtObjectDeclaration && node.isCompanion())
-                    && node.hasGuardAnnotation(flagName) -> return true
+                node is KtClassOrObject && !(node is KtObjectDeclaration && node.isCompanion()) &&
+                    node.hasGuardAnnotation(flagName) -> return true
 
                 // Crossed into a companion object — class annotation does not cover this scope
                 node is KtObjectDeclaration && node.isCompanion() -> return false
@@ -192,15 +200,14 @@ public class UncheckedFlagAccess(
         // Check the element itself (e.g. bare `if (newCheckout)` where condition IS the reference)
         if (this is KtNameReferenceExpression && this.getReferencedName() == flagName) return true
         // Check all descendants
-        return PsiTreeUtil.findChildrenOfType(this, KtNameReferenceExpression::class.java)
+        return PsiTreeUtil
+            .findChildrenOfType(this, KtNameReferenceExpression::class.java)
             .any { it.getReferencedName() == flagName }
     }
 
-    private fun KtNamedFunction.hasGuardAnnotation(flagName: String): Boolean =
-        annotationEntries.any { it.matchesGuard(flagName) }
+    private fun KtNamedFunction.hasGuardAnnotation(flagName: String): Boolean = annotationEntries.any { it.matchesGuard(flagName) }
 
-    private fun KtClassOrObject.hasGuardAnnotation(flagName: String): Boolean =
-        annotationEntries.any { it.matchesGuard(flagName) }
+    private fun KtClassOrObject.hasGuardAnnotation(flagName: String): Boolean = annotationEntries.any { it.matchesGuard(flagName) }
 
     private fun KtAnnotationEntry.matchesGuard(flagName: String): Boolean {
         val name = shortName?.asString() ?: return false
@@ -209,10 +216,12 @@ public class UncheckedFlagAccess(
     }
 
     private fun KtAnnotationEntry.flagNameArgument(): String? {
-        val entries = valueArguments.firstOrNull()
-            ?.getArgumentExpression()
-            ?.let { it as? KtStringTemplateExpression }
-            ?.entries ?: return null
+        val entries =
+            valueArguments
+                .firstOrNull()
+                ?.getArgumentExpression()
+                ?.let { it as? KtStringTemplateExpression }
+                ?.entries ?: return null
         if (entries.size != 1) return null
         return (entries[0] as? KtLiteralStringTemplateEntry)?.text
     }
