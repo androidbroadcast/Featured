@@ -257,6 +257,36 @@ class UncheckedFlagAccessTest {
     }
 
     @Test
+    fun `no finding for call inside AssumesFlag object body same flag`() {
+        val findings = rule.lintWithContext(env, """
+            import dev.androidbroadcast.featured.BehindFlag
+            import dev.androidbroadcast.featured.AssumesFlag
+
+            @BehindFlag("newCheckout")
+            fun newCheckoutScreen() {}
+
+            @AssumesFlag("newCheckout")
+            object CheckoutFeature {
+                fun show() { newCheckoutScreen() }
+            }
+        """.trimIndent())
+        assertEquals(0, findings.size)
+    }
+
+    @Test
+    fun `reports finding for callable reference to BehindFlag function without context`() {
+        val findings = rule.lintWithContext(env, """
+            import dev.androidbroadcast.featured.BehindFlag
+
+            @BehindFlag("newCheckout")
+            fun newCheckoutScreen() {}
+
+            val ref: () -> Unit = ::newCheckoutScreen
+        """.trimIndent())
+        assertEquals(1, findings.size)
+    }
+
+    @Test
     fun `reports finding when call site has no guard — same compilation unit`() {
         // NOTE: Detekt 1.23.8 lintWithContext accepts a single String only.
         // True cross-file detection (declaration in module A, call in module B) cannot be

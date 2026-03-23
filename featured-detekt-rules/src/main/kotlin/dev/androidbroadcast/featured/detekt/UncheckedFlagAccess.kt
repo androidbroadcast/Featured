@@ -15,7 +15,6 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtCallExpression
-import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtIfExpression
 import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
@@ -77,7 +76,9 @@ public class UncheckedFlagAccess(
     override fun visitSimpleNameExpression(expression: KtSimpleNameExpression) {
         super.visitSimpleNameExpression(expression)
         if (bindingContext == BindingContext.EMPTY) return
-        // Skip call targets — those are handled by visitCallExpression
+        // Skip callee expressions inside direct calls — handled by visitCallExpression.
+        // Callable references (this::fn) are intentionally NOT excluded here; accessing
+        // a @BehindFlag declaration via reference outside a guard is itself a violation.
         if (expression.parent is KtCallExpression) return
 
         val descriptor = bindingContext[BindingContext.REFERENCE_TARGET, expression]
@@ -172,8 +173,11 @@ public class UncheckedFlagAccess(
                 // Enclosing function with @BehindFlag("X") or @AssumesFlag("X")
                 node is KtNamedFunction && node.hasGuardAnnotation(flagName) -> return true
 
-                // Enclosing class with @BehindFlag("X") or @AssumesFlag("X")
-                node is KtClass && node.hasGuardAnnotation(flagName) -> return true
+                // Enclosing class/object with @BehindFlag("X") or @AssumesFlag("X")
+                // KtClassOrObject covers both `class` and `object`; companion objects are
+                // already short-circuited by the branch below, so exclude them here.
+                node is KtClassOrObject && !(node is KtObjectDeclaration && node.isCompanion())
+                    && node.hasGuardAnnotation(flagName) -> return true
 
                 // Crossed into a companion object — class annotation does not cover this scope
                 node is KtObjectDeclaration && node.isCompanion() -> return false
@@ -195,7 +199,7 @@ public class UncheckedFlagAccess(
     private fun KtNamedFunction.hasGuardAnnotation(flagName: String): Boolean =
         annotationEntries.any { it.matchesGuard(flagName) }
 
-    private fun KtClass.hasGuardAnnotation(flagName: String): Boolean =
+    private fun KtClassOrObject.hasGuardAnnotation(flagName: String): Boolean =
         annotationEntries.any { it.matchesGuard(flagName) }
 
     private fun KtAnnotationEntry.matchesGuard(flagName: String): Boolean {
