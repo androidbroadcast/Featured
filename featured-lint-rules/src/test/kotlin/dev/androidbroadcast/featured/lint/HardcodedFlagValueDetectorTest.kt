@@ -124,9 +124,11 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
 
     @Test
     fun `does not report correct usage via ConfigValues`() {
-        // The stub uses TODO() in the body — we're testing the call site (configValues[flag]),
-        // not the ConfigValues implementation. The real ConfigValues in the library would use
-        // @Suppress("HardcodedFlagValue") on its internal defaultValue access.
+        // Tests that configValues[flag] at the call site does not trigger the rule.
+        // The get() body uses TODO() so it contains no defaultValue access — this
+        // isolates the call-site behavior from the implementation behavior.
+        // (The real ConfigValues uses @Suppress("HardcodedFlagValue") on its internal
+        // defaultValue access — see ConfigValues.kt.)
         lint()
             .files(
                 configParamStub,
@@ -135,8 +137,7 @@ class HardcodedFlagValueDetectorTest : LintDetectorTest() {
                     import dev.androidbroadcast.featured.ConfigParam
 
                     class ConfigValues {
-                        @Suppress("HardcodedFlagValue")
-                        operator fun <T : Any> get(param: ConfigParam<T>): T = param.defaultValue
+                        operator fun <T : Any> get(param: ConfigParam<T>): T = TODO()
                     }
 
                     fun check(configValues: ConfigValues, flag: ConfigParam<Boolean>) {
