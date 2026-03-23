@@ -91,6 +91,7 @@ public class ConfigValues(
             }
         if (remoteValue != null) return remoteValue
 
+        @Suppress("HardcodedFlagValue") // intentional: this IS the provider fallback path
         return ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
     }
 

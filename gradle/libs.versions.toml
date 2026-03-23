@@ -32,6 +32,7 @@ mavenPublish = "0.32.0"
 dokka = "2.1.0"
 detekt = "1.23.8"
 configcat = "5.1.0"
+lint = "32.1.0" # Must equal AGP version + 23.0.0 (e.g., AGP 9.1.0 → Lint 32.1.0)
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
@@ -69,6 +70,9 @@ detekt-api = { module = "io.gitlab.arturbosch.detekt:detekt-api", version.ref = 
 detekt-test = { module = "io.gitlab.arturbosch.detekt:detekt-test", version.ref = "detekt" }
 
 configcat-kotlinSdk = { module = "com.configcat:configcat-kotlin-client", version.ref = "configcat" }
+
+lint-api = { module = "com.android.tools.lint:lint-api", version.ref = "lint" }
+lint-tests = { module = "com.android.tools.lint:lint-tests", version.ref = "lint" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
