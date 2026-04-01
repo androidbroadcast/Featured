@@ -12,8 +12,7 @@ internal fun String.toCamelCase(): String =
     split("_")
         .mapIndexed { index, word ->
             if (index == 0) word.lowercase() else word.replaceFirstChar { it.uppercase() }
-        }
-        .joinToString("")
+        }.joinToString("")
 
 /**
  * Derives a unique JVM class name suffix from a Gradle module path, used in

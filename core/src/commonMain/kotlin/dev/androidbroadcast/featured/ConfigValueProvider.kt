@@ -19,4 +19,3 @@ public sealed interface ConfigValueProvider {
      */
     public suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T>?
 }
-

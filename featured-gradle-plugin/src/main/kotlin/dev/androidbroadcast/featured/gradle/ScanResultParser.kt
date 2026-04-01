@@ -26,39 +26,53 @@ internal fun RegularFileProperty.parseLocalFlagEntries(): List<LocalFlagEntry> {
 private fun parseLine(line: String): LocalFlagEntry? {
     val parts = line.split("|")
     return when (parts.size) {
-        4 -> LocalFlagEntry(
-            key = parts[0],
-            defaultValue = parts[1],
-            type = parts[2],
-            moduleName = parts[3],
-            propertyName = parts[0].toCamelCase(),
-        )
-        6 -> LocalFlagEntry(
-            key = parts[0],
-            defaultValue = parts[1],
-            type = parts[2],
-            moduleName = parts[3],
-            propertyName = parts[4].ifEmpty { parts[0].toCamelCase() },
-        )
-        7 -> LocalFlagEntry(
-            key = parts[0],
-            defaultValue = parts[1],
-            type = parts[2],
-            moduleName = parts[3],
-            propertyName = parts[4].ifEmpty { parts[0].toCamelCase() },
-            flagType = parts[6].ifEmpty { LocalFlagEntry.FLAG_TYPE_LOCAL },
-        )
-        9 -> LocalFlagEntry(
-            key = parts[0],
-            defaultValue = parts[1],
-            type = parts[2],
-            moduleName = parts[3],
-            propertyName = parts[4].ifEmpty { parts[0].toCamelCase() },
-            flagType = parts[5].ifEmpty { LocalFlagEntry.FLAG_TYPE_LOCAL },
-            description = parts[6].ifEmpty { null },
-            category = parts[7].ifEmpty { null },
-            expiresAt = parts[8].ifEmpty { null },
-        )
-        else -> null
+        4 -> {
+            LocalFlagEntry(
+                key = parts[0],
+                defaultValue = parts[1],
+                type = parts[2],
+                moduleName = parts[3],
+                propertyName = parts[0].toCamelCase(),
+            )
+        }
+
+        6 -> {
+            LocalFlagEntry(
+                key = parts[0],
+                defaultValue = parts[1],
+                type = parts[2],
+                moduleName = parts[3],
+                propertyName = parts[4].ifEmpty { parts[0].toCamelCase() },
+            )
+        }
+
+        7 -> {
+            LocalFlagEntry(
+                key = parts[0],
+                defaultValue = parts[1],
+                type = parts[2],
+                moduleName = parts[3],
+                propertyName = parts[4].ifEmpty { parts[0].toCamelCase() },
+                flagType = parts[6].ifEmpty { LocalFlagEntry.FLAG_TYPE_LOCAL },
+            )
+        }
+
+        9 -> {
+            LocalFlagEntry(
+                key = parts[0],
+                defaultValue = parts[1],
+                type = parts[2],
+                moduleName = parts[3],
+                propertyName = parts[4].ifEmpty { parts[0].toCamelCase() },
+                flagType = parts[5].ifEmpty { LocalFlagEntry.FLAG_TYPE_LOCAL },
+                description = parts[6].ifEmpty { null },
+                category = parts[7].ifEmpty { null },
+                expiresAt = parts[8].ifEmpty { null },
+            )
+        }
+
+        else -> {
+            null
+        }
     }
 }

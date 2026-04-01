@@ -73,10 +73,11 @@ class FlagRegistrarGeneratorTest {
 
     @Test
     fun `generates register calls for mixed local and remote entries`() {
-        val entries = listOf(
-            localEntry("dark_mode", "darkMode"),
-            remoteEntry("promo_banner", "promoBanner"),
-        )
+        val entries =
+            listOf(
+                localEntry("dark_mode", "darkMode"),
+                remoteEntry("promo_banner", "promoBanner"),
+            )
         val source = FlagRegistrarGenerator.generate(entries)
         assertContains(source, "FlagRegistry.register(${LocalFlagEntry.GENERATED_LOCAL_OBJECT}.darkMode)")
         assertContains(source, "FlagRegistry.register(${LocalFlagEntry.GENERATED_REMOTE_OBJECT}.promoBanner)")
@@ -84,9 +85,10 @@ class FlagRegistrarGeneratorTest {
 
     @Test
     fun `generates TODO comment for blank property name`() {
-        val entries = listOf(
-            LocalFlagEntry(key = "legacy_flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-        )
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "legacy_flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+            )
         val source = FlagRegistrarGenerator.generate(entries)
         assertContains(source, "// TODO: register flag 'legacy_flag'")
         assertFalse(source.contains("FlagRegistry.register()"))
@@ -115,15 +117,27 @@ class FlagRegistrarGeneratorTest {
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
-    private fun localEntry(key: String, propertyName: String) =
-        LocalFlagEntry(
-            key = key, defaultValue = "false", type = "Boolean", moduleName = ":app",
-            propertyName = propertyName, flagType = LocalFlagEntry.FLAG_TYPE_LOCAL,
-        )
+    private fun localEntry(
+        key: String,
+        propertyName: String,
+    ) = LocalFlagEntry(
+        key = key,
+        defaultValue = "false",
+        type = "Boolean",
+        moduleName = ":app",
+        propertyName = propertyName,
+        flagType = LocalFlagEntry.FLAG_TYPE_LOCAL,
+    )
 
-    private fun remoteEntry(key: String, propertyName: String) =
-        LocalFlagEntry(
-            key = key, defaultValue = "false", type = "Boolean", moduleName = ":app",
-            propertyName = propertyName, flagType = LocalFlagEntry.FLAG_TYPE_REMOTE,
-        )
+    private fun remoteEntry(
+        key: String,
+        propertyName: String,
+    ) = LocalFlagEntry(
+        key = key,
+        defaultValue = "false",
+        type = "Boolean",
+        moduleName = ":app",
+        propertyName = propertyName,
+        flagType = LocalFlagEntry.FLAG_TYPE_REMOTE,
+    )
 }

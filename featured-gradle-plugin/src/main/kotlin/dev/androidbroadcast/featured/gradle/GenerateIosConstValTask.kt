@@ -61,7 +61,7 @@ public abstract class GenerateIosConstValTask : DefaultTask() {
         commonOut.writeText(commonContent)
 
         if (entries.isEmpty()) {
-            logger.lifecycle("[featured] No @LocalFlag declarations found — iOS const val files are empty.")
+            logger.lifecycle("[featured] No local flags declared in featured { } DSL — iOS const val files are empty.")
         } else {
             logger.lifecycle("[featured] Generated iOS const val declarations for ${entries.size} flag(s) → ${iosOut.path}")
             logger.lifecycle("[featured] Generated commonMain expect declarations → ${commonOut.path}")

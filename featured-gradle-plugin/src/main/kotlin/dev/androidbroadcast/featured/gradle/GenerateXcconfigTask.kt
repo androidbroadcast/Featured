@@ -49,7 +49,7 @@ public abstract class GenerateXcconfigTask : DefaultTask() {
         out.writeText(content)
 
         if (content.isBlank()) {
-            logger.lifecycle("[featured] No @LocalFlag(defaultValue=false) flags found — FeatureFlags.generated.xcconfig is empty.")
+            logger.lifecycle("[featured] No local boolean flags with defaultValue=false — FeatureFlags.generated.xcconfig is empty.")
         } else {
             val count = entries.count { it.type == "Boolean" && it.defaultValue == "false" }
             logger.lifecycle("[featured] Generated xcconfig with $count DISABLE_ condition(s) → ${out.path}")

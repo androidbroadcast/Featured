@@ -113,30 +113,23 @@ Then add `FeaturedCore` as a target dependency:
 
 ### 1. Declare a flag
 
-Flags are plain `ConfigParam` properties. Annotate them with `@LocalFlag` so the Gradle plugin can scan them for code generation.
+Declare flags in `build.gradle.kts` using the `featured { }` DSL block. The plugin generates typed helpers automatically.
 
-```kotlin
-// shared/src/commonMain/kotlin/com/example/FeatureFlags.kt
-import dev.androidbroadcast.featured.ConfigParam
-import dev.androidbroadcast.featured.LocalFlag
-
-object FeatureFlags {
-    @LocalFlag
-    val newCheckout = ConfigParam<Boolean>(
-        key = "new_checkout",
-        defaultValue = false,
-        description = "Enable the new checkout flow",
-        category = "Checkout",
-    )
-
-    @LocalFlag
-    val maxCartItems = ConfigParam<Int>(
-        key = "max_cart_items",
-        defaultValue = 10,
-        description = "Maximum items allowed in cart",
-    )
+```kotlin title="build.gradle.kts"
+featured {
+    localFlags {
+        boolean("new_checkout", default = false) {
+            description = "Enable the new checkout flow"
+            category = "Checkout"
+        }
+        int("max_cart_items", default = 10) {
+            description = "Maximum items allowed in cart"
+        }
+    }
 }
 ```
+
+The plugin generates `internal object GeneratedLocalFlags` with typed `ConfigParam` properties, and public extension functions on `ConfigValues` — for example `fun ConfigValues.isNewCheckoutEnabled(): Boolean` and `fun ConfigValues.getMaxCartItems(): Int`.
 
 ### 2. Create a `ConfigValues` instance
 
@@ -363,7 +356,7 @@ Only include `featured-debug-ui` and `featured-registry` in debug builds (they a
 
 ### Android / JVM — R8 rules
 
-The Gradle plugin generates ProGuard / R8 `-assumevalues` rules for every `@LocalFlag`-annotated `ConfigParam<Boolean>` with `defaultValue = false`. These rules instruct R8 to treat the flag as a constant `false` at shrink time, so all code guarded by `if (flag.value)` is removed from the release APK.
+The Gradle plugin generates per-function ProGuard / R8 `-assumevalues` rules for the generated extension functions of every local boolean flag with `default = false`. These rules instruct R8 to treat the flag as a constant `false` at shrink time, so all code guarded by the generated accessor is removed from the release APK. Remote flags are excluded since their values are dynamic.
 
 The task runs automatically when you build a release variant. To run it manually:
 
@@ -383,7 +376,7 @@ See the [iOS integration](#ios-integration) section below.
 
 ## iOS integration
 
-The Gradle plugin generates an xcconfig file that feeds Swift compilation conditions into Xcode. For every `@LocalFlag`-annotated `ConfigParam<Boolean>` with `defaultValue = false`, a `DISABLE_<FLAG_KEY>` condition is generated.
+The Gradle plugin generates an xcconfig file that feeds Swift compilation conditions into Xcode. For every local boolean flag declared in `featured { localFlags { } }` with `default = false`, a `DISABLE_<FLAG_KEY>` condition is generated.
 
 ### Key transformation
 
@@ -472,7 +465,7 @@ cp shared/build/featured/FeatureFlags.generated.xcconfig \
 
 ## Multi-module setup
 
-In a multi-module project, apply the Gradle plugin to every module that declares `@LocalFlag` annotations. The plugin registers a `scanLocalFlags` task per module and an aggregator task `scanAllLocalFlags` at the root.
+In a multi-module project, apply the Gradle plugin to every module that declares flags in `featured { }`. The plugin registers a `resolveFeatureFlags` task per module and an aggregator task `scanAllLocalFlags` at the root that collects flags across all modules.
 
 ```kotlin
 // :feature:checkout module build.gradle.kts
@@ -492,7 +485,7 @@ plugins {
 Run code generation tasks across all modules at once:
 
 ```bash
-# Scan flags in all modules
+# Resolve and aggregate flags across all modules
 ./gradlew scanAllLocalFlags
 
 # Generate R8 rules for all Android modules

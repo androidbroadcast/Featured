@@ -20,6 +20,5 @@ public class FlagSpec(
     public var expiresAt: String? = null
 
     /** Serialises this spec to a pipe-delimited descriptor consumed by [ResolveFlagsTask]. */
-    internal fun toDescriptor(): String =
-        "$key|$defaultValue|$type|${description.orEmpty()}|${category.orEmpty()}|${expiresAt.orEmpty()}"
+    internal fun toDescriptor(): String = "$key|$defaultValue|$type|${description.orEmpty()}|${category.orEmpty()}|${expiresAt.orEmpty()}"
 }

@@ -53,14 +53,13 @@ public class FirebaseConfigValueProvider(
      * @return A [ConfigValue] whose [ConfigValue.source] reflects the Firebase value origin.
      * @throws IllegalStateException if no converter is registered for the type of [param].
      */
-    override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T> {
-        return remoteConfig.getValue(param.key).let { remoteValue ->
+    override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T> =
+        remoteConfig.getValue(param.key).let { remoteValue ->
             ConfigValue(
                 value = remoteValue.asTyped(param.valueType),
                 source = remoteValue.featureFlagValueSource(),
             )
         }
-    }
 
     private fun <T : Any> FirebaseRemoteConfigValue.asTyped(type: KClass<T>): T {
         converters[type]?.let { return it.convert(this) }
@@ -74,7 +73,7 @@ public class FirebaseConfigValueProvider(
             val match = constants.firstOrNull { (it as Enum<*>).name == name }
             return requireNotNull(match as T?) {
                 "Unknown enum constant '$name' for $type. " +
-                        "Valid values: ${constants.map { (it as Enum<*>).name }}"
+                    "Valid values: ${constants.map { (it as Enum<*>).name }}"
             }
         }
 
@@ -91,10 +90,11 @@ public class FirebaseConfigValueProvider(
      *   exception for diagnostics. See [FetchException] for retry recommendations.
      */
     override suspend fun fetch(activate: Boolean) {
-        val task = when (activate) {
-            true -> remoteConfig.fetchAndActivate()
-            false -> remoteConfig.fetch()
-        }
+        val task =
+            when (activate) {
+                true -> remoteConfig.fetchAndActivate()
+                false -> remoteConfig.fetch()
+            }
 
         try {
             task.await()
@@ -106,11 +106,10 @@ public class FirebaseConfigValueProvider(
     }
 }
 
-private fun FirebaseRemoteConfigValue.featureFlagValueSource(): ConfigValue.Source {
-    return when (this.source) {
+private fun FirebaseRemoteConfigValue.featureFlagValueSource(): ConfigValue.Source =
+    when (this.source) {
         FirebaseRemoteConfig.VALUE_SOURCE_DEFAULT -> ConfigValue.Source.REMOTE_DEFAULT
         FirebaseRemoteConfig.VALUE_SOURCE_REMOTE -> ConfigValue.Source.REMOTE
         FirebaseRemoteConfig.VALUE_SOURCE_STATIC -> ConfigValue.Source.DEFAULT
         else -> ConfigValue.Source.UNKNOWN
     }
-}

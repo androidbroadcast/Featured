@@ -31,7 +31,10 @@ public object ProguardRulesGenerator {
      *
      * Returns a blank string when [entries] contains no local flags with a supported type.
      */
-    public fun generate(entries: List<LocalFlagEntry>, modulePath: String): String {
+    public fun generate(
+        entries: List<LocalFlagEntry>,
+        modulePath: String,
+    ): String {
         val localEntries = entries.filter { it.isLocal && jvmType(it.type) != null }
         if (localEntries.isEmpty()) return ""
 
@@ -54,12 +57,12 @@ public object ProguardRulesGenerator {
     private fun jvmType(kotlinType: String): String? =
         when (kotlinType) {
             "Boolean" -> "boolean"
-            "Int"     -> "int"
-            "Long"    -> "long"
-            "Float"   -> "float"
-            "Double"  -> "double"
-            "String"  -> "java.lang.String"
-            else      -> null
+            "Int" -> "int"
+            "Long" -> "long"
+            "Float" -> "float"
+            "Double" -> "double"
+            "String" -> "java.lang.String"
+            else -> null
         }
 
     private fun extensionFunctionName(entry: LocalFlagEntry): String {
@@ -69,9 +72,13 @@ public object ProguardRulesGenerator {
 
     private fun proguardLiteral(entry: LocalFlagEntry): String =
         when (entry.type) {
-            "String" -> entry.defaultValue  // already quoted (e.g. `"hello"`)
-            "Long"   -> entry.defaultValue.trimEnd('L', 'l')
-            "Float"  -> entry.defaultValue.trimEnd('f', 'F')
-            else     -> entry.defaultValue
+            "String" -> entry.defaultValue
+
+            // already quoted (e.g. `"hello"`)
+            "Long" -> entry.defaultValue.trimEnd('L', 'l')
+
+            "Float" -> entry.defaultValue.trimEnd('f', 'F')
+
+            else -> entry.defaultValue
         }
 }

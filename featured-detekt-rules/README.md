@@ -12,12 +12,11 @@ detektPlugins("dev.androidbroadcast.featured:featured-detekt-rules")
 
 | Rule | What it catches |
 |------|----------------|
-| `MissingFlagAnnotation` | `ConfigParam` property without `@LocalFlag` or `@RemoteFlag` |
-| `ExpiredFeatureFlag` | `@ExpiresAt` date is in the past — flag should be removed |
+| `ExpiredFeatureFlag` | `expiresAt` date is in the past — flag should be removed from the DSL |
 | `UncheckedFlagAccess` | Flag value read outside a `@BehindFlag`-annotated call site |
-| `InvalidFlagReference` | `@RemoteFlag` param used where only `@LocalFlag` is expected (or vice versa) |
+| `InvalidFlagReference` | `ConfigParam` accessed directly instead of via the generated extension functions on `ConfigValues` |
 | `HardcodedFlagValue` | Boolean/value literal used instead of reading from `ConfigValues` |
 
 ## Why this matters
 
-The runtime does not distinguish local flags from remote flags — that contract is enforced here, statically. These rules are what prevents a `@LocalFlag` param from accidentally being wired to a remote provider.
+The runtime does not distinguish local flags from remote flags — that contract is enforced here, statically. These rules are what prevents a generated local-flag param from accidentally being wired to a remote provider, and ensures all flag access goes through the generated typed extension functions.

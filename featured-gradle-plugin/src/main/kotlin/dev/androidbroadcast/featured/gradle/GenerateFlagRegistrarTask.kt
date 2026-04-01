@@ -62,7 +62,7 @@ public abstract class GenerateFlagRegistrarTask : DefaultTask() {
         out.writeText(source)
 
         if (entries.isEmpty()) {
-            logger.lifecycle("[featured] No @LocalFlag declarations found — GeneratedFlagRegistrar.register() is empty.")
+            logger.lifecycle("[featured] No flags declared in featured { } DSL — GeneratedFlagRegistrar.register() is empty.")
         } else {
             logger.lifecycle("[featured] Generated FlagRegistrar with ${entries.size} registration(s) → ${out.path}")
         }

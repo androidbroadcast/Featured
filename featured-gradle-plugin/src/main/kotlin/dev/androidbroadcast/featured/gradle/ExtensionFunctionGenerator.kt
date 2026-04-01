@@ -36,15 +36,17 @@ public object ExtensionFunctionGenerator {
      * Examples: `":app"` → `"FeaturedApp_FlagExtensionsKt"`,
      * `":feature:checkout"` → `"FeaturedFeatureCheckout_FlagExtensionsKt"`.
      */
-    public fun jvmFileName(modulePath: String): String =
-        "Featured${modulePath.modulePathToIdentifier()}_FlagExtensionsKt"
+    public fun jvmFileName(modulePath: String): String = "Featured${modulePath.modulePathToIdentifier()}_FlagExtensionsKt"
 
     /**
      * Generates the full source text for `GeneratedFlagExtensions.kt`.
      *
      * Returns an empty string if [entries] is empty.
      */
-    public fun generate(entries: List<LocalFlagEntry>, modulePath: String): String {
+    public fun generate(
+        entries: List<LocalFlagEntry>,
+        modulePath: String,
+    ): String {
         if (entries.isEmpty()) return ""
         val jvmName = jvmFileName(modulePath)
         val needsConfigValue = entries.any { !it.isLocal }

@@ -19,9 +19,10 @@ class ProguardRulesGeneratorTest {
 
     @Test
     fun `returns blank when all entries are remote`() {
-        val entries = listOf(
-            entry("promo", "false", "Boolean", flagType = LocalFlagEntry.FLAG_TYPE_REMOTE),
-        )
+        val entries =
+            listOf(
+                entry("promo", "false", "Boolean", flagType = LocalFlagEntry.FLAG_TYPE_REMOTE),
+            )
         assertTrue(ProguardRulesGenerator.generate(entries, modulePath).isBlank())
     }
 
@@ -97,11 +98,12 @@ class ProguardRulesGeneratorTest {
 
     @Test
     fun `generates one rule per local flag`() {
-        val entries = listOf(
-            entry("flag_a", "false", "Boolean"),
-            entry("flag_b", "true", "Boolean"),
-            entry("retry_count", "3", "Int"),
-        )
+        val entries =
+            listOf(
+                entry("flag_a", "false", "Boolean"),
+                entry("flag_b", "true", "Boolean"),
+                entry("retry_count", "3", "Int"),
+            )
         val rules = ProguardRulesGenerator.generate(entries, modulePath)
         assertContains(rules, "isFlagAEnabled")
         assertContains(rules, "isFlagBEnabled")
@@ -110,10 +112,11 @@ class ProguardRulesGeneratorTest {
 
     @Test
     fun `excludes remote flags from rules`() {
-        val entries = listOf(
-            entry("local_flag", "false", "Boolean", flagType = LocalFlagEntry.FLAG_TYPE_LOCAL),
-            entry("remote_flag", "false", "Boolean", flagType = LocalFlagEntry.FLAG_TYPE_REMOTE),
-        )
+        val entries =
+            listOf(
+                entry("local_flag", "false", "Boolean", flagType = LocalFlagEntry.FLAG_TYPE_LOCAL),
+                entry("remote_flag", "false", "Boolean", flagType = LocalFlagEntry.FLAG_TYPE_REMOTE),
+            )
         val rules = ProguardRulesGenerator.generate(entries, modulePath)
         assertContains(rules, "isLocalFlagEnabled")
         assertFalse(rules.contains("isRemoteFlagEnabled"), "Remote flags must not appear in ProGuard rules")
