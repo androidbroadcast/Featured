@@ -62,7 +62,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(project(":featured-compose"))
     implementation(project(":featured-platform"))
-    implementation(project(":sharedpreferences-provider"))
+    implementation(project(":providers:sharedpreferences"))
 
     debugImplementation(compose.uiTooling)
     debugImplementation(project(":featured-debug-ui"))
@@ -70,6 +70,6 @@ dependencies {
     if (hasFirebase) {
         implementation(platform(libs.firebase.bom))
         implementation(libs.firebase.config)
-        implementation(project(":firebase-provider"))
+        implementation(project(":providers:firebase"))
     }
 }

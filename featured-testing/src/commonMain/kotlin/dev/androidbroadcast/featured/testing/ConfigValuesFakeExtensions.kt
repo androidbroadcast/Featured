@@ -16,4 +16,6 @@ import dev.androidbroadcast.featured.ConfigValues
  *
  * @see fakeConfigValues
  */
-public suspend fun ConfigValues.Companion.fake(block: FakeConfigValuesScope.() -> Unit = {}): ConfigValues = fakeConfigValues(block)
+public suspend fun ConfigValues.Companion.fake(
+    block: FakeConfigValuesScope.() -> Unit = {},
+): ConfigValues = fakeConfigValues(block)

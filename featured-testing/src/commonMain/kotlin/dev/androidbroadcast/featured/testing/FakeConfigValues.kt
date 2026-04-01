@@ -54,9 +54,14 @@ public class FakeConfigValuesScope internal constructor() {
  * configValues.override(NewCheckoutFlag, false)
  * ```
  */
-public suspend fun fakeConfigValues(block: FakeConfigValuesScope.() -> Unit = {}): ConfigValues {
-    val scope = FakeConfigValuesScope().apply(block)
-    val provider = InMemoryConfigValueProvider()
-    scope.applyTo(provider)
-    return ConfigValues(localProvider = provider)
+public suspend fun fakeConfigValues(
+    block: FakeConfigValuesScope.() -> Unit = {},
+): ConfigValues {
+    return ConfigValues(
+        localProvider = InMemoryConfigValueProvider().also { provider ->
+            FakeConfigValuesScope()
+                .apply(block)
+                .applyTo(provider)
+        }
+    )
 }
