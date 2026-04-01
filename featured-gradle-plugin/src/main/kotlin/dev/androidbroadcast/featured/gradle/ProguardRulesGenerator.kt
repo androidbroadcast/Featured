@@ -46,7 +46,7 @@ public object ProguardRulesGenerator {
             appendLine("-assumevalues class $className {")
             localEntries.forEach { entry ->
                 val jvmType = jvmType(entry.type) ?: return@forEach
-                val funcName = extensionFunctionName(entry)
+                val funcName = entry.extensionFunctionName()
                 val returnValue = proguardLiteral(entry)
                 appendLine("    $jvmType $funcName($CONFIG_VALUES_TYPE) return $returnValue;")
             }
@@ -65,16 +65,10 @@ public object ProguardRulesGenerator {
             else -> null
         }
 
-    private fun extensionFunctionName(entry: LocalFlagEntry): String {
-        val capitalized = entry.propertyName.replaceFirstChar { it.uppercase() }
-        return if (entry.type == "Boolean") "is${capitalized}Enabled" else "get$capitalized"
-    }
-
     private fun proguardLiteral(entry: LocalFlagEntry): String =
         when (entry.type) {
-            "String" -> entry.defaultValue
+            "String" -> entry.defaultValue // already quoted (e.g. `"hello"`)
 
-            // already quoted (e.g. `"hello"`)
             "Long" -> entry.defaultValue.trimEnd('L', 'l')
 
             "Float" -> entry.defaultValue.trimEnd('f', 'F')

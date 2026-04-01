@@ -59,8 +59,7 @@ public object ExtensionFunctionGenerator {
             appendLine()
             appendLine("import $CONFIG_VALUES_IMPORT")
             if (needsConfigValue) appendLine("import $CONFIG_VALUE_IMPORT")
-            val localEntries = entries.filter { it.isLocal }
-            val remoteEntries = entries.filter { !it.isLocal }
+            val (localEntries, remoteEntries) = entries.partition { it.isLocal }
             if (localEntries.isNotEmpty()) {
                 appendLine("import $PACKAGE.${LocalFlagEntry.GENERATED_LOCAL_OBJECT}")
             }
@@ -77,19 +76,13 @@ public object ExtensionFunctionGenerator {
     private fun LocalFlagEntry.toExtensionFunction(): String {
         val objectRef = if (isLocal) LocalFlagEntry.GENERATED_LOCAL_OBJECT else LocalFlagEntry.GENERATED_REMOTE_OBJECT
         return if (isLocal) {
-            val returnType = jvmReturnType()
             val funcName = extensionFunctionName()
-            "public fun ConfigValues.$funcName(): $returnType = getValue($objectRef.$propertyName).value\n"
+            "public fun ConfigValues.$funcName(): $type = getValue($objectRef.$propertyName).value\n"
         } else {
-            val funcName = "get${propertyName.replaceFirstChar { it.uppercase() }}"
+            // Remote flags always use get… regardless of type — the return is ConfigValue<T>,
+            // so callers can inspect the value source.
+            val funcName = "get${propertyName.capitalized()}"
             "public fun ConfigValues.$funcName(): ConfigValue<$type> = getValue($objectRef.$propertyName)\n"
         }
     }
-
-    private fun LocalFlagEntry.extensionFunctionName(): String {
-        val capitalized = propertyName.replaceFirstChar { it.uppercase() }
-        return if (type == "Boolean") "is${capitalized}Enabled" else "get$capitalized"
-    }
-
-    private fun LocalFlagEntry.jvmReturnType(): String = type
 }

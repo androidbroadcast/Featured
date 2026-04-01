@@ -26,8 +26,7 @@ public object ConfigParamGenerator {
      * if there are no flags of that type.
      */
     public fun generate(entries: List<LocalFlagEntry>): Pair<String, String> {
-        val local = entries.filter { it.isLocal }
-        val remote = entries.filter { !it.isLocal }
+        val (local, remote) = entries.partition { it.isLocal }
         return generateObject(local, LocalFlagEntry.GENERATED_LOCAL_OBJECT) to
             generateObject(remote, LocalFlagEntry.GENERATED_REMOTE_OBJECT)
     }
@@ -65,9 +64,8 @@ public object ConfigParamGenerator {
 
     private fun LocalFlagEntry.formatDefault(): String =
         when (type) {
-            "String" -> defaultValue
+            "String" -> defaultValue // already quoted by FlagContainer.string()
 
-            // already quoted by FlagContainer.string()
             "Long" -> "${defaultValue}L"
 
             "Float" -> "${defaultValue}f"

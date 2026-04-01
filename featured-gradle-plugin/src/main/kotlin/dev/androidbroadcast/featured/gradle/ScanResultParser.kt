@@ -9,7 +9,7 @@ import org.gradle.api.file.RegularFileProperty
  * - 4-field (legacy): `key|defaultValue|type|moduleName`
  * - 6-field (legacy): `key|defaultValue|type|moduleName|propertyName|ownerName`
  * - 7-field: `key|defaultValue|type|moduleName|propertyName|ownerName|flagType`
- * - 10-field (current): `key|defaultValue|type|moduleName|propertyName|flagType|description|category|expiresAt`
+ * - 9-field (current): `key|defaultValue|type|moduleName|propertyName|flagType|description|category|expiresAt`
  *
  * Returns an empty list when the file does not exist or is empty.
  * Ignores lines that do not conform to any expected format.

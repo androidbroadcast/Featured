@@ -29,3 +29,16 @@ internal fun String.modulePathToIdentifier(): String =
         .filter { it.isNotBlank() }
         .joinToString("") { segment -> segment.replaceFirstChar { it.uppercase() } }
         .ifEmpty { "Root" }
+
+internal fun String.capitalized(): String = replaceFirstChar { it.uppercase() }
+
+/**
+ * Returns the name of the generated `ConfigValues` extension function for this flag.
+ *
+ * - Boolean flags: `is<Name>Enabled` (e.g. `isDarkModeEnabled`)
+ * - All other types: `get<Name>` (e.g. `getMaxRetries`)
+ */
+internal fun LocalFlagEntry.extensionFunctionName(): String {
+    val capitalized = propertyName.capitalized()
+    return if (type == "Boolean") "is${capitalized}Enabled" else "get$capitalized"
+}
