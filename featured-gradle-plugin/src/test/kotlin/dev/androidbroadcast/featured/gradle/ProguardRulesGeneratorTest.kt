@@ -2,146 +2,165 @@ package dev.androidbroadcast.featured.gradle
 
 import kotlin.test.Test
 import kotlin.test.assertContains
-import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ProguardRulesGeneratorTest {
+    private val modulePath = ":feature:ui"
+    private val expectedClass =
+        "dev.androidbroadcast.featured.generated.${ExtensionFunctionGenerator.jvmFileName(modulePath)}"
+
+    // ── empty / no-op cases ──────────────────────────────────────────────────
+
     @Test
-    fun `generates no rules when entries list is empty`() {
-        val rules = ProguardRulesGenerator.generate(emptyList())
-        assertTrue(
-            rules.isBlank(),
-            "Expected blank output for empty entries, got: '$rules'",
-        )
+    fun `returns blank for empty entries`() {
+        assertTrue(ProguardRulesGenerator.generate(emptyList(), modulePath).isBlank())
     }
 
     @Test
-    fun `generates no rules for boolean flag with defaultValue true`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(key = "feature_enabled", defaultValue = "true", type = "Boolean", moduleName = ":app"),
-            )
-        val rules = ProguardRulesGenerator.generate(entries)
-        assertTrue(
-            rules.isBlank(),
-            "Expected no rules for flags with defaultValue=true, got: '$rules'",
+    fun `returns blank when all entries are remote`() {
+        val entries = listOf(
+            entry("promo", "false", "Boolean", flagType = LocalFlagEntry.FLAG_TYPE_REMOTE),
         )
+        assertTrue(ProguardRulesGenerator.generate(entries, modulePath).isBlank())
     }
 
-    @Test
-    fun `generates no rules for non-boolean flags`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(key = "timeout", defaultValue = "30", type = "Int", moduleName = ":app"),
-                LocalFlagEntry(key = "server_url", defaultValue = "https://example.com", type = "String", moduleName = ":app"),
-            )
-        val rules = ProguardRulesGenerator.generate(entries)
-        assertTrue(
-            rules.isBlank(),
-            "Expected no rules for non-boolean flags, got: '$rules'",
-        )
-    }
+    // ── per-function rule generation ─────────────────────────────────────────
 
     @Test
-    fun `generates assumevalues rule for boolean flag with defaultValue false`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(key = "dark_mode", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-            )
-        val rules = ProguardRulesGenerator.generate(entries)
+    fun `generates assumevalues block for local boolean false flag`() {
+        val entries = listOf(entry("dark_mode", "false", "Boolean"))
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
         assertContains(rules, "-assumevalues")
-        assertContains(rules, "dark_mode")
-        assertFalse(rules.isBlank())
+        assertContains(rules, "boolean isDarkModeEnabled")
+        assertContains(rules, "return false")
     }
 
     @Test
-    fun `generated rule contains correct class reference`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(key = "new_ui", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-            )
-        val rules = ProguardRulesGenerator.generate(entries)
+    fun `generates assumevalues block for local boolean true flag`() {
+        val entries = listOf(entry("main_button_red", "true", "Boolean"))
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
+        assertContains(rules, "boolean isMainButtonRedEnabled")
+        assertContains(rules, "return true")
+    }
+
+    @Test
+    fun `targets the generated extensions class not ConfigValues`() {
+        val entries = listOf(entry("dark_mode", "false", "Boolean"))
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
+        assertContains(rules, expectedClass)
+        assertFalse(rules.contains("ConfigValues {"), "Must not target ConfigValues directly")
+    }
+
+    @Test
+    fun `generates int rule with correct jvm type`() {
+        val entries = listOf(entry("max_retries", "3", "Int"))
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
+        assertContains(rules, "int getMaxRetries")
+        assertContains(rules, "return 3")
+    }
+
+    @Test
+    fun `generates long rule with long suffix stripped`() {
+        val entries = listOf(entry("timeout_ms", "5000L", "Long"))
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
+        assertContains(rules, "long getTimeoutMs")
+        assertContains(rules, "return 5000")
+        assertFalse(rules.contains("return 5000L"), "Long literal suffix must be stripped")
+    }
+
+    @Test
+    fun `generates float rule with float suffix stripped`() {
+        val entries = listOf(entry("threshold", "0.5f", "Float"))
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
+        assertContains(rules, "float getThreshold")
+        assertContains(rules, "return 0.5")
+    }
+
+    @Test
+    fun `generates double rule`() {
+        val entries = listOf(entry("ratio", "1.5", "Double"))
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
+        assertContains(rules, "double getRatio")
+        assertContains(rules, "return 1.5")
+    }
+
+    @Test
+    fun `generates string rule with quoted value`() {
+        val entries = listOf(entry("api_url", "\"https://example.com\"", "String"))
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
+        assertContains(rules, "java.lang.String getApiUrl")
+        assertContains(rules, "return \"https://example.com\"")
+    }
+
+    // ── multiple flags ───────────────────────────────────────────────────────
+
+    @Test
+    fun `generates one rule per local flag`() {
+        val entries = listOf(
+            entry("flag_a", "false", "Boolean"),
+            entry("flag_b", "true", "Boolean"),
+            entry("retry_count", "3", "Int"),
+        )
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
+        assertContains(rules, "isFlagAEnabled")
+        assertContains(rules, "isFlagBEnabled")
+        assertContains(rules, "getRetryCount")
+    }
+
+    @Test
+    fun `excludes remote flags from rules`() {
+        val entries = listOf(
+            entry("local_flag", "false", "Boolean", flagType = LocalFlagEntry.FLAG_TYPE_LOCAL),
+            entry("remote_flag", "false", "Boolean", flagType = LocalFlagEntry.FLAG_TYPE_REMOTE),
+        )
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
+        assertContains(rules, "isLocalFlagEnabled")
+        assertFalse(rules.contains("isRemoteFlagEnabled"), "Remote flags must not appear in ProGuard rules")
+    }
+
+    // ── module-path-based class name ─────────────────────────────────────────
+
+    @Test
+    fun `class name differs per module path`() {
+        val entries = listOf(entry("flag", "false", "Boolean"))
+        val rulesApp = ProguardRulesGenerator.generate(entries, ":app")
+        val rulesFeature = ProguardRulesGenerator.generate(entries, ":feature:checkout")
+        assertFalse(
+            rulesApp == rulesFeature,
+            "Different module paths must produce different class names",
+        )
+    }
+
+    // ── output format ────────────────────────────────────────────────────────
+
+    @Test
+    fun `output starts with comment header`() {
+        val entries = listOf(entry("flag", "false", "Boolean"))
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
+        assertTrue(rules.trimStart().startsWith("#"), "Output must start with a comment")
+    }
+
+    @Test
+    fun `each method rule includes ConfigValues parameter type`() {
+        val entries = listOf(entry("dark_mode", "false", "Boolean"))
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
         assertContains(rules, "dev.androidbroadcast.featured.ConfigValues")
     }
 
-    @Test
-    fun `generates rules only for boolean false flags when mixed entries provided`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(key = "disabled_flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-                LocalFlagEntry(key = "enabled_flag", defaultValue = "true", type = "Boolean", moduleName = ":app"),
-                LocalFlagEntry(key = "timeout", defaultValue = "30", type = "Int", moduleName = ":app"),
-            )
-        val rules = ProguardRulesGenerator.generate(entries)
-        assertContains(rules, "disabled_flag")
-        assertFalse(rules.contains("enabled_flag"), "Should not contain rules for true flags")
-        assertFalse(rules.contains("timeout"), "Should not contain rules for non-boolean flags")
-    }
+    // ── helpers ──────────────────────────────────────────────────────────────
 
-    @Test
-    fun `generates rules for multiple boolean false flags`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(key = "flag_a", defaultValue = "false", type = "Boolean", moduleName = ":core"),
-                LocalFlagEntry(key = "flag_b", defaultValue = "false", type = "Boolean", moduleName = ":feature"),
-            )
-        val rules = ProguardRulesGenerator.generate(entries)
-        assertContains(rules, "flag_a")
-        assertContains(rules, "flag_b")
-    }
-
-    @Test
-    fun `generated output is valid proguard rule format`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(key = "my_flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-            )
-        val rules = ProguardRulesGenerator.generate(entries)
-        // Must start with -assumevalues directive
-        assertTrue(
-            rules.trimStart().startsWith("-assumevalues"),
-            "Generated rules must start with -assumevalues, got: '$rules'",
-        )
-    }
-
-    @Test
-    fun `generates no rules when RemoteFlag entries are absent from input`() {
-        // @RemoteFlag params are never scanned into LocalFlagEntry — the scanner
-        // only recognises @LocalFlag. Passing an empty list simulates the result
-        // of a project that has only @RemoteFlag declarations.
-        val rules = ProguardRulesGenerator.generate(emptyList())
-        assertTrue(
-            rules.isBlank(),
-            "Expected no rules when no @LocalFlag entries are present (e.g. only @RemoteFlag), got: '$rules'",
-        )
-    }
-
-    @Test
-    fun `generates rules for boolean false flags from three modules`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(key = "flag_core", defaultValue = "false", type = "Boolean", moduleName = ":core"),
-                LocalFlagEntry(key = "flag_feature", defaultValue = "false", type = "Boolean", moduleName = ":feature"),
-                LocalFlagEntry(key = "flag_app", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-            )
-        val rules = ProguardRulesGenerator.generate(entries)
-        assertContains(rules, "flag_core")
-        assertContains(rules, "flag_feature")
-        assertContains(rules, "flag_app")
-        assertContains(rules, ":core")
-        assertContains(rules, ":feature")
-        assertContains(rules, ":app")
-        assertFalse(rules.isBlank(), "Expected rules to be generated for all three modules")
-    }
-
-    @Test
-    fun `generated rule contains return false for the method`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(key = "my_flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
-            )
-        val rules = ProguardRulesGenerator.generate(entries)
-        assertContains(rules, "return false")
-    }
+    private fun entry(
+        key: String,
+        default: String,
+        type: String,
+        flagType: String = LocalFlagEntry.FLAG_TYPE_LOCAL,
+    ) = LocalFlagEntry(
+        key = key,
+        defaultValue = default,
+        type = type,
+        moduleName = modulePath,
+        propertyName = key.toCamelCase(),
+        flagType = flagType,
+    )
 }
