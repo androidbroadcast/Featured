@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.flowOf
  * Use [set] to define per-param overrides. The scope is opaque — only [set] is part of the
  * public API.
  */
-public class FakeConfigValuesScope internal constructor() {
+internal class FakeConfigValuesScope internal constructor() {
     private val overrides: MutableMap<String, Any> = mutableMapOf()
 
     /**
@@ -48,7 +48,7 @@ public class FakeConfigValuesScope internal constructor() {
  * }
  * ```
  */
-public fun fakeConfigValues(block: FakeConfigValuesScope.() -> Unit = {}): ConfigValues {
+internal fun fakeConfigValues(block: FakeConfigValuesScope.() -> Unit = {}): ConfigValues {
     val scope = FakeConfigValuesScope().apply(block)
     return ConfigValues(localProvider = FakeLocalConfigValueProvider(scope.buildOverrides()))
 }
