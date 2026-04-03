@@ -1,8 +1,0 @@
-public final class dev/androidbroadcast/featured/compose/ConfigValuesComposeExtensionsKt {
-	public static final fun collectAsState (Ldev/androidbroadcast/featured/ConfigValues;Ldev/androidbroadcast/featured/ConfigParam;Landroidx/compose/runtime/Composer;I)Landroidx/compose/runtime/State;
-}
-
-public final class dev/androidbroadcast/featured/compose/LocalConfigValuesKt {
-	public static final fun getLocalConfigValues ()Landroidx/compose/runtime/ProvidableCompositionLocal;
-}
-
