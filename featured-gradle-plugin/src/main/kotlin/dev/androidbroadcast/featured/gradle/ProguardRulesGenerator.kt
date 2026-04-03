@@ -67,7 +67,9 @@ public object ProguardRulesGenerator {
 
     private fun proguardLiteral(entry: LocalFlagEntry): String =
         when (entry.type) {
-            "String" -> entry.defaultValue // already quoted (e.g. `"hello"`)
+            "String" -> entry.defaultValue
+
+            // already quoted (e.g. `"hello"`)
 
             "Long" -> entry.defaultValue.trimEnd('L', 'l')
 
