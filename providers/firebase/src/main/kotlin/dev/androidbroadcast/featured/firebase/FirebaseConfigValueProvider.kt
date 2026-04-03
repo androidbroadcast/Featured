@@ -5,6 +5,7 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
 import dev.androidbroadcast.featured.RemoteConfigValueProvider
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 import kotlin.reflect.KClass
 
@@ -98,6 +99,8 @@ public class FirebaseConfigValueProvider(
 
         try {
             task.await()
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw FetchException("Firebase Remote Config fetch failed", e)
         }
