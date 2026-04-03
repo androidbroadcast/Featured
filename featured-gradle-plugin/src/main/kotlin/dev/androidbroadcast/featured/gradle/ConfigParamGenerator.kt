@@ -64,7 +64,7 @@ public object ConfigParamGenerator {
 
     private fun LocalFlagEntry.formatDefault(): String =
         when (type) {
-            "String" -> defaultValue // already quoted by FlagContainer.string()
+            "String" -> defaultValue
 
             "Long" -> "${defaultValue}L"
 

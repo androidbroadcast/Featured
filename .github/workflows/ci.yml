@@ -24,9 +24,9 @@ jobs:
       - run: >-
           ./gradlew test
           :core:koverVerify
-          :datastore-provider:koverVerify
-          :sharedpreferences-provider:koverVerify
-          :firebase-provider:koverVerify
+          :providers:datastore:koverVerify
+          :providers:sharedpreferences:koverVerify
+          :providers:firebase:koverVerify
           :featured-compose:koverVerify
           :featured-registry:koverVerify
           :featured-testing:koverVerify
@@ -98,9 +98,9 @@ jobs:
             :core:linkDebugFrameworkIosSimulatorArm64 \
             :core:linkDebugFrameworkIosArm64 \
             :core:linkDebugFrameworkIosX64 \
-            :datastore-provider:linkDebugFrameworkIosSimulatorArm64 \
-            :datastore-provider:linkDebugFrameworkIosArm64 \
-            :datastore-provider:linkDebugFrameworkIosX64
+            :providers:datastore:linkDebugFrameworkIosSimulatorArm64 \
+            :providers:datastore:linkDebugFrameworkIosArm64 \
+            :providers:datastore:linkDebugFrameworkIosX64
 
       - name: Build Xcode project
         # generic/platform avoids "simulator not found" failures on runners
