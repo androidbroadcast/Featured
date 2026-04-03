@@ -95,9 +95,6 @@ public abstract interface class dev/androidbroadcast/featured/LocalConfigValuePr
 	public abstract fun set (Ldev/androidbroadcast/featured/ConfigParam;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public abstract interface annotation class dev/androidbroadcast/featured/LocalFlag : java/lang/annotation/Annotation {
-}
-
 public abstract interface class dev/androidbroadcast/featured/RemoteConfigValueProvider : dev/androidbroadcast/featured/ConfigValueProvider {
 	public abstract fun fetch (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun fetch$default (Ldev/androidbroadcast/featured/RemoteConfigValueProvider;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
@@ -105,9 +102,6 @@ public abstract interface class dev/androidbroadcast/featured/RemoteConfigValueP
 
 public final class dev/androidbroadcast/featured/RemoteConfigValueProvider$DefaultImpls {
 	public static synthetic fun fetch$default (Ldev/androidbroadcast/featured/RemoteConfigValueProvider;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-}
-
-public abstract interface annotation class dev/androidbroadcast/featured/RemoteFlag : java/lang/annotation/Annotation {
 }
 
 public abstract interface class dev/androidbroadcast/featured/TypeConverter {

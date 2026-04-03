@@ -9,10 +9,9 @@ import io.gitlab.arturbosch.detekt.api.RuleSetProvider
  *
  * Rules:
  * - [ExpiredFeatureFlagRule] — flags past their expiry date
- * - [HardcodedFlagValueRule] — hardcoded boolean flag values
- * - [MissingFlagAnnotationRule] — missing `@LocalFlag`/`@RemoteFlag` annotations
- * - [InvalidFlagReference] — `@BehindFlag`/`@AssumesFlag` referencing an unknown flag name (PSI-only, runs under plain `detekt` task)
- * - [UncheckedFlagAccess] — `@BehindFlag`-annotated code used outside a guard (requires `detektWithTypeResolution` task)
+ * - [HardcodedFlagValueRule] — direct access to `ConfigParam.defaultValue`
+ * - [InvalidFlagReference] — `@BehindFlag`/`@AssumesFlag` referencing an unknown flag name (PSI-only)
+ * - [UncheckedFlagAccess] — `@BehindFlag`-annotated code used outside a guard (requires type resolution)
  *
  * Example `detekt.yml`:
  * ```yaml
@@ -20,8 +19,6 @@ import io.gitlab.arturbosch.detekt.api.RuleSetProvider
  *   ExpiredFeatureFlag:
  *     active: true
  *   HardcodedFlagValue:
- *     active: true
- *   MissingFlagAnnotation:
  *     active: true
  *   InvalidFlagReference:
  *     active: true      # runs under plain detekt task
@@ -42,7 +39,6 @@ public class FeaturedRuleSetProvider : RuleSetProvider {
                 listOf(
                     ExpiredFeatureFlagRule(config),
                     HardcodedFlagValueRule(config),
-                    MissingFlagAnnotationRule(config),
                     InvalidFlagReference(config),
                     UncheckedFlagAccess(config),
                 ),

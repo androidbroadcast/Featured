@@ -87,27 +87,44 @@ interface RemoteConfigValueProvider {
 
 ---
 
-## Annotations
+## Gradle DSL
 
-### `@LocalFlag`
+Flags are declared in `build.gradle.kts` using the `featured { }` extension block provided by the `dev.androidbroadcast.featured` Gradle plugin.
 
-Marks a `ConfigParam` property for scanning by the Gradle plugin. The plugin uses this annotation to generate R8 rules (Android/JVM) and xcconfig conditions (iOS).
-
-```kotlin
-@Target(AnnotationTarget.PROPERTY)
-@Retention(AnnotationRetention.SOURCE)
-annotation class LocalFlag
+```kotlin title="build.gradle.kts"
+featured {
+    localFlags {
+        boolean("dark_mode", default = false) { category = "UI"; expiresAt = "2026-06-01" }
+        int("max_retries", default = 3)
+    }
+    remoteFlags {
+        boolean("promo_banner", default = false) { description = "Show promo banner" }
+        string("api_url", default = "https://api.example.com")
+    }
+}
 ```
 
-### `@RemoteFlag`
+### Generated types
 
-Marks a `ConfigParam` as remote-only. Remote-only flags are excluded from code-generation tasks.
+The plugin generates:
 
-```kotlin
-@Target(AnnotationTarget.PROPERTY)
-@Retention(AnnotationRetention.SOURCE)
-annotation class RemoteFlag
-```
+| Generated type | Description |
+|---|---|
+| `internal object GeneratedLocalFlags` | Typed `ConfigParam` properties for every local flag |
+| `internal object GeneratedRemoteFlags` | Typed `ConfigParam` properties for every remote flag |
+| Extension functions on `ConfigValues` | Local boolean flag → `fun ConfigValues.is<Name>Enabled(): Boolean`; local non-boolean → `fun ConfigValues.get<Name>(): T`; remote → `fun ConfigValues.get<Name>(): ConfigValue<T>` |
+
+### Key tasks
+
+| Task | Description |
+|---|---|
+| `resolveFeatureFlags` | Resolves DSL-declared flags; runs before all code-generation tasks |
+| `generateConfigParam` | Generates `GeneratedLocalFlags` and `GeneratedRemoteFlags` objects |
+| `generateFlagRegistrar` | Generates flag registrar for the debug UI |
+| `generateProguardRules` | Generates per-function R8 `-assumevalues` rules for local boolean flags |
+| `generateIosConstVal` | Generates `expect`/`actual const val` for local flags (iOS) |
+| `generateXcconfig` | Generates xcconfig with `DISABLE_*` conditions for local boolean flags |
+| `scanAllLocalFlags` | Aggregator task — collects flags across all modules |
 
 ---
 

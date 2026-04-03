@@ -24,23 +24,21 @@ Then add `FeaturedCore` as a target dependency:
 )
 ```
 
-## 2. Declare flags in Kotlin (shared module)
+## 2. Declare flags in the shared module
 
-Flags live in the shared Kotlin module and are exported to Swift. Annotate them with `@LocalFlag` so the Gradle plugin can scan them:
+Declare flags in the shared module's `build.gradle.kts` using the `featured { }` DSL block. The plugin generates typed helpers automatically.
 
-```kotlin title="shared/src/commonMain/kotlin/com/example/FeatureFlags.kt"
-import dev.androidbroadcast.featured.ConfigParam
-import dev.androidbroadcast.featured.LocalFlag
-
-object FeatureFlags {
-    @LocalFlag
-    val newCheckout = ConfigParam<Boolean>(
-        key = "new_checkout",
-        defaultValue = false,
-        description = "Enable the new checkout flow",
-    )
+```kotlin title="shared/build.gradle.kts"
+featured {
+    localFlags {
+        boolean("new_checkout", default = false) {
+            description = "Enable the new checkout flow"
+        }
+    }
 }
 ```
+
+The plugin generates `internal object GeneratedLocalFlags` with typed `ConfigParam` properties and public extension functions on `ConfigValues` such as `fun ConfigValues.isNewCheckoutEnabled(): Boolean`. These generated types are exported to Swift via the KMP framework.
 
 ## 3. Initialize `ConfigValues` in Swift
 
@@ -166,7 +164,7 @@ struct CheckoutScreen: View {
 
 ## 7. Swift dead-code elimination via xcconfig
 
-The Gradle plugin generates an xcconfig file that feeds Swift compilation conditions into Xcode. For every `@LocalFlag`-annotated `ConfigParam<Boolean>` with `defaultValue = false`, a `DISABLE_<FLAG_KEY>` condition is generated.
+The Gradle plugin generates an xcconfig file that feeds Swift compilation conditions into Xcode. For every local boolean flag declared in `featured { localFlags { } }` with `default = false`, a `DISABLE_<FLAG_KEY>` condition is generated.
 
 ### Key transformation
 

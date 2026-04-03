@@ -5,8 +5,8 @@ disabled feature-flag code paths from your iOS Release binaries at compile time.
 
 ## How it works
 
-For every `@LocalFlag`-annotated `ConfigParam<Boolean>` with `defaultValue = false` in
-your shared Kotlin module, the plugin generates a `DISABLE_<FLAG_KEY>` Swift compilation
+For every local boolean flag declared in `featured { localFlags { } }` with `default = false`
+in your shared Kotlin module, the plugin generates a `DISABLE_<FLAG_KEY>` Swift compilation
 condition. Xcode reads these conditions from an xcconfig file and passes them to the Swift
 compiler, which removes any `#if !DISABLE_*` guarded block from the binary entirely —
 with no runtime overhead.
@@ -19,12 +19,12 @@ with no runtime overhead.
 | `experimentalUi`     | `DISABLE_EXPERIMENTAL_UI`|
 | `my_feature_flag`    | `DISABLE_MY_FEATURE_FLAG`|
 
-Only Boolean flags with `defaultValue = false` produce a condition. Flags with
-`defaultValue = true`, non-boolean flags, and `@RemoteFlag` declarations are excluded.
+Only local boolean flags with `default = false` produce a condition. Flags with
+`default = true`, non-boolean flags, and flags declared in `remoteFlags { }` are excluded.
 
 ## Step 1: Generate the xcconfig file
 
-Run the Gradle task from the module that contains your `@LocalFlag` declarations
+Run the Gradle task from the module that contains your `featured { localFlags { } }` DSL declarations
 (usually your `shared` or `core` module):
 
 ```bash
@@ -89,7 +89,7 @@ condition. The Swift compiler removes the entire guarded block from Release bina
 ### View entry point
 
 ```swift
-// Entry point guarded by @LocalFlag new_checkout (defaultValue = false)
+// Entry point guarded by local boolean flag new_checkout (default = false)
 #if !DISABLE_NEW_CHECKOUT
 NewCheckoutButton()
 #endif
@@ -141,5 +141,7 @@ Set **Based on dependency analysis** to **off** so it runs on every build.
 
 - `FeatureFlags.swift` — Swift wrapper with usage examples and setup guidance
 - `iosApp/Configuration/FeatureFlags.generated.xcconfig` — placeholder / copy destination
+- `generateIosConstVal` — Gradle task that generates `expect`/`actual const val` for local flags
+- `resolveFeatureFlags` — Gradle task that resolves DSL-declared flags before code generation
 - `GenerateXcconfigTask.kt` — Gradle task that writes the xcconfig
 - `XcconfigGenerator.kt` — key transformation and file generation logic

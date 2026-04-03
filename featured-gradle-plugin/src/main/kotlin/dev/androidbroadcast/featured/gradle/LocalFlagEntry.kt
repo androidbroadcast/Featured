@@ -1,16 +1,17 @@
 package dev.androidbroadcast.featured.gradle
 
 /**
- * Represents a single `@LocalFlag`-annotated [dev.androidbroadcast.featured.ConfigParam]
- * discovered during source scanning.
+ * Represents a single feature flag declared via the `featured { }` Gradle DSL.
  *
- * @property key The configuration key string passed to [ConfigParam].
- * @property defaultValue The default value as a raw string extracted from source.
- * @property type The inferred Kotlin type name (e.g. "Boolean", "String", "Int", "Double").
- * @property moduleName The Gradle module (project path) that declares this flag.
- * @property propertyName The Kotlin property name of the [ConfigParam] declaration (e.g. `"darkTheme"`).
- * @property ownerName The simple name of the enclosing `object` or `companion object`, or `null`
- *   if the declaration is top-level.
+ * @property key The configuration key string (e.g. `"dark_mode"`).
+ * @property defaultValue The default value as a raw string (e.g. `"false"`, `"42"`).
+ * @property type The Kotlin type name: `"Boolean"`, `"Int"`, `"Long"`, `"Float"`, `"Double"`, or `"String"`.
+ * @property moduleName The Gradle module path that declares this flag (e.g. `":feature:checkout"`).
+ * @property propertyName The camelCase property name derived from [key] (e.g. `"darkMode"`).
+ * @property flagType Either `"local"` or `"remote"`.
+ * @property description Optional human-readable description, passed to the generated [ConfigParam].
+ * @property category Optional grouping category shown in the debug UI.
+ * @property expiresAt Optional ISO-8601 date string (`"YYYY-MM-DD"`) after which the flag is considered stale.
  */
 public data class LocalFlagEntry(
     public val key: String,
@@ -18,23 +19,32 @@ public data class LocalFlagEntry(
     public val type: String,
     public val moduleName: String,
     public val propertyName: String = "",
-    public val ownerName: String? = null,
+    public val flagType: String = FLAG_TYPE_LOCAL,
+    public val description: String? = null,
+    public val category: String? = null,
+    public val expiresAt: String? = null,
 ) {
+    public val isLocal: Boolean get() = flagType == FLAG_TYPE_LOCAL
+
     /**
-     * Returns the Kotlin reference expression used in the generated `FlagRegistry.register(...)` call.
+     * Returns the Kotlin reference used in the generated `FlagRegistry.register(...)` call.
      *
-     * - If [ownerName] is non-null: `"OwnerName.propertyName"`
-     * - Otherwise: `"propertyName"` (top-level declaration)
-     *
-     * Returns an empty string when [propertyName] is blank, signalling that the entry
-     * cannot produce a valid compile-time reference (e.g. when scanned from legacy data
-     * without property-name information).
+     * - Local flags: `"GeneratedLocalFlags.propertyName"`
+     * - Remote flags: `"GeneratedRemoteFlags.propertyName"`
+     * - Blank when [propertyName] is empty (legacy data without property information).
      */
     public val kotlinReference: String
         get() =
             when {
                 propertyName.isBlank() -> ""
-                ownerName != null -> "$ownerName.$propertyName"
-                else -> propertyName
+                isLocal -> "$GENERATED_LOCAL_OBJECT.$propertyName"
+                else -> "$GENERATED_REMOTE_OBJECT.$propertyName"
             }
+
+    public companion object {
+        public const val FLAG_TYPE_LOCAL: String = "local"
+        public const val FLAG_TYPE_REMOTE: String = "remote"
+        internal const val GENERATED_LOCAL_OBJECT = "GeneratedLocalFlags"
+        internal const val GENERATED_REMOTE_OBJECT = "GeneratedRemoteFlags"
+    }
 }
