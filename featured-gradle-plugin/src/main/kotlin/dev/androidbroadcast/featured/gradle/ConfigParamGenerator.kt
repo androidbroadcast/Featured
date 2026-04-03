@@ -65,11 +65,8 @@ public object ConfigParamGenerator {
     private fun LocalFlagEntry.formatDefault(): String =
         when (type) {
             "String" -> defaultValue
-
             "Long" -> "${defaultValue}L"
-
             "Float" -> "${defaultValue}f"
-
             else -> defaultValue
         }
 }
