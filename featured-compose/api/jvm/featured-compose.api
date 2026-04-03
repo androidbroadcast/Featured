@@ -2,16 +2,6 @@ public final class dev/androidbroadcast/featured/compose/ConfigValuesComposeExte
 	public static final fun collectAsState (Ldev/androidbroadcast/featured/ConfigValues;Ldev/androidbroadcast/featured/ConfigParam;Landroidx/compose/runtime/Composer;I)Landroidx/compose/runtime/State;
 }
 
-public final class dev/androidbroadcast/featured/compose/FakeConfigValuesKt {
-	public static final fun fakeConfigValues (Lkotlin/jvm/functions/Function1;)Ldev/androidbroadcast/featured/ConfigValues;
-	public static synthetic fun fakeConfigValues$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ldev/androidbroadcast/featured/ConfigValues;
-}
-
-public final class dev/androidbroadcast/featured/compose/FakeConfigValuesScope {
-	public static final field $stable I
-	public final fun set (Ldev/androidbroadcast/featured/ConfigParam;Ljava/lang/Object;)V
-}
-
 public final class dev/androidbroadcast/featured/compose/LocalConfigValuesKt {
 	public static final fun getLocalConfigValues ()Landroidx/compose/runtime/ProvidableCompositionLocal;
 }
