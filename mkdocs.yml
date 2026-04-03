@@ -63,5 +63,3 @@ nav:
       - iOS Dead-Code Elimination: ios-integration.md
   - API Reference: api/index.md
   - Changelog: changelog.md
-  - ADRs:
-      - "ADR 001: ConfigValues Multi-Module": adr/001-configvalues-multi-module.md

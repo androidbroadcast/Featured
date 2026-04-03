@@ -98,8 +98,6 @@ public class FirebaseConfigValueProvider(
 
         try {
             task.await()
-        } catch (e: RuntimeException) {
-            throw e
         } catch (e: Exception) {
             throw FetchException("Firebase Remote Config fetch failed", e)
         }
