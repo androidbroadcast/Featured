@@ -9,7 +9,28 @@ import org.junit.Before
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.ClassWriter.COMPUTE_FRAMES
 import org.objectweb.asm.Label
-import org.objectweb.asm.Opcodes.*
+import org.objectweb.asm.Opcodes.ACC_PUBLIC
+import org.objectweb.asm.Opcodes.ACC_STATIC
+import org.objectweb.asm.Opcodes.ALOAD
+import org.objectweb.asm.Opcodes.ASTORE
+import org.objectweb.asm.Opcodes.DUP
+import org.objectweb.asm.Opcodes.GETFIELD
+import org.objectweb.asm.Opcodes.GETSTATIC
+import org.objectweb.asm.Opcodes.GOTO
+import org.objectweb.asm.Opcodes.IADD
+import org.objectweb.asm.Opcodes.ICONST_1
+import org.objectweb.asm.Opcodes.IFEQ
+import org.objectweb.asm.Opcodes.IFLE
+import org.objectweb.asm.Opcodes.ILOAD
+import org.objectweb.asm.Opcodes.INVOKESPECIAL
+import org.objectweb.asm.Opcodes.INVOKESTATIC
+import org.objectweb.asm.Opcodes.INVOKEVIRTUAL
+import org.objectweb.asm.Opcodes.IRETURN
+import org.objectweb.asm.Opcodes.NEW
+import org.objectweb.asm.Opcodes.PUTFIELD
+import org.objectweb.asm.Opcodes.PUTSTATIC
+import org.objectweb.asm.Opcodes.RETURN
+import org.objectweb.asm.Opcodes.V1_8
 import java.io.File
 import java.nio.file.Files
 import java.util.jar.JarEntry
@@ -105,11 +126,7 @@ internal class R8EliminationTest {
      */
     @Test
     fun `if-branch class is eliminated when boolean flag returns false`() {
-        val inputJar = workDir.resolve("input.jar").also { buildBooleanInputJar(it) }
-        val rulesFile = workDir.resolve("rules.pro").also { writeBooleanRules(it, returnValue = false) }
-        val outputJar = workDir.resolve("output.jar")
-
-        runR8(inputJar, rulesFile, outputJar)
+        val outputJar = runBooleanR8 { writeBooleanRules(it, returnValue = false) }
 
         assertClassAbsent(outputJar, IF_BRANCH_CODE_INTERNAL)
         assertClassPresent(outputJar, ELSE_BRANCH_CODE_INTERNAL)
@@ -123,11 +140,7 @@ internal class R8EliminationTest {
      */
     @Test
     fun `else-branch class is eliminated when boolean flag returns true`() {
-        val inputJar = workDir.resolve("input.jar").also { buildBooleanInputJar(it) }
-        val rulesFile = workDir.resolve("rules.pro").also { writeBooleanRules(it, returnValue = true) }
-        val outputJar = workDir.resolve("output.jar")
-
-        runR8(inputJar, rulesFile, outputJar)
+        val outputJar = runBooleanR8 { writeBooleanRules(it, returnValue = true) }
 
         assertClassPresent(outputJar, IF_BRANCH_CODE_INTERNAL)
         assertClassAbsent(outputJar, ELSE_BRANCH_CODE_INTERNAL)
@@ -144,11 +157,7 @@ internal class R8EliminationTest {
      */
     @Test
     fun `both branch classes survive when no boolean assumevalues rule is present`() {
-        val inputJar = workDir.resolve("input.jar").also { buildBooleanInputJar(it) }
-        val rulesFile = workDir.resolve("rules.pro").also { writeNoBooleanAssumeRules(it) }
-        val outputJar = workDir.resolve("output.jar")
-
-        runR8(inputJar, rulesFile, outputJar)
+        val outputJar = runBooleanR8 { writeNoBooleanAssumeRules(it) }
 
         assertClassPresent(outputJar, IF_BRANCH_CODE_INTERNAL)
         assertClassPresent(outputJar, ELSE_BRANCH_CODE_INTERNAL)
@@ -162,11 +171,7 @@ internal class R8EliminationTest {
      */
     @Test
     fun `guarded class is eliminated when int flag is assumed to return zero`() {
-        val inputJar = workDir.resolve("input.jar").also { buildIntInputJar(it) }
-        val rulesFile = workDir.resolve("rules.pro").also { writeIntRules(it, returnValue = 0) }
-        val outputJar = workDir.resolve("output.jar")
-
-        runR8(inputJar, rulesFile, outputJar)
+        val outputJar = runIntR8 { writeIntRules(it, returnValue = 0) }
 
         assertClassAbsent(outputJar, POSITIVE_COUNT_CODE_INTERNAL)
         assertClassPresent(outputJar, INT_CALLER_INTERNAL)
@@ -178,11 +183,7 @@ internal class R8EliminationTest {
      */
     @Test
     fun `guarded class survives when int flag has no assumevalues rule`() {
-        val inputJar = workDir.resolve("input.jar").also { buildIntInputJar(it) }
-        val rulesFile = workDir.resolve("rules.pro").also { writeNoIntAssumeRules(it) }
-        val outputJar = workDir.resolve("output.jar")
-
-        runR8(inputJar, rulesFile, outputJar)
+        val outputJar = runIntR8 { writeNoIntAssumeRules(it) }
 
         assertClassPresent(outputJar, POSITIVE_COUNT_CODE_INTERNAL)
         assertClassPresent(outputJar, INT_CALLER_INTERNAL)
@@ -534,6 +535,29 @@ internal class R8EliminationTest {
     }
 
     // ── R8 invocation ─────────────────────────────────────────────────────────
+
+    /**
+     * Builds the Boolean input JAR, writes rules via [writeRules], runs R8, and returns
+     * the output JAR for assertion.
+     */
+    private fun runBooleanR8(writeRules: (File) -> Unit): File = runR8WithJar(::buildBooleanInputJar, writeRules)
+
+    /**
+     * Builds the Int input JAR, writes rules via [writeRules], runs R8, and returns
+     * the output JAR for assertion.
+     */
+    private fun runIntR8(writeRules: (File) -> Unit): File = runR8WithJar(::buildIntInputJar, writeRules)
+
+    private fun runR8WithJar(
+        buildInputJar: (File) -> Unit,
+        writeRules: (File) -> Unit,
+    ): File {
+        val inputJar = workDir.resolve("input.jar").also(buildInputJar)
+        val rulesFile = workDir.resolve("rules.pro").also(writeRules)
+        val outputJar = workDir.resolve("output.jar")
+        runR8(inputJar, rulesFile, outputJar)
+        return outputJar
+    }
 
     private fun runR8(
         inputJar: File,
