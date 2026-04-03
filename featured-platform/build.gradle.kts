@@ -52,13 +52,13 @@ kotlin {
         }
 
         androidMain.dependencies {
-            implementation(project(":datastore-provider"))
+            implementation(project(":providers:datastore"))
             implementation(libs.androidx.datastore.preferences)
             implementation(libs.kotlinx.coroutines.android)
         }
 
         iosMain.dependencies {
-            implementation(project(":nsuserdefaults-provider"))
+            implementation(project(":providers:nsuserdefaults"))
         }
     }
 }

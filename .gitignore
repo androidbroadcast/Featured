@@ -19,3 +19,6 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 .pipeline/
 *.preferences_pb
+/docs/superpowers/
+/docs/adr/
+/.claude/worktrees/

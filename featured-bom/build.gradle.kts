@@ -10,18 +10,20 @@ javaPlatform {
 dependencies {
     constraints {
         api(project(":core"))
-        api(project(":datastore-provider"))
-        api(project(":firebase-provider"))
-        api(project(":sharedpreferences-provider"))
-        api(project(":javaprefs-provider"))
+        api(project(":providers:datastore"))
+        api(project(":providers:firebase"))
+        api(project(":providers:sharedpreferences"))
+        api(project(":providers:javaprefs"))
+        api(project(":providers:nsuserdefaults"))
+        api(project(":providers:configcat"))
+
         api(project(":featured-compose"))
         api(project(":featured-registry"))
         api(project(":featured-debug-ui"))
         api(project(":featured-gradle-plugin"))
-        api(project(":nsuserdefaults-provider"))
+
         api(project(":featured-platform"))
         api(project(":featured-detekt-rules"))
-        api(project(":configcat-provider"))
     }
 }
 

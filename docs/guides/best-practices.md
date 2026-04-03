@@ -10,25 +10,26 @@ Draft → Rollout → Cleanup
 
 ### 1. Draft — introduce the flag
 
-Declare the `ConfigParam` in your module's flags registry. Annotate it with `@LocalFlag` or `@RemoteFlag` (required by the `MissingFlagAnnotationRule` Detekt rule) and set an expiry date using `@ExpiresAt` so stale flags surface automatically in CI.
+Declare the flag in `build.gradle.kts` using the `featured { }` DSL block and set an expiry date using `expiresAt` so stale flags surface automatically in CI. Use `localFlags { }` for flags that will be deleted once the rollout is complete, and `remoteFlags { }` for flags that will be permanently controlled from the server.
 
 ```kotlin
-// GOOD: annotated, expiry date set, snake_case key, module-prefixed
-@LocalFlag
-@ExpiresAt("2026-09-01")
-val newCheckout: ConfigParam<Boolean> = ConfigParam(
-    key = "checkout_new_flow",
-    defaultValue = false,
-    description = "Enable the redesigned single-page checkout",
-    category = "checkout",
-)
+// GOOD: expiry date set, snake_case key, module-prefixed
+featured {
+    localFlags {
+        boolean("checkout_new_flow", default = false) {
+            description = "Enable the redesigned single-page checkout"
+            category = "checkout"
+            expiresAt = "2026-09-01"
+        }
+    }
+}
 ```
 
-Guard every entry point — UI composition roots **and** deep-link handlers — behind the flag value. Keep the default `false` so the feature is off until you explicitly enable it.
+Guard every entry point — UI composition roots **and** deep-link handlers — behind the generated extension function. Keep the default `false` so the feature is off until you explicitly enable it.
 
 ```kotlin
 // Guard a Compose entry point
-val isNewCheckout by configValues.collectAsState(FeatureFlags.newCheckout)
+val isNewCheckout by configValues.collectAsState(GeneratedLocalFlags.checkoutNewFlow)
 
 if (isNewCheckout) {
     NewCheckoutScreen()
@@ -41,28 +42,28 @@ if (isNewCheckout) {
 
 Use a `RemoteConfigValueProvider` (e.g. Firebase Remote Config) to enable the flag for a growing percentage of users. Remote values automatically override local defaults — no code change required.
 
-Annotate the flag `@RemoteFlag` when it is intended to be permanently controlled from the server (A/B experiments, promotional banners). Use `@LocalFlag` for flags that will eventually be deleted once the rollout is complete.
+Declare the flag in `remoteFlags { }` when it is intended to be permanently controlled from the server (A/B experiments, promotional banners). Use `localFlags { }` for flags that will eventually be deleted once the rollout is complete.
 
 ```kotlin
 // Permanent remote-controlled flag
-@RemoteFlag
-val promoBannerEnabled: ConfigParam<Boolean> = ConfigParam(
-    key = "promo_banner_enabled",
-    defaultValue = false,
-    description = "Show a promotional banner (remote-controlled)",
-    category = "promotions",
-)
+featured {
+    remoteFlags {
+        boolean("promo_banner_enabled", default = false) {
+            description = "Show a promotional banner (remote-controlled)"
+            category = "promotions"
+        }
+    }
+}
 ```
 
 ### 3. Cleanup — delete the flag
 
 Once the feature is fully rolled out and validated:
 
-1. Delete the `ConfigParam` declaration.
-2. Remove the `@LocalFlag` / `@ExpiresAt` annotations (they go with the declaration).
-3. Remove the guarding `if` blocks — keep only the new-path code.
-4. Remove the corresponding key from your remote configuration backend.
-5. Regenerate platform artefacts:
+1. Remove the flag from the `featured { }` DSL block in `build.gradle.kts`.
+2. Delete all usages of the generated extension function and any guarding `if` blocks — keep only the new-path code.
+3. Remove the corresponding key from your remote configuration backend.
+4. Regenerate platform artefacts:
 
 ```bash
 ./gradlew generateProguardRules   # keep Android R8 rules in sync
@@ -100,39 +101,31 @@ val enabled: ConfigParam<Boolean> = ConfigParam(key = "new_flow", ...)
 
 Each feature module declares its own object holding its `ConfigParam` instances. The module does not create `ConfigValues` — that is the app module's responsibility.
 
-```kotlin title=":feature:checkout/src/.../CheckoutFlags.kt"
-public object CheckoutFlags {
-
-    @LocalFlag
-    @ExpiresAt("2026-09-01")
-    public val newFlow: ConfigParam<Boolean> = ConfigParam(
-        key = "checkout_new_flow",
-        defaultValue = false,
-        description = "Enable the redesigned checkout flow",
-        category = "checkout",
-    )
-
-    @LocalFlag
-    @ExpiresAt("2026-09-01")
-    public val paymentV2: ConfigParam<Boolean> = ConfigParam(
-        key = "checkout_payment_v2",
-        defaultValue = false,
-        description = "Enable Payment V2 during checkout",
-        category = "checkout",
-    )
+```kotlin title=":feature:checkout/build.gradle.kts"
+featured {
+    localFlags {
+        boolean("checkout_new_flow", default = false) {
+            description = "Enable the redesigned checkout flow"
+            category = "checkout"
+            expiresAt = "2026-09-01"
+        }
+        boolean("checkout_payment_v2", default = false) {
+            description = "Enable Payment V2 during checkout"
+            category = "checkout"
+            expiresAt = "2026-09-01"
+        }
+    }
 }
 ```
 
-```kotlin title=":feature:promotions/src/.../PromotionsFlags.kt"
-public object PromotionsFlags {
-
-    @RemoteFlag
-    public val promoBanner: ConfigParam<Boolean> = ConfigParam(
-        key = "promo_banner_enabled",
-        defaultValue = false,
-        description = "Show a promotional banner (remote-controlled)",
-        category = "promotions",
-    )
+```kotlin title=":feature:promotions/build.gradle.kts"
+featured {
+    remoteFlags {
+        boolean("promo_banner_enabled", default = false) {
+            description = "Show a promotional banner (remote-controlled)"
+            category = "promotions"
+        }
+    }
 }
 ```
 
@@ -164,8 +157,9 @@ class CheckoutViewModel @Inject constructor(
     private val configValues: ConfigValues,
 ) : ViewModel() {
 
+    // isCheckoutNewFlowEnabled() is the generated extension function from the DSL declaration
     val isNewFlowEnabled: StateFlow<Boolean> = configValues.asStateFlow(
-        param = CheckoutFlags.newFlow,
+        param = GeneratedLocalFlags.checkoutNewFlow,
         scope = viewModelScope,
     )
 }
@@ -229,28 +223,41 @@ Never use real providers (`FirebaseConfigValueProvider`, `DataStoreConfigValuePr
 Flags are temporary scaffolding, not permanent configuration. Without an expiry date they accumulate silently.
 
 ```kotlin
-// BAD — no @ExpiresAt, will never prompt cleanup
-@LocalFlag
-val newCheckout: ConfigParam<Boolean> = ConfigParam(key = "checkout_new_flow", defaultValue = false)
+// BAD — no expiresAt, will never prompt cleanup
+featured {
+    localFlags {
+        boolean("checkout_new_flow", default = false)
+    }
+}
 
-// GOOD — @ExpiresAt triggers the ExpiredFeatureFlagRule Detekt warning on the deadline
-@LocalFlag
-@ExpiresAt("2026-09-01")
-val newCheckout: ConfigParam<Boolean> = ConfigParam(key = "checkout_new_flow", defaultValue = false)
+// GOOD — expiresAt triggers the ExpiredFeatureFlagRule Detekt warning on the deadline
+featured {
+    localFlags {
+        boolean("checkout_new_flow", default = false) {
+            expiresAt = "2026-09-01"
+        }
+    }
+}
 ```
 
 ### Using flags for configuration values
 
-`ConfigParam<Boolean>` is for feature toggles that will be deleted. Long-lived configuration values (thresholds, URLs, strings) should use the appropriate type directly and be annotated `@RemoteFlag` — they are not subject to the cleanup lifecycle.
+`localFlags` boolean entries are for feature toggles that will be deleted. Long-lived configuration values (thresholds, URLs, strings) should be declared in `remoteFlags { }` — they are not subject to the cleanup lifecycle.
 
 ```kotlin
-// BAD — a URL is not a feature flag; it will never be "cleaned up"
-@LocalFlag
-val apiBaseUrl: ConfigParam<String> = ConfigParam(key = "api_base_url", defaultValue = "https://api.example.com")
+// BAD — a URL is not a temporary feature flag; it will never be "cleaned up"
+featured {
+    localFlags {
+        string("api_base_url", default = "https://api.example.com")
+    }
+}
 
 // GOOD — permanent remote config value, not a temporary flag
-@RemoteFlag
-val apiBaseUrl: ConfigParam<String> = ConfigParam(key = "api_base_url", defaultValue = "https://api.example.com")
+featured {
+    remoteFlags {
+        string("api_base_url", default = "https://api.example.com")
+    }
+}
 ```
 
 ### Hardcoding flag values in production code
@@ -263,20 +270,6 @@ if (FeatureFlags.newCheckout.defaultValue) { ... }
 
 // GOOD — reads the live value through ConfigValues
 if (configValues.getValue(FeatureFlags.newCheckout)) { ... }
-```
-
-### Missing `@LocalFlag` or `@RemoteFlag` annotation
-
-Every `ConfigParam` property must carry one of these annotations. The `MissingFlagAnnotationRule` Detekt rule enforces this, making intent explicit and enabling the Gradle plugin's code-generation tasks.
-
-```kotlin
-// BAD — unannotated, Detekt will warn
-val newCheckout: ConfigParam<Boolean> = ConfigParam(key = "checkout_new_flow", defaultValue = false)
-
-// GOOD
-@LocalFlag
-@ExpiresAt("2026-09-01")
-val newCheckout: ConfigParam<Boolean> = ConfigParam(key = "checkout_new_flow", defaultValue = false)
 ```
 
 ### Testing with real providers
@@ -297,8 +290,7 @@ Add the `featured-detekt-rules` dependency to your Detekt configuration to enfor
 
 | Rule | What it catches |
 |---|---|
-| `MissingFlagAnnotationRule` | `ConfigParam` properties missing `@LocalFlag` or `@RemoteFlag` |
-| `ExpiredFeatureFlagRule` | Flags whose `@ExpiresAt` date is in the past |
+| `ExpiredFeatureFlagRule` | Flags whose `expiresAt` date is in the past |
 | `HardcodedFlagValueRule` | Direct access to `ConfigParam.defaultValue` in production code |
 
 With these rules enabled, the lifecycle contract is enforced by CI rather than code review alone.

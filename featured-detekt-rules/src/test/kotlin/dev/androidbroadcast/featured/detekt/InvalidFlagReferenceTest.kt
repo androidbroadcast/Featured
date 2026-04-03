@@ -8,14 +8,12 @@ class InvalidFlagReferenceTest {
     private val rule = InvalidFlagReference()
 
     @Test
-    fun `no finding when BehindFlag matches LocalFlag property in same file`() {
+    fun `no finding when BehindFlag matches ConfigParam property in same file`() {
         val findings =
             rule.lint(
                 """
                 import dev.androidbroadcast.featured.BehindFlag
-                import dev.androidbroadcast.featured.LocalFlag
 
-                @LocalFlag
                 val newCheckout = ConfigParam("new_checkout", false)
 
                 @BehindFlag("newCheckout")
@@ -26,14 +24,12 @@ class InvalidFlagReferenceTest {
     }
 
     @Test
-    fun `no finding when BehindFlag matches RemoteFlag property in same file`() {
+    fun `no finding when BehindFlag matches remote ConfigParam property in same file`() {
         val findings =
             rule.lint(
                 """
                 import dev.androidbroadcast.featured.BehindFlag
-                import dev.androidbroadcast.featured.RemoteFlag
 
-                @RemoteFlag
                 val remoteFeature = ConfigParam("remote_feature", false)
 
                 @BehindFlag("remoteFeature")
@@ -49,9 +45,7 @@ class InvalidFlagReferenceTest {
             rule.lint(
                 """
                 import dev.androidbroadcast.featured.BehindFlag
-                import dev.androidbroadcast.featured.LocalFlag
 
-                @LocalFlag
                 val newCheckout = ConfigParam("new_checkout", false)
 
                 @BehindFlag("newChekout")
@@ -63,14 +57,11 @@ class InvalidFlagReferenceTest {
 
     @Test
     fun `reports finding when AssumesFlag references unknown flag on function`() {
-        // @LocalFlag must be present so knownFlags is non-empty; "unknown" is not in it
         val findings =
             rule.lint(
                 """
                 import dev.androidbroadcast.featured.AssumesFlag
-                import dev.androidbroadcast.featured.LocalFlag
 
-                @LocalFlag
                 val realFlag = ConfigParam("real_flag", false)
 
                 @AssumesFlag("unknown")
@@ -82,14 +73,11 @@ class InvalidFlagReferenceTest {
 
     @Test
     fun `reports finding when AssumesFlag references unknown flag on class`() {
-        // @LocalFlag must be present so knownFlags is non-empty; "unknown" is not in it
         val findings =
             rule.lint(
                 """
                 import dev.androidbroadcast.featured.AssumesFlag
-                import dev.androidbroadcast.featured.LocalFlag
 
-                @LocalFlag
                 val realFlag = ConfigParam("real_flag", false)
 
                 @AssumesFlag("unknown")
@@ -100,8 +88,8 @@ class InvalidFlagReferenceTest {
     }
 
     @Test
-    fun `no finding when flag registry is in a different file`() {
-        // No @LocalFlag or @RemoteFlag in this snippet — rule must not false-positive
+    fun `no finding when flag declarations are in a different file`() {
+        // No ConfigParam in this snippet — rule must not false-positive
         val findings =
             rule.lint(
                 """
@@ -115,18 +103,16 @@ class InvalidFlagReferenceTest {
     }
 
     @Test
-    fun `no finding when BehindFlag annotation appears before LocalFlag declaration`() {
-        // Two-pass must handle ordering correctly
+    fun `no finding when BehindFlag annotation appears before ConfigParam declaration`() {
+        // Two-pass ordering must be handled correctly
         val findings =
             rule.lint(
                 """
                 import dev.androidbroadcast.featured.BehindFlag
-                import dev.androidbroadcast.featured.LocalFlag
 
                 @BehindFlag("newCheckout")
                 fun NewCheckoutScreen() {}
 
-                @LocalFlag
                 val newCheckout = ConfigParam("new_checkout", false)
                 """.trimIndent(),
             )

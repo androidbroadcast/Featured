@@ -2,6 +2,7 @@ package dev.androidbroadcast.featured.gradle
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
@@ -21,6 +22,7 @@ import org.gradle.api.tasks.TaskAction
  *
  * The output file is written to `<module>/build/featured/FeatureFlags.generated.xcconfig`.
  */
+@CacheableTask
 public abstract class GenerateXcconfigTask : DefaultTask() {
     /**
      * The line-delimited flag report produced by [ScanLocalFlagsTask].
@@ -47,7 +49,7 @@ public abstract class GenerateXcconfigTask : DefaultTask() {
         out.writeText(content)
 
         if (content.isBlank()) {
-            logger.lifecycle("[featured] No @LocalFlag(defaultValue=false) flags found — FeatureFlags.generated.xcconfig is empty.")
+            logger.lifecycle("[featured] No local boolean flags with defaultValue=false — FeatureFlags.generated.xcconfig is empty.")
         } else {
             val count = entries.count { it.type == "Boolean" && it.defaultValue == "false" }
             logger.lifecycle("[featured] Generated xcconfig with $count DISABLE_ condition(s) → ${out.path}")

@@ -3,6 +3,7 @@ package dev.androidbroadcast.featured.gradle
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
@@ -27,6 +28,7 @@ import org.gradle.api.tasks.TaskAction
  * }
  * ```
  */
+@CacheableTask
 public abstract class GenerateFlagRegistrarTask : DefaultTask() {
     /**
      * The line-delimited flag report produced by [ScanLocalFlagsTask].
@@ -60,7 +62,7 @@ public abstract class GenerateFlagRegistrarTask : DefaultTask() {
         out.writeText(source)
 
         if (entries.isEmpty()) {
-            logger.lifecycle("[featured] No @LocalFlag declarations found — GeneratedFlagRegistrar.register() is empty.")
+            logger.lifecycle("[featured] No flags declared in featured { } DSL — GeneratedFlagRegistrar.register() is empty.")
         } else {
             logger.lifecycle("[featured] Generated FlagRegistrar with ${entries.size} registration(s) → ${out.path}")
         }

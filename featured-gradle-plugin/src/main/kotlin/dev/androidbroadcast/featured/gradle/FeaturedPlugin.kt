@@ -2,204 +2,161 @@ package dev.androidbroadcast.featured.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.file.FileTree
-import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.TaskProvider
 
-private val logger = Logging.getLogger("dev.androidbroadcast.featured")
-
-/** Name of the per-module scan task registered by this plugin. */
-internal const val SCAN_TASK_NAME = "scanLocalFlags"
-
-/** Name of the root-level aggregation task that depends on all module scan tasks. */
+internal const val RESOLVE_FLAGS_TASK_NAME = "resolveFeatureFlags"
 internal const val SCAN_ALL_TASK_NAME = "scanAllLocalFlags"
-
-/** Name of the per-module FlagRegistrar generation task registered by this plugin. */
 internal const val GENERATE_FLAG_REGISTRAR_TASK_NAME = "generateFlagRegistrar"
-
-/** Name of the per-module ProGuard rules generation task registered by this plugin. */
 internal const val GENERATE_PROGUARD_TASK_NAME = "generateProguardRules"
-
-/** Name of the per-module iOS const val generation task registered by this plugin. */
 internal const val GENERATE_IOS_CONST_VAL_TASK_NAME = "generateIosConstVal"
-
-/** Name of the per-module xcconfig generation task registered by this plugin. */
 internal const val GENERATE_XCCONFIG_TASK_NAME = "generateXcconfig"
+internal const val GENERATE_CONFIG_PARAM_TASK_NAME = "generateConfigParam"
 
+/**
+ * Gradle plugin (`dev.androidbroadcast.featured`) that:
+ * 1. Exposes the `featured { }` DSL extension for declaring local and remote feature flags.
+ * 2. Generates typed `ConfigParam` objects and ergonomic `ConfigValues` extension functions.
+ * 3. Generates per-function R8 `-assumevalues` rules for local flags (dead-code elimination).
+ * 4. Generates a `GeneratedFlagRegistrar` that registers all flags with `FlagRegistry`.
+ * 5. Generates iOS constant-value files and xcconfig for Swift dead-code elimination.
+ *
+ * Usage in `build.gradle.kts`:
+ * ```kotlin
+ * plugins { id("dev.androidbroadcast.featured") }
+ *
+ * featured {
+ *     localFlags {
+ *         boolean("dark_mode", default = false) { category = "UI" }
+ *     }
+ *     remoteFlags {
+ *         boolean("promo_banner", default = false) { description = "Show promo banner" }
+ *     }
+ * }
+ * ```
+ */
 public class FeaturedPlugin : Plugin<Project> {
     override fun apply(target: Project) {
-        val scanTask = registerModuleScanTask(target)
-        registerFlagRegistrarGenerationTask(target, scanTask)
-        registerProguardGenerationTask(target, scanTask)
-        registerIosConstValGenerationTask(target, scanTask)
-        registerXcconfigGenerationTask(target, scanTask)
-        wireModuleTaskToRootAggregator(target, scanTask)
-    }
+        val extension = target.extensions.create("featured", FeaturedExtension::class.java)
+        val resolveTask = registerResolveFlagsTask(target)
 
-    private fun registerModuleScanTask(target: Project): TaskProvider<ScanLocalFlagsTask> =
-        target.tasks.register(SCAN_TASK_NAME, ScanLocalFlagsTask::class.java) { task ->
-            task.group = "featured"
-            task.description =
-                "Scans Kotlin sources in '${target.path}' for @LocalFlag-annotated ConfigParam declarations."
-            task.moduleName.set(target.path)
-            task.outputFile.set(
-                target.layout.buildDirectory.file("featured/local-flags.txt"),
-            )
-            // Wire source files lazily: resolved after all plugins have applied so
-            // KMP/Android source sets are fully configured.
-            task.sourceFiles.setFrom(
-                target.provider { target.kotlinSourceFiles() },
-            )
+        // Wire DSL descriptors after the build script runs so the featured { } block is evaluated first.
+        // Calling afterEvaluate here (not inside the task config block) avoids IllegalMutationException
+        // when tasks are realized after project evaluation (e.g. in ProjectBuilder-based unit tests).
+        target.afterEvaluate {
+            resolveTask.configure { task ->
+                task.localFlagDescriptors.set(extension.localFlags.toDescriptors())
+                task.remoteFlagDescriptors.set(extension.remoteFlags.toDescriptors())
+            }
         }
 
-    private fun registerFlagRegistrarGenerationTask(
+        registerConfigParamTask(target, resolveTask)
+        registerFlagRegistrarTask(target, resolveTask)
+        registerProguardTask(target, resolveTask)
+        registerIosConstValTask(target, resolveTask)
+        registerXcconfigTask(target, resolveTask)
+        wireToRootAggregator(target, resolveTask)
+    }
+
+    private fun registerResolveFlagsTask(target: Project): TaskProvider<ResolveFlagsTask> =
+        target.tasks.register(RESOLVE_FLAGS_TASK_NAME, ResolveFlagsTask::class.java) { task ->
+            task.group = "featured"
+            task.description = "Resolves feature flags declared in the featured { } DSL for '${target.path}'."
+            task.moduleName.set(target.path)
+            task.outputFile.set(target.layout.buildDirectory.file("featured/flags.txt"))
+        }
+
+    private fun registerConfigParamTask(
         target: Project,
-        scanTask: TaskProvider<ScanLocalFlagsTask>,
+        resolveTask: TaskProvider<ResolveFlagsTask>,
+    ) {
+        target.tasks.register(GENERATE_CONFIG_PARAM_TASK_NAME, GenerateConfigParamTask::class.java) { task ->
+            task.group = "featured"
+            task.description =
+                "Generates ConfigParam objects and ConfigValues extension functions for '${target.path}'."
+            task.flagsFile.set(resolveTask.flatMap { it.outputFile })
+            task.modulePath.set(target.path)
+            task.outputDir.set(target.layout.buildDirectory.dir("generated/featured/commonMain"))
+            task.dependsOn(resolveTask)
+        }
+    }
+
+    private fun registerFlagRegistrarTask(
+        target: Project,
+        resolveTask: TaskProvider<ResolveFlagsTask>,
     ) {
         target.tasks.register(GENERATE_FLAG_REGISTRAR_TASK_NAME, GenerateFlagRegistrarTask::class.java) { task ->
             task.group = "featured"
-            task.description =
-                "Generates a GeneratedFlagRegistrar.kt source file that registers all " +
-                "@LocalFlag-annotated ConfigParams from '${target.path}' with FlagRegistry."
-            task.scanResultFile.set(scanTask.flatMap { it.outputFile })
+            task.description = "Generates GeneratedFlagRegistrar.kt for '${target.path}'."
+            task.scanResultFile.set(resolveTask.flatMap { it.outputFile })
             task.packageName.set("dev.androidbroadcast.featured.generated")
             task.outputFile.set(
                 target.layout.buildDirectory.file("generated/featured/GeneratedFlagRegistrar.kt"),
             )
-            task.dependsOn(scanTask)
+            task.dependsOn(resolveTask)
         }
     }
 
-    private fun registerProguardGenerationTask(
+    private fun registerProguardTask(
         target: Project,
-        scanTask: TaskProvider<ScanLocalFlagsTask>,
+        resolveTask: TaskProvider<ResolveFlagsTask>,
     ) {
         target.tasks.register(GENERATE_PROGUARD_TASK_NAME, GenerateProguardRulesTask::class.java) { task ->
             task.group = "featured"
-            task.description =
-                "Generates ProGuard/R8 -assumevalues rules for @LocalFlag(defaultValue=false) flags in '${target.path}'."
-            task.scanResultFile.set(scanTask.flatMap { it.outputFile })
-            task.outputFile.set(
-                target.layout.buildDirectory.file("featured/proguard-featured.pro"),
-            )
-            task.dependsOn(scanTask)
+            task.description = "Generates ProGuard/R8 -assumevalues rules for local flags in '${target.path}'."
+            task.scanResultFile.set(resolveTask.flatMap { it.outputFile })
+            task.modulePath.set(target.path)
+            task.outputFile.set(target.layout.buildDirectory.file("featured/proguard-featured.pro"))
+            task.dependsOn(resolveTask)
         }
     }
 
-    private fun registerIosConstValGenerationTask(
+    private fun registerIosConstValTask(
         target: Project,
-        scanTask: TaskProvider<ScanLocalFlagsTask>,
+        resolveTask: TaskProvider<ResolveFlagsTask>,
     ) {
         target.tasks.register(GENERATE_IOS_CONST_VAL_TASK_NAME, GenerateIosConstValTask::class.java) { task ->
             task.group = "featured"
-            task.description =
-                "Generates actual const val declarations for Kotlin/Native iOS target from @LocalFlag-annotated ConfigParams in '${target.path}'."
-            task.scanResultFile.set(scanTask.flatMap { it.outputFile })
+            task.description = "Generates iOS const val declarations for local flags in '${target.path}'."
+            task.scanResultFile.set(resolveTask.flatMap { it.outputFile })
             task.iosMainOutputFile.set(
                 target.layout.buildDirectory.file("generated/featured/iosMain/FeatureFlagOverrides.kt"),
             )
             task.commonMainOutputFile.set(
                 target.layout.buildDirectory.file("generated/featured/commonMain/FeatureFlagExpect.kt"),
             )
-            task.dependsOn(scanTask)
+            task.dependsOn(resolveTask)
         }
     }
 
-    private fun registerXcconfigGenerationTask(
+    private fun registerXcconfigTask(
         target: Project,
-        scanTask: TaskProvider<ScanLocalFlagsTask>,
+        resolveTask: TaskProvider<ResolveFlagsTask>,
     ) {
         target.tasks.register(GENERATE_XCCONFIG_TASK_NAME, GenerateXcconfigTask::class.java) { task ->
             task.group = "featured"
-            task.description =
-                "Generates FeatureFlags.generated.xcconfig for iOS Swift DCE from @LocalFlag(defaultValue=false) flags in '${target.path}'."
-            task.scanResultFile.set(scanTask.flatMap { it.outputFile })
-            task.outputFile.set(
-                target.layout.buildDirectory.file("featured/FeatureFlags.generated.xcconfig"),
-            )
-            task.dependsOn(scanTask)
+            task.description = "Generates FeatureFlags.generated.xcconfig for iOS in '${target.path}'."
+            task.scanResultFile.set(resolveTask.flatMap { it.outputFile })
+            task.outputFile.set(target.layout.buildDirectory.file("featured/FeatureFlags.generated.xcconfig"))
+            task.dependsOn(resolveTask)
         }
     }
 
     /**
      * Ensures the root project has a `scanAllLocalFlags` aggregation task and wires
-     * [scanTask] into it as a dependency. This makes `./gradlew scanAllLocalFlags`
-     * discover flags across every module that applies the plugin.
+     * [resolveTask] into it. `./gradlew scanAllLocalFlags` triggers flag resolution
+     * across every module that applies the plugin.
      */
-    private fun wireModuleTaskToRootAggregator(
+    private fun wireToRootAggregator(
         target: Project,
-        scanTask: TaskProvider<ScanLocalFlagsTask>,
+        resolveTask: TaskProvider<ResolveFlagsTask>,
     ) {
         val root = target.rootProject
-
-        // Register the aggregation task if this is the first module to apply the plugin.
         if (root.tasks.findByName(SCAN_ALL_TASK_NAME) == null) {
             root.tasks.register(SCAN_ALL_TASK_NAME) { task ->
                 task.group = "featured"
-                task.description =
-                    "Aggregates @LocalFlag scan results from all modules applying the Featured plugin."
+                task.description = "Resolves feature flags across all modules applying the Featured plugin."
             }
         }
-
-        // Wire this module's scan task as a dependency of the root aggregator.
-        root.tasks.named(SCAN_ALL_TASK_NAME) { it.dependsOn(scanTask) }
-    }
-}
-
-/**
- * Returns a [FileTree] containing all `.kt` source files on [this] project.
- *
- * Supports Kotlin Multiplatform (`src/<sourceSet>/kotlin`) and conventional JVM
- * (`src/main/kotlin`, `src/main/java`) layouts by scanning the `src/` directory.
- * Custom source directories registered via the Kotlin extension are also included.
- */
-internal fun Project.kotlinSourceFiles(): FileTree {
-    val trees = mutableListOf<FileTree>()
-
-    // Scan the standard KMP/Kotlin source directory layout under `src/`.
-    val srcDir = file("src")
-    if (srcDir.isDirectory) {
-        trees += fileTree(srcDir) { it.include("**/*.kt") }
-    }
-
-    // Also honour custom source directories registered via the Kotlin extension
-    // (covers source sets outside the conventional `src/` tree).
-    extensions.findByName("kotlin")?.let { ext ->
-        runCatching {
-            // KotlinProjectExtension exposes getSourceSets() returning a NamedDomainObjectContainer.
-            val sourceSets =
-                ext::class.java.getMethod("getSourceSets").invoke(ext)
-                    as? Iterable<*> ?: return@runCatching
-            sourceSets.forEach { ss ->
-                ss ?: return@forEach
-                runCatching {
-                    val kotlin = ss::class.java.getMethod("getKotlin").invoke(ss)
-                    val srcDirs =
-                        kotlin?.let {
-                            it::class.java.getMethod("getSrcDirs").invoke(it) as? Set<*>
-                        } ?: return@runCatching
-                    srcDirs.filterIsInstance<java.io.File>().forEach { dir ->
-                        // Only add dirs outside `src/` to avoid duplicates with the tree above.
-                        if (dir.isDirectory && !dir.startsWith(srcDir)) {
-                            trees += fileTree(dir) { it.include("**/*.kt") }
-                        }
-                    }
-                }.onFailure { ex ->
-                    logger.warn(
-                        "[featured] Could not read Kotlin source dirs for source set in '$path': ${ex.message}",
-                    )
-                }
-            }
-        }.onFailure { ex ->
-            logger.warn(
-                "[featured] Could not inspect 'kotlin' extension on project '$path': ${ex.message}",
-            )
-        }
-    }
-
-    return if (trees.isEmpty()) {
-        files().asFileTree
-    } else {
-        trees.reduce { acc, tree -> acc + tree }
+        root.tasks.named(SCAN_ALL_TASK_NAME) { it.dependsOn(resolveTask) }
     }
 }

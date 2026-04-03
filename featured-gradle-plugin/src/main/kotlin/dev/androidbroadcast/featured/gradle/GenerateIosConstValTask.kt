@@ -2,6 +2,7 @@ package dev.androidbroadcast.featured.gradle
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
@@ -21,6 +22,7 @@ import org.gradle.api.tasks.TaskAction
  * Both files are placed under `<module>/build/generated/featured/` and must be
  * registered as generated source directories in the corresponding KMP source sets.
  */
+@CacheableTask
 public abstract class GenerateIosConstValTask : DefaultTask() {
     /**
      * The line-delimited flag report produced by [ScanLocalFlagsTask].
@@ -59,7 +61,7 @@ public abstract class GenerateIosConstValTask : DefaultTask() {
         commonOut.writeText(commonContent)
 
         if (entries.isEmpty()) {
-            logger.lifecycle("[featured] No @LocalFlag declarations found — iOS const val files are empty.")
+            logger.lifecycle("[featured] No local flags declared in featured { } DSL — iOS const val files are empty.")
         } else {
             logger.lifecycle("[featured] Generated iOS const val declarations for ${entries.size} flag(s) → ${iosOut.path}")
             logger.lifecycle("[featured] Generated commonMain expect declarations → ${commonOut.path}")

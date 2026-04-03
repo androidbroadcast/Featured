@@ -77,17 +77,17 @@ class GenerateFlagRegistrarTaskRegistrationTest {
     }
 
     @Test
-    fun `generateFlagRegistrar task depends on scanLocalFlags task`() {
+    fun `generateFlagRegistrar task depends on resolveFeatureFlags task`() {
         val project = ProjectBuilder.builder().build()
         project.plugins.apply("dev.androidbroadcast.featured")
 
         val generateTask = project.tasks.findByName(GENERATE_FLAG_REGISTRAR_TASK_NAME)
         assertNotNull(generateTask)
-        val scanTask = project.tasks.findByName(SCAN_TASK_NAME)
+        val scanTask = project.tasks.findByName(RESOLVE_FLAGS_TASK_NAME)
         assertNotNull(scanTask)
         assertTrue(
             generateTask.taskDependencies.getDependencies(generateTask).contains(scanTask),
-            "Expected '$GENERATE_FLAG_REGISTRAR_TASK_NAME' to depend on '$SCAN_TASK_NAME'",
+            "Expected '$GENERATE_FLAG_REGISTRAR_TASK_NAME' to depend on '$RESOLVE_FLAGS_TASK_NAME'",
         )
     }
 

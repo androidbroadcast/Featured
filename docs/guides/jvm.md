@@ -28,28 +28,22 @@ dependencies {
 
 ## 2. Declare flags
 
-Flags are declared identically to any other platform — `ConfigParam` is a common (KMP shared) type:
+Declare flags in `build.gradle.kts` using the `featured { }` DSL block. The plugin generates typed helpers automatically.
 
-```kotlin
-import dev.androidbroadcast.featured.ConfigParam
-import dev.androidbroadcast.featured.LocalFlag
-
-object FeatureFlags {
-    @LocalFlag
-    val darkMode = ConfigParam<Boolean>(
-        key = "dark_mode",
-        defaultValue = false,
-        description = "Enable dark mode UI",
-    )
-
-    @LocalFlag
-    val pageSize = ConfigParam<Int>(
-        key = "page_size",
-        defaultValue = 20,
-        description = "Number of items per page",
-    )
+```kotlin title="build.gradle.kts"
+featured {
+    localFlags {
+        boolean("dark_mode", default = false) {
+            description = "Enable dark mode UI"
+        }
+        int("page_size", default = 20) {
+            description = "Number of items per page"
+        }
+    }
 }
 ```
+
+The plugin generates `internal object GeneratedLocalFlags` with typed `ConfigParam` properties and public extension functions on `ConfigValues` such as `fun ConfigValues.isDarkModeEnabled(): Boolean` and `fun ConfigValues.getPageSize(): Int`.
 
 ## 3. Create `ConfigValues` with `JavaPreferencesConfigValueProvider`
 
