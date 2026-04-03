@@ -3,16 +3,16 @@ package dev.androidbroadcast.featured.gradle
 import org.gradle.api.file.RegularFileProperty
 
 /**
- * Reads the line-delimited flag report produced by [ScanLocalFlagsTask] and returns
- * the parsed entries.
+ * Reads the flag report produced by [ResolveFlagsTask] and returns the parsed entries.
  *
- * Supported line formats (for backwards compatibility):
- * - 4-field: `key|defaultValue|type|moduleName`
- * - 6-field: `key|defaultValue|type|moduleName|propertyName|ownerName`
- *   where `ownerName` may be empty (top-level declaration).
+ * Supported formats (pipe-delimited, for backward compatibility during migration):
+ * - 4-field (legacy): `key|defaultValue|type|moduleName`
+ * - 6-field (legacy): `key|defaultValue|type|moduleName|propertyName|ownerName`
+ * - 7-field: `key|defaultValue|type|moduleName|propertyName|ownerName|flagType`
+ * - 9-field (current): `key|defaultValue|type|moduleName|propertyName|flagType|description|category|expiresAt`
  *
  * Returns an empty list when the file does not exist or is empty.
- * Ignores lines that do not conform to either expected format.
+ * Ignores lines that do not conform to any expected format.
  */
 internal fun RegularFileProperty.parseLocalFlagEntries(): List<LocalFlagEntry> {
     val file = get().asFile
@@ -20,32 +20,59 @@ internal fun RegularFileProperty.parseLocalFlagEntries(): List<LocalFlagEntry> {
     return file
         .readLines()
         .filter { it.isNotBlank() }
-        .mapNotNull { line ->
-            val parts = line.split("|")
-            when (parts.size) {
-                4 -> {
-                    LocalFlagEntry(
-                        key = parts[0],
-                        defaultValue = parts[1],
-                        type = parts[2],
-                        moduleName = parts[3],
-                    )
-                }
+        .mapNotNull { line -> parseLine(line) }
+}
 
-                6 -> {
-                    LocalFlagEntry(
-                        key = parts[0],
-                        defaultValue = parts[1],
-                        type = parts[2],
-                        moduleName = parts[3],
-                        propertyName = parts[4],
-                        ownerName = parts[5].takeIf { it.isNotEmpty() },
-                    )
-                }
-
-                else -> {
-                    null
-                }
-            }
+private fun parseLine(line: String): LocalFlagEntry? {
+    val parts = line.split("|")
+    return when (parts.size) {
+        4 -> {
+            LocalFlagEntry(
+                key = parts[0],
+                defaultValue = parts[1],
+                type = parts[2],
+                moduleName = parts[3],
+                propertyName = parts[0].toCamelCase(),
+            )
         }
+
+        6 -> {
+            LocalFlagEntry(
+                key = parts[0],
+                defaultValue = parts[1],
+                type = parts[2],
+                moduleName = parts[3],
+                propertyName = parts[4].ifEmpty { parts[0].toCamelCase() },
+            )
+        }
+
+        7 -> {
+            LocalFlagEntry(
+                key = parts[0],
+                defaultValue = parts[1],
+                type = parts[2],
+                moduleName = parts[3],
+                propertyName = parts[4].ifEmpty { parts[0].toCamelCase() },
+                flagType = parts[6].ifEmpty { LocalFlagEntry.FLAG_TYPE_LOCAL },
+            )
+        }
+
+        9 -> {
+            LocalFlagEntry(
+                key = parts[0],
+                defaultValue = parts[1],
+                type = parts[2],
+                moduleName = parts[3],
+                propertyName = parts[4].ifEmpty { parts[0].toCamelCase() },
+                flagType = parts[5].ifEmpty { LocalFlagEntry.FLAG_TYPE_LOCAL },
+                description = parts[6].ifEmpty { null },
+                category = parts[7].ifEmpty { null },
+                expiresAt = parts[8].ifEmpty { null },
+            )
+        }
+
+        else -> {
+            null
+        }
+    }
 }

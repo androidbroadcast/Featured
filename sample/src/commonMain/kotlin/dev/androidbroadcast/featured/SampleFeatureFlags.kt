@@ -14,12 +14,35 @@ public enum class CheckoutVariant {
     NEW_MULTI_STEP,
 }
 
+/**
+ * Feature flags for the sample app.
+ *
+ * In a real consumer project, Boolean/Int/String flags would be declared in
+ * `build.gradle.kts` using the Featured Gradle DSL, and the plugin would generate
+ * typed `ConfigParam` objects and `ConfigValues` extension functions automatically:
+ *
+ * ```kotlin
+ * // build.gradle.kts
+ * featured {
+ *     localFlags {
+ *         boolean("main_button_red", default = true) { category = "ui" }
+ *         boolean("new_feature_section_enabled", default = true) { category = "ui" }
+ *     }
+ *     remoteFlags {
+ *         boolean("promo_banner_enabled", default = false) {
+ *             description = "Show promotional banner"
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * Enum-typed flags (like [checkoutVariant]) are declared manually as `ConfigParam`
+ * until enum support is added to the DSL.
+ *
+ * The sample module is part of the library's own build and cannot apply the plugin
+ * to itself, so all flags are declared manually here for demonstration purposes.
+ */
 public object SampleFeatureFlags {
-    /**
-     * @LocalFlag — resolved entirely on-device via [InMemoryConfigValueProvider].
-     * Drives the main button colour in [FeaturedSample].
-     */
-    @LocalFlag
     public val mainButtonRed: ConfigParam<Boolean> =
         ConfigParam(
             key = "main_button_red",
@@ -28,12 +51,6 @@ public object SampleFeatureFlags {
             category = "ui",
         )
 
-    /**
-     * @LocalFlag — controls visibility of the "New Feature" section in [FeaturedSample].
-     * When `false` the section is excluded from the composition tree entirely
-     * (demonstrates the `isEnabled` guard pattern for UI entry points).
-     */
-    @LocalFlag
     public val newFeatureSectionEnabled: ConfigParam<Boolean> =
         ConfigParam(
             key = "new_feature_section_enabled",
@@ -42,16 +59,6 @@ public object SampleFeatureFlags {
             category = "ui",
         )
 
-    /**
-     * Demonstrates the [ExpiresAt] annotation workflow:
-     *
-     * 1. Flag introduced with a future expiry date.
-     * 2. Once the date passes, static analysis tooling (for example, a Detekt rule
-     *    such as `ExpiresAtRule`) can be configured to warn at build time.
-     * 3. Team removes the flag and its associated remote config entry.
-     */
-    @LocalFlag
-    @ExpiresAt("2026-06-01")
     public val newCheckout: ConfigParam<Boolean> =
         ConfigParam(
             key = "new_checkout",
@@ -59,37 +66,19 @@ public object SampleFeatureFlags {
             description = "Enable the redesigned checkout flow",
         )
 
-    /**
-     * @RemoteFlag — resolved via a [RemoteConfigValueProvider] (e.g. Firebase Remote Config).
-     * Demonstrates a multivariate (enum) flag driven by a remote backend.
-     *
-     * ```kotlin
-     * when (configValues.getValue(checkoutVariant).value) {
-     *     CheckoutVariant.LEGACY          -> LegacyCheckout()
-     *     CheckoutVariant.NEW_SINGLE_PAGE -> SinglePageCheckout()
-     *     CheckoutVariant.NEW_MULTI_STEP  -> MultiStepCheckout()
-     * }
-     * ```
-     */
-    @RemoteFlag
-    public val checkoutVariant: ConfigParam<CheckoutVariant> =
-        ConfigParam(
-            key = "checkout_variant",
-            defaultValue = CheckoutVariant.LEGACY,
-            description = "Controls which checkout flow variant is shown to the user",
-            category = "checkout",
-        )
-
-    /**
-     * @RemoteFlag — controls whether a promotional banner is shown.
-     * In production this would be toggled remotely without a code change.
-     */
-    @RemoteFlag
     public val promoBannerEnabled: ConfigParam<Boolean> =
         ConfigParam(
             key = "promo_banner_enabled",
             defaultValue = false,
             description = "Show a promotional banner on the main screen (remote-controlled)",
             category = "promotions",
+        )
+
+    public val checkoutVariant: ConfigParam<CheckoutVariant> =
+        ConfigParam(
+            key = "checkout_variant",
+            defaultValue = CheckoutVariant.LEGACY,
+            description = "Controls which checkout flow variant is shown to the user",
+            category = "checkout",
         )
 }

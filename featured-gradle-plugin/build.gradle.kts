@@ -57,4 +57,6 @@ mavenPublishing {
 dependencies {
     testImplementation(gradleTestKit())
     testImplementation(libs.kotlin.testJunit)
+    testImplementation(libs.r8)
+    testImplementation(libs.asm)
 }

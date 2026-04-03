@@ -71,17 +71,17 @@ class GenerateIosConstValTaskRegistrationTest {
     }
 
     @Test
-    fun `generateIosConstVal task depends on scanLocalFlags task`() {
+    fun `generateIosConstVal task depends on resolveFeatureFlags task`() {
         val project = ProjectBuilder.builder().build()
         project.plugins.apply("dev.androidbroadcast.featured")
 
         val generateTask = project.tasks.findByName(GENERATE_IOS_CONST_VAL_TASK_NAME)
         assertNotNull(generateTask)
-        val scanTask = project.tasks.findByName(SCAN_TASK_NAME)
+        val scanTask = project.tasks.findByName(RESOLVE_FLAGS_TASK_NAME)
         assertNotNull(scanTask)
         assertTrue(
             generateTask.taskDependencies.getDependencies(generateTask).contains(scanTask),
-            "Expected '$GENERATE_IOS_CONST_VAL_TASK_NAME' to depend on '$SCAN_TASK_NAME'",
+            "Expected '$GENERATE_IOS_CONST_VAL_TASK_NAME' to depend on '$RESOLVE_FLAGS_TASK_NAME'",
         )
     }
 }

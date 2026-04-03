@@ -69,29 +69,28 @@ Then add `FeaturedCore` as a target dependency:
 
 ## Step 1 — Declare a flag
 
-Flags are plain `ConfigParam` properties. Annotate them with `@LocalFlag` so the Gradle plugin can scan them for code generation.
+Declare flags in `build.gradle.kts` using the `featured { }` DSL block. The plugin generates typed helpers automatically.
 
-```kotlin title="shared/src/commonMain/kotlin/com/example/FeatureFlags.kt"
-import dev.androidbroadcast.featured.ConfigParam
-import dev.androidbroadcast.featured.LocalFlag
-
-object FeatureFlags {
-    @LocalFlag
-    val newCheckout = ConfigParam<Boolean>(
-        key = "new_checkout",
-        defaultValue = false,
-        description = "Enable the new checkout flow",
-        category = "Checkout",
-    )
-
-    @LocalFlag
-    val maxCartItems = ConfigParam<Int>(
-        key = "max_cart_items",
-        defaultValue = 10,
-        description = "Maximum items allowed in cart",
-    )
+```kotlin title="build.gradle.kts"
+featured {
+    localFlags {
+        boolean("new_checkout", default = false) {
+            description = "Enable the new checkout flow"
+            category = "Checkout"
+        }
+        int("max_cart_items", default = 10) {
+            description = "Maximum items allowed in cart"
+        }
+    }
+    remoteFlags {
+        boolean("promo_banner", default = false) {
+            description = "Show promo banner"
+        }
+    }
 }
 ```
+
+The plugin generates `internal object GeneratedLocalFlags` and `internal object GeneratedRemoteFlags` with typed `ConfigParam` properties, and public extension functions on `ConfigValues` — for example `fun ConfigValues.isNewCheckoutEnabled(): Boolean`, `fun ConfigValues.getMaxCartItems(): Int`, and `fun ConfigValues.getPromoBanner(): ConfigValue<Boolean>`.
 
 ## Step 2 — Create a `ConfigValues` instance
 
@@ -108,11 +107,18 @@ val configValues = ConfigValues(
 
 ## Step 3 — Read a flag value
 
+Use the generated extension functions on `ConfigValues`:
+
 ```kotlin
-// Suspend function — call from a coroutine
-val value: ConfigValue<Boolean> = configValues.getValue(FeatureFlags.newCheckout)
-val isEnabled: Boolean = value.value          // the actual value
-val source: ConfigValue.Source = value.source // DEFAULT, LOCAL, or REMOTE
+// Local boolean flag — returns Boolean directly
+val isEnabled: Boolean = configValues.isNewCheckoutEnabled()
+
+// Local non-boolean flag — returns the value directly
+val maxItems: Int = configValues.getMaxCartItems()
+
+// Remote flag — returns ConfigValue<T> to expose source information
+val promo: ConfigValue<Boolean> = configValues.getPromoBanner()
+val source: ConfigValue.Source = promo.source // DEFAULT, LOCAL, or REMOTE
 ```
 
 ## Next steps

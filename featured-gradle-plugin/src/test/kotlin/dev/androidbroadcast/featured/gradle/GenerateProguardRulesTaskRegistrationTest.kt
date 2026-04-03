@@ -2,6 +2,7 @@ package dev.androidbroadcast.featured.gradle
 
 import org.gradle.testfixtures.ProjectBuilder
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -13,7 +14,7 @@ class GenerateProguardRulesTaskRegistrationTest {
 
         assertNotNull(
             project.tasks.findByName(GENERATE_PROGUARD_TASK_NAME),
-            "Expected '$GENERATE_PROGUARD_TASK_NAME' task to be registered by the plugin",
+            "Expected '$GENERATE_PROGUARD_TASK_NAME' task to be registered",
         )
     }
 
@@ -24,10 +25,7 @@ class GenerateProguardRulesTaskRegistrationTest {
 
         val task = project.tasks.findByName(GENERATE_PROGUARD_TASK_NAME)
         assertNotNull(task)
-        assertTrue(
-            task is GenerateProguardRulesTask,
-            "Expected task type GenerateProguardRulesTask but was ${task::class.simpleName}",
-        )
+        assertTrue(task is GenerateProguardRulesTask, "Expected GenerateProguardRulesTask, was ${task::class.simpleName}")
     }
 
     @Test
@@ -37,11 +35,7 @@ class GenerateProguardRulesTaskRegistrationTest {
 
         val task = project.tasks.findByName(GENERATE_PROGUARD_TASK_NAME)
         assertNotNull(task)
-        assertEquals(
-            "featured",
-            task.group,
-            "Expected task group 'featured' but was '${task.group}'",
-        )
+        assertEquals("featured", task.group)
     }
 
     @Test
@@ -51,33 +45,21 @@ class GenerateProguardRulesTaskRegistrationTest {
 
         val task = project.tasks.findByName(GENERATE_PROGUARD_TASK_NAME) as? GenerateProguardRulesTask
         assertNotNull(task)
-        assertTrue(
-            task.outputFile.isPresent,
-            "Expected outputFile to be configured on GenerateProguardRulesTask",
-        )
+        assertTrue(task.outputFile.isPresent, "Expected outputFile to be configured")
     }
 
     @Test
-    fun `generateProguardRules task depends on scanLocalFlags task`() {
+    fun `generateProguardRules task depends on resolveFeatureFlags task`() {
         val project = ProjectBuilder.builder().build()
         project.plugins.apply("dev.androidbroadcast.featured")
 
         val generateTask = project.tasks.findByName(GENERATE_PROGUARD_TASK_NAME)
+        val resolveTask = project.tasks.findByName(RESOLVE_FLAGS_TASK_NAME)
         assertNotNull(generateTask)
-        val scanTask = project.tasks.findByName(SCAN_TASK_NAME)
-        assertNotNull(scanTask)
+        assertNotNull(resolveTask)
         assertTrue(
-            generateTask.taskDependencies.getDependencies(generateTask).contains(scanTask),
-            "Expected '$GENERATE_PROGUARD_TASK_NAME' to depend on '$SCAN_TASK_NAME'",
+            generateTask.taskDependencies.getDependencies(generateTask).contains(resolveTask),
+            "Expected '$GENERATE_PROGUARD_TASK_NAME' to depend on '$RESOLVE_FLAGS_TASK_NAME'",
         )
     }
-}
-
-// Local helper for cleaner assertions
-private fun assertEquals(
-    expected: String,
-    actual: String?,
-    message: String,
-) {
-    kotlin.test.assertEquals(expected, actual, message)
 }

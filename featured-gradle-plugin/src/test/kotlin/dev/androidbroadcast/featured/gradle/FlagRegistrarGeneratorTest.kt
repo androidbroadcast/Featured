@@ -19,19 +19,13 @@ class FlagRegistrarGeneratorTest {
     }
 
     @Test
-    fun `generates GeneratedFlagRegistrar object`() {
-        val source = FlagRegistrarGenerator.generate(emptyList())
-        assertContains(source, "object GeneratedFlagRegistrar")
-    }
-
-    @Test
-    fun `generates public object modifier`() {
+    fun `generates public GeneratedFlagRegistrar object`() {
         val source = FlagRegistrarGenerator.generate(emptyList())
         assertContains(source, "public object GeneratedFlagRegistrar")
     }
 
     @Test
-    fun `generates register function`() {
+    fun `generates public register function`() {
         val source = FlagRegistrarGenerator.generate(emptyList())
         assertContains(source, "public fun register()")
     }
@@ -39,97 +33,71 @@ class FlagRegistrarGeneratorTest {
     @Test
     fun `generates empty register body when no entries`() {
         val source = FlagRegistrarGenerator.generate(emptyList())
-        assertFalse(
-            source.contains("FlagRegistry.register("),
-            "Expected no register calls for empty entries, got:\n$source",
-        )
+        assertFalse(source.contains("FlagRegistry.register("), "No register calls for empty entries")
     }
 
     @Test
-    fun `generates register call for entry with owner`() {
+    fun `generates GeneratedLocalFlags import for local flag`() {
+        val entries = listOf(localEntry("dark_mode", "darkMode"))
+        val source = FlagRegistrarGenerator.generate(entries)
+        assertContains(source, "import dev.androidbroadcast.featured.generated.${LocalFlagEntry.GENERATED_LOCAL_OBJECT}")
+    }
+
+    @Test
+    fun `generates GeneratedRemoteFlags import for remote flag`() {
+        val entries = listOf(remoteEntry("promo_banner", "promoBanner"))
+        val source = FlagRegistrarGenerator.generate(entries)
+        assertContains(source, "import dev.androidbroadcast.featured.generated.${LocalFlagEntry.GENERATED_REMOTE_OBJECT}")
+    }
+
+    @Test
+    fun `does not generate local import when no local flags`() {
+        val entries = listOf(remoteEntry("promo", "promo"))
+        val source = FlagRegistrarGenerator.generate(entries)
+        assertFalse(source.contains(LocalFlagEntry.GENERATED_LOCAL_OBJECT + "\n"))
+    }
+
+    @Test
+    fun `generates register call referencing GeneratedLocalFlags for local flag`() {
+        val entries = listOf(localEntry("dark_mode", "darkMode"))
+        val source = FlagRegistrarGenerator.generate(entries)
+        assertContains(source, "FlagRegistry.register(${LocalFlagEntry.GENERATED_LOCAL_OBJECT}.darkMode)")
+    }
+
+    @Test
+    fun `generates register call referencing GeneratedRemoteFlags for remote flag`() {
+        val entries = listOf(remoteEntry("promo_banner", "promoBanner"))
+        val source = FlagRegistrarGenerator.generate(entries)
+        assertContains(source, "FlagRegistry.register(${LocalFlagEntry.GENERATED_REMOTE_OBJECT}.promoBanner)")
+    }
+
+    @Test
+    fun `generates register calls for mixed local and remote entries`() {
         val entries =
             listOf(
-                LocalFlagEntry(
-                    key = "new_checkout",
-                    defaultValue = "false",
-                    type = "Boolean",
-                    moduleName = ":checkout",
-                    propertyName = "newCheckout",
-                    ownerName = "NewCheckoutFlags",
-                ),
+                localEntry("dark_mode", "darkMode"),
+                remoteEntry("promo_banner", "promoBanner"),
             )
         val source = FlagRegistrarGenerator.generate(entries)
-        assertContains(source, "FlagRegistry.register(NewCheckoutFlags.newCheckout)")
+        assertContains(source, "FlagRegistry.register(${LocalFlagEntry.GENERATED_LOCAL_OBJECT}.darkMode)")
+        assertContains(source, "FlagRegistry.register(${LocalFlagEntry.GENERATED_REMOTE_OBJECT}.promoBanner)")
     }
 
     @Test
-    fun `generates register call for top-level entry without owner`() {
+    fun `generates TODO comment for blank property name`() {
         val entries =
             listOf(
-                LocalFlagEntry(
-                    key = "dark_theme",
-                    defaultValue = "true",
-                    type = "Boolean",
-                    moduleName = ":app",
-                    propertyName = "darkTheme",
-                    ownerName = null,
-                ),
-            )
-        val source = FlagRegistrarGenerator.generate(entries)
-        assertContains(source, "FlagRegistry.register(darkTheme)")
-    }
-
-    @Test
-    fun `generates register calls for multiple entries`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(
-                    key = "flag_a",
-                    defaultValue = "false",
-                    type = "Boolean",
-                    moduleName = ":app",
-                    propertyName = "flagA",
-                    ownerName = "MyFlags",
-                ),
-                LocalFlagEntry(
-                    key = "flag_b",
-                    defaultValue = "true",
-                    type = "Boolean",
-                    moduleName = ":app",
-                    propertyName = "flagB",
-                    ownerName = "MyFlags",
-                ),
-            )
-        val source = FlagRegistrarGenerator.generate(entries)
-        assertContains(source, "FlagRegistry.register(MyFlags.flagA)")
-        assertContains(source, "FlagRegistry.register(MyFlags.flagB)")
-    }
-
-    @Test
-    fun `generates TODO comment for entry with blank property name`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(
-                    key = "legacy_flag",
-                    defaultValue = "false",
-                    type = "Boolean",
-                    moduleName = ":app",
-                    propertyName = "",
-                    ownerName = null,
-                ),
+                LocalFlagEntry(key = "legacy_flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
             )
         val source = FlagRegistrarGenerator.generate(entries)
         assertContains(source, "// TODO: register flag 'legacy_flag'")
-        assertFalse(
-            source.contains("FlagRegistry.register()"),
-            "Should not emit empty register call for blank property name",
-        )
+        assertFalse(source.contains("FlagRegistry.register()"))
     }
 
     @Test
-    fun `generated source contains auto-generated warning comment`() {
+    fun `generated source contains auto-generated comment`() {
         val source = FlagRegistrarGenerator.generate(emptyList())
-        assertContains(source, "Auto-generated by the Featured Gradle plugin")
+        assertContains(source, "Auto-generated by Featured Gradle Plugin")
     }
 
     @Test
@@ -139,24 +107,37 @@ class FlagRegistrarGeneratorTest {
     }
 
     @Test
-    fun `generates valid kotlin structure — braces are balanced`() {
-        val entries =
-            listOf(
-                LocalFlagEntry(
-                    key = "flag",
-                    defaultValue = "false",
-                    type = "Boolean",
-                    moduleName = ":app",
-                    propertyName = "myFlag",
-                    ownerName = "Flags",
-                ),
-            )
+    fun `generated source has balanced braces`() {
+        val entries = listOf(localEntry("flag", "flag"))
         val source = FlagRegistrarGenerator.generate(entries)
-        val openBraces = source.count { it == '{' }
-        val closeBraces = source.count { it == '}' }
-        assertTrue(
-            openBraces == closeBraces && openBraces >= 2,
-            "Expected balanced braces (≥2 pairs), open=$openBraces close=$closeBraces in:\n$source",
-        )
+        val open = source.count { it == '{' }
+        val close = source.count { it == '}' }
+        assertTrue(open == close && open >= 2, "Expected balanced braces, open=$open close=$close")
     }
+
+    // ── helpers ───────────────────────────────────────────────────────────────
+
+    private fun localEntry(
+        key: String,
+        propertyName: String,
+    ) = LocalFlagEntry(
+        key = key,
+        defaultValue = "false",
+        type = "Boolean",
+        moduleName = ":app",
+        propertyName = propertyName,
+        flagType = LocalFlagEntry.FLAG_TYPE_LOCAL,
+    )
+
+    private fun remoteEntry(
+        key: String,
+        propertyName: String,
+    ) = LocalFlagEntry(
+        key = key,
+        defaultValue = "false",
+        type = "Boolean",
+        moduleName = ":app",
+        propertyName = propertyName,
+        flagType = LocalFlagEntry.FLAG_TYPE_REMOTE,
+    )
 }

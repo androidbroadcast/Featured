@@ -38,27 +38,20 @@ dependencies {
 
 ## 2. Declare flags
 
-```kotlin title="shared/src/commonMain/kotlin/com/example/FeatureFlags.kt"
-import dev.androidbroadcast.featured.ConfigParam
-import dev.androidbroadcast.featured.LocalFlag
+Declare flags in `build.gradle.kts` using the `featured { }` DSL block. The plugin generates typed helpers automatically.
 
-object FeatureFlags {
-    @LocalFlag
-    val newCheckout = ConfigParam<Boolean>(
-        key = "new_checkout",
-        defaultValue = false,
-        description = "Enable the new checkout flow",
-    )
-
-    @LocalFlag
-    val maxCartItems = ConfigParam<Int>(
-        key = "max_cart_items",
-        defaultValue = 10,
-    )
+```kotlin title="build.gradle.kts"
+featured {
+    localFlags {
+        boolean("new_checkout", default = false) {
+            description = "Enable the new checkout flow"
+        }
+        int("max_cart_items", default = 10)
+    }
 }
 ```
 
-Annotate flags with `@LocalFlag` so the Gradle plugin can scan them for code generation (ProGuard rules, xcconfig).
+The plugin generates `internal object GeneratedLocalFlags` with typed `ConfigParam` properties and public extension functions on `ConfigValues` such as `fun ConfigValues.isNewCheckoutEnabled(): Boolean` and `fun ConfigValues.getMaxCartItems(): Int`.
 
 ## 3. Initialize `ConfigValues` in `Application.onCreate`
 
@@ -247,7 +240,7 @@ Navigate to this screen from your in-app debug menu (a drawer, a shake gesture, 
 
 ## 8. ProGuard / R8 setup
 
-The Gradle plugin generates `-assumevalues` rules for every `@LocalFlag`-annotated `ConfigParam<Boolean>` with `defaultValue = false`. These rules instruct R8 to treat the flag as a compile-time constant `false`, removing all guarded code from release APKs.
+The Gradle plugin generates per-function `-assumevalues` rules for the generated extension functions of every local boolean flag with `default = false`. These rules instruct R8 to treat the flag as a compile-time constant `false`, removing all guarded code from release APKs. Remote flags are excluded since their values are dynamic.
 
 The task runs automatically when you build a release variant. To run it manually:
 
