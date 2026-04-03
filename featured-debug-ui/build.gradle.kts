@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
     alias(libs.plugins.dokka)
 }
