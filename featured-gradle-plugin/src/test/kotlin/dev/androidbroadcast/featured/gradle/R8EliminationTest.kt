@@ -80,7 +80,6 @@ import kotlin.test.assertNull
  * `-assumevalues` rule overrides it.
  */
 internal class R8EliminationTest {
-
     private lateinit var workDir: File
 
     @Before
@@ -143,7 +142,11 @@ internal class R8EliminationTest {
         }
     }
 
-    private fun putClass(jos: JarOutputStream, internalName: String, bytes: ByteArray) {
+    private fun putClass(
+        jos: JarOutputStream,
+        internalName: String,
+        bytes: ByteArray,
+    ) {
         jos.putNextEntry(JarEntry("$internalName.class"))
         jos.write(bytes)
         jos.closeEntry()
@@ -156,22 +159,23 @@ internal class R8EliminationTest {
      * forwards its own unknown parameter: `new ConfigValues(enabled)`.
      */
     private fun configValuesBytes(): ByteArray =
-        safeClassWriter().apply {
-            visit(V1_8, ACC_PUBLIC, CONFIG_VALUES_INTERNAL, null, OBJECT, null)
-            visitField(ACC_PUBLIC, "enabled", "Z", null, null).visitEnd()
-            visitMethod(ACC_PUBLIC, "<init>", "(Z)V", null, null).apply {
-                visitCode()
-                visitVarInsn(ALOAD, 0)
-                visitMethodInsn(INVOKESPECIAL, OBJECT, "<init>", "()V", false)
-                visitVarInsn(ALOAD, 0)
-                visitVarInsn(ILOAD, 1)
-                visitFieldInsn(PUTFIELD, CONFIG_VALUES_INTERNAL, "enabled", "Z")
-                visitInsn(RETURN)
-                visitMaxs(0, 0)
+        safeClassWriter()
+            .apply {
+                visit(V1_8, ACC_PUBLIC, CONFIG_VALUES_INTERNAL, null, OBJECT, null)
+                visitField(ACC_PUBLIC, "enabled", "Z", null, null).visitEnd()
+                visitMethod(ACC_PUBLIC, "<init>", "(Z)V", null, null).apply {
+                    visitCode()
+                    visitVarInsn(ALOAD, 0)
+                    visitMethodInsn(INVOKESPECIAL, OBJECT, "<init>", "()V", false)
+                    visitVarInsn(ALOAD, 0)
+                    visitVarInsn(ILOAD, 1)
+                    visitFieldInsn(PUTFIELD, CONFIG_VALUES_INTERNAL, "enabled", "Z")
+                    visitInsn(RETURN)
+                    visitMaxs(0, 0)
+                    visitEnd()
+                }
                 visitEnd()
-            }
-            visitEnd()
-        }.toByteArray()
+            }.toByteArray()
 
     /**
      * Mirrors [ExtensionFunctionGenerator]'s output for module `":test"`:
@@ -183,18 +187,19 @@ internal class R8EliminationTest {
      * overrides this return value to a build-time constant.
      */
     private fun extensionsBytes(): ByteArray =
-        safeClassWriter().apply {
-            visit(V1_8, ACC_PUBLIC, EXTENSIONS_INTERNAL, null, OBJECT, null)
-            visitMethod(ACC_PUBLIC or ACC_STATIC, IS_DARK_MODE_ENABLED, "(L$CONFIG_VALUES_INTERNAL;)Z", null, null).apply {
-                visitCode()
-                visitVarInsn(ALOAD, 0)
-                visitFieldInsn(GETFIELD, CONFIG_VALUES_INTERNAL, "enabled", "Z")
-                visitInsn(IRETURN)
-                visitMaxs(0, 0)
+        safeClassWriter()
+            .apply {
+                visit(V1_8, ACC_PUBLIC, EXTENSIONS_INTERNAL, null, OBJECT, null)
+                visitMethod(ACC_PUBLIC or ACC_STATIC, IS_DARK_MODE_ENABLED, "(L$CONFIG_VALUES_INTERNAL;)Z", null, null).apply {
+                    visitCode()
+                    visitVarInsn(ALOAD, 0)
+                    visitFieldInsn(GETFIELD, CONFIG_VALUES_INTERNAL, "enabled", "Z")
+                    visitInsn(IRETURN)
+                    visitMaxs(0, 0)
+                    visitEnd()
+                }
                 visitEnd()
-            }
-            visitEnd()
-        }.toByteArray()
+            }.toByteArray()
 
     /**
      * Code that must be absent when the flag is disabled.
@@ -203,29 +208,30 @@ internal class R8EliminationTest {
      * no-op and remove the instantiation when the branch is live.
      */
     private fun behindFlagCodeBytes(): ByteArray =
-        safeClassWriter().apply {
-            visit(V1_8, ACC_PUBLIC, BEHIND_FLAG_CODE_INTERNAL, null, OBJECT, null)
-            visitField(ACC_PUBLIC or ACC_STATIC, "sideEffect", "I", null, 0).visitEnd()
-            visitMethod(ACC_PUBLIC, "<init>", "()V", null, null).apply {
-                visitCode()
-                visitVarInsn(ALOAD, 0)
-                visitMethodInsn(INVOKESPECIAL, OBJECT, "<init>", "()V", false)
-                visitInsn(RETURN)
-                visitMaxs(0, 0)
+        safeClassWriter()
+            .apply {
+                visit(V1_8, ACC_PUBLIC, BEHIND_FLAG_CODE_INTERNAL, null, OBJECT, null)
+                visitField(ACC_PUBLIC or ACC_STATIC, "sideEffect", "I", null, 0).visitEnd()
+                visitMethod(ACC_PUBLIC, "<init>", "()V", null, null).apply {
+                    visitCode()
+                    visitVarInsn(ALOAD, 0)
+                    visitMethodInsn(INVOKESPECIAL, OBJECT, "<init>", "()V", false)
+                    visitInsn(RETURN)
+                    visitMaxs(0, 0)
+                    visitEnd()
+                }
+                visitMethod(ACC_PUBLIC, "doWork", "()V", null, null).apply {
+                    visitCode()
+                    visitFieldInsn(GETSTATIC, BEHIND_FLAG_CODE_INTERNAL, "sideEffect", "I")
+                    visitInsn(ICONST_1)
+                    visitInsn(IADD)
+                    visitFieldInsn(PUTSTATIC, BEHIND_FLAG_CODE_INTERNAL, "sideEffect", "I")
+                    visitInsn(RETURN)
+                    visitMaxs(0, 0)
+                    visitEnd()
+                }
                 visitEnd()
-            }
-            visitMethod(ACC_PUBLIC, "doWork", "()V", null, null).apply {
-                visitCode()
-                visitFieldInsn(GETSTATIC, BEHIND_FLAG_CODE_INTERNAL, "sideEffect", "I")
-                visitInsn(ICONST_1)
-                visitInsn(IADD)
-                visitFieldInsn(PUTSTATIC, BEHIND_FLAG_CODE_INTERNAL, "sideEffect", "I")
-                visitInsn(RETURN)
-                visitMaxs(0, 0)
-                visitEnd()
-            }
-            visitEnd()
-        }.toByteArray()
+            }.toByteArray()
 
     /**
      * Entry point: `static void execute(boolean enabled)`.
@@ -235,30 +241,31 @@ internal class R8EliminationTest {
      * `-assumevalues`.
      */
     private fun callerBytes(): ByteArray =
-        safeClassWriter().apply {
-            visit(V1_8, ACC_PUBLIC, CALLER_INTERNAL, null, OBJECT, null)
-            visitMethod(ACC_PUBLIC or ACC_STATIC, "execute", "(Z)V", null, null).apply {
-                visitCode()
-                visitTypeInsn(NEW, CONFIG_VALUES_INTERNAL)
-                visitInsn(DUP)
-                visitVarInsn(ILOAD, 0)
-                visitMethodInsn(INVOKESPECIAL, CONFIG_VALUES_INTERNAL, "<init>", "(Z)V", false)
-                visitVarInsn(ASTORE, 1)
-                visitVarInsn(ALOAD, 1)
-                visitMethodInsn(INVOKESTATIC, EXTENSIONS_INTERNAL, IS_DARK_MODE_ENABLED, "(L$CONFIG_VALUES_INTERNAL;)Z", false)
-                val skipLabel = Label()
-                visitJumpInsn(IFEQ, skipLabel)
-                visitTypeInsn(NEW, BEHIND_FLAG_CODE_INTERNAL)
-                visitInsn(DUP)
-                visitMethodInsn(INVOKESPECIAL, BEHIND_FLAG_CODE_INTERNAL, "<init>", "()V", false)
-                visitMethodInsn(INVOKEVIRTUAL, BEHIND_FLAG_CODE_INTERNAL, "doWork", "()V", false)
-                visitLabel(skipLabel)
-                visitInsn(RETURN)
-                visitMaxs(0, 0)
+        safeClassWriter()
+            .apply {
+                visit(V1_8, ACC_PUBLIC, CALLER_INTERNAL, null, OBJECT, null)
+                visitMethod(ACC_PUBLIC or ACC_STATIC, "execute", "(Z)V", null, null).apply {
+                    visitCode()
+                    visitTypeInsn(NEW, CONFIG_VALUES_INTERNAL)
+                    visitInsn(DUP)
+                    visitVarInsn(ILOAD, 0)
+                    visitMethodInsn(INVOKESPECIAL, CONFIG_VALUES_INTERNAL, "<init>", "(Z)V", false)
+                    visitVarInsn(ASTORE, 1)
+                    visitVarInsn(ALOAD, 1)
+                    visitMethodInsn(INVOKESTATIC, EXTENSIONS_INTERNAL, IS_DARK_MODE_ENABLED, "(L$CONFIG_VALUES_INTERNAL;)Z", false)
+                    val skipLabel = Label()
+                    visitJumpInsn(IFEQ, skipLabel)
+                    visitTypeInsn(NEW, BEHIND_FLAG_CODE_INTERNAL)
+                    visitInsn(DUP)
+                    visitMethodInsn(INVOKESPECIAL, BEHIND_FLAG_CODE_INTERNAL, "<init>", "()V", false)
+                    visitMethodInsn(INVOKEVIRTUAL, BEHIND_FLAG_CODE_INTERNAL, "doWork", "()V", false)
+                    visitLabel(skipLabel)
+                    visitInsn(RETURN)
+                    visitMaxs(0, 0)
+                    visitEnd()
+                }
                 visitEnd()
-            }
-            visitEnd()
-        }.toByteArray()
+            }.toByteArray()
 
     // ── ProGuard rules ────────────────────────────────────────────────────────
 
@@ -275,7 +282,7 @@ internal class R8EliminationTest {
             }
             -keep class $CALLER_FQN { *; }
             -dontwarn **
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -290,40 +297,51 @@ internal class R8EliminationTest {
             -keep class $CALLER_FQN { *; }
             -keepclassmembers class $BEHIND_FLAG_CODE_FQN { public static int sideEffect; }
             -dontwarn **
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
     // ── R8 invocation ─────────────────────────────────────────────────────────
 
-    private fun runR8(inputJar: File, rulesFile: File, outputJar: File) {
+    private fun runR8(
+        inputJar: File,
+        rulesFile: File,
+        outputJar: File,
+    ) {
         R8.run(
-            R8Command.builder()
+            R8Command
+                .builder()
                 .addProgramFiles(inputJar.toPath())
                 .addProguardConfigurationFiles(rulesFile.toPath())
                 .addLibraryResourceProvider(JdkClassFileProvider.fromSystemJdk())
                 .setOutput(outputJar.toPath(), OutputMode.ClassFile)
                 .setDisableMinification(true)
-                .build()
+                .build(),
         )
     }
 
     // ── Assertions ────────────────────────────────────────────────────────────
 
-    private fun assertClassAbsent(jar: File, internalName: String) {
+    private fun assertClassAbsent(
+        jar: File,
+        internalName: String,
+    ) {
         JarFile(jar).use { jf ->
             assertNull(
                 jf.getJarEntry("$internalName.class"),
-                "Expected $internalName to be dead-code-eliminated by R8 but it was found in the output JAR"
+                "Expected $internalName to be dead-code-eliminated by R8 but it was found in the output JAR",
             )
         }
     }
 
-    private fun assertClassPresent(jar: File, internalName: String) {
+    private fun assertClassPresent(
+        jar: File,
+        internalName: String,
+    ) {
         JarFile(jar).use { jf ->
             assertNotNull(
                 jf.getJarEntry("$internalName.class"),
-                "Expected $internalName to survive R8 but it was not found in the output JAR"
+                "Expected $internalName to survive R8 but it was not found in the output JAR",
             )
         }
     }
@@ -355,5 +373,8 @@ internal class R8EliminationTest {
  */
 private fun safeClassWriter(): ClassWriter =
     object : ClassWriter(COMPUTE_FRAMES) {
-        override fun getCommonSuperClass(type1: String, type2: String): String = "java/lang/Object"
+        override fun getCommonSuperClass(
+            type1: String,
+            type2: String,
+        ): String = "java/lang/Object"
     }
