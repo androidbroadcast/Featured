@@ -165,7 +165,6 @@ class CheckoutViewModel @Inject constructor(
 }
 ```
 
-See [ADR 001](../adr/001-configvalues-multi-module.md) for the rationale behind this design.
 
 ---
 
