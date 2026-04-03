@@ -9,26 +9,7 @@ import org.junit.Before
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.ClassWriter.COMPUTE_FRAMES
 import org.objectweb.asm.Label
-import org.objectweb.asm.Opcodes.ACC_PUBLIC
-import org.objectweb.asm.Opcodes.ACC_STATIC
-import org.objectweb.asm.Opcodes.ALOAD
-import org.objectweb.asm.Opcodes.ASTORE
-import org.objectweb.asm.Opcodes.DUP
-import org.objectweb.asm.Opcodes.GETFIELD
-import org.objectweb.asm.Opcodes.GETSTATIC
-import org.objectweb.asm.Opcodes.IADD
-import org.objectweb.asm.Opcodes.ICONST_1
-import org.objectweb.asm.Opcodes.IFEQ
-import org.objectweb.asm.Opcodes.ILOAD
-import org.objectweb.asm.Opcodes.INVOKESPECIAL
-import org.objectweb.asm.Opcodes.INVOKESTATIC
-import org.objectweb.asm.Opcodes.INVOKEVIRTUAL
-import org.objectweb.asm.Opcodes.IRETURN
-import org.objectweb.asm.Opcodes.NEW
-import org.objectweb.asm.Opcodes.PUTFIELD
-import org.objectweb.asm.Opcodes.PUTSTATIC
-import org.objectweb.asm.Opcodes.RETURN
-import org.objectweb.asm.Opcodes.V1_8
+import org.objectweb.asm.Opcodes.*
 import java.io.File
 import java.nio.file.Files
 import java.util.jar.JarEntry
@@ -40,44 +21,67 @@ import kotlin.test.assertNull
 
 /**
  * Verifies the library's core guarantee: local flags declared via the Gradle DSL generate
- * `-assumevalues` ProGuard/R8 rules that cause R8 to dead-code-eliminate all code reachable
- * only when the flag is enabled.
+ * `-assumevalues` ProGuard/R8 rules that cause R8 to dead-code-eliminate all code that is
+ * reachable only through the disabled branch of a flag check.
  *
  * Strategy: use ASM to build synthetic bytecode that mirrors the plugin-generated structure,
- * write a rules file in the exact format [ProguardRulesGenerator] produces, run R8
- * programmatically, and assert presence / absence of the flag-guarded class in the output.
+ * write rules files in the exact format [ProguardRulesGenerator] produces, run R8
+ * programmatically, and assert presence / absence of flag-guarded classes in the output JAR.
  *
- * ### Synthetic class design
+ * ### Boolean flag — bifurcated caller design
  *
- * ```
+ * ```java
  * // Mirrors dev.androidbroadcast.featured.ConfigValues
- * class ConfigValues { boolean enabled; ConfigValues(boolean enabled) { ... } }
+ * class ConfigValues { boolean enabled; ConfigValues(boolean) }
  *
  * // Mirrors ExtensionFunctionGenerator output for module ":test"
  * class FeaturedTest_FlagExtensionsKt {
  *     static boolean isDarkModeEnabled(ConfigValues cv) { return cv.enabled; }
  * }
  *
- * // Code that must be absent when the flag is off
- * class BehindFlagCode {
- *     public static int sideEffect;   // kept by rule so R8 cannot eliminate the write
- *     void doWork() { sideEffect++; }
- * }
+ * // Code that must be absent when the flag is disabled (if-branch)
+ * class IfBranchCode { static int sideEffect; void doWork() { sideEffect++; } }
  *
- * // Entry point — public method with boolean parameter (unknown value at R8 time)
- * class Caller {
+ * // Code that must be absent when the flag is enabled (else-branch)
+ * class ElseBranchCode { static int sideEffect; void doWork() { sideEffect++; } }
+ *
+ * // Entry point kept by -keep; unknown boolean parameter prevents R8 from
+ * // constant-folding the flag value without an -assumevalues rule.
+ * class BifurcatedCaller {
  *     static void execute(boolean enabled) {
  *         ConfigValues cv = new ConfigValues(enabled);
  *         if (FeaturedTest_FlagExtensionsKt.isDarkModeEnabled(cv)) {
- *             new BehindFlagCode().doWork();
+ *             new IfBranchCode().doWork();
+ *         } else {
+ *             new ElseBranchCode().doWork();
  *         }
  *     }
  * }
  * ```
  *
- * Because `execute` is public and kept, R8 cannot infer the value of `enabled`.
- * Therefore `isDarkModeEnabled` has an unknown return value **unless** the
- * `-assumevalues` rule overrides it.
+ * ### Int flag — positive-guard caller design
+ *
+ * ```java
+ * class IntConfigValues { int count; IntConfigValues(int) }
+ *
+ * class FeaturedIntTest_FlagExtensionsKt {
+ *     static int getMaxRetries(IntConfigValues cv) { return cv.count; }
+ * }
+ *
+ * class PositiveCountCode { static int sideEffect; void doWork() { sideEffect++; } }
+ *
+ * class IntCaller {
+ *     static void execute(int count) {
+ *         IntConfigValues cv = new IntConfigValues(count);
+ *         if (FeaturedIntTest_FlagExtensionsKt.getMaxRetries(cv) > 0) {
+ *             new PositiveCountCode().doWork();
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * When `-assumevalues` pins `getMaxRetries` to `0`, R8 constant-folds `0 > 0` to `false`
+ * and eliminates the if-branch entirely.
  */
 internal class R8EliminationTest {
     private lateinit var workDir: File
@@ -92,73 +96,117 @@ internal class R8EliminationTest {
         workDir.deleteRecursively()
     }
 
-    // ── Tests ─────────────────────────────────────────────────────────────────
+    // ── Boolean flag — elimination tests ──────────────────────────────────────
 
     /**
-     * With `-assumevalues … return false`, R8 treats the flag as permanently disabled.
-     * The true-branch is dead code, [BEHIND_FLAG_CODE_INTERNAL] becomes unreachable,
-     * and R8 must eliminate it from the output.
+     * With `return false`, `isDarkModeEnabled` is pinned to `false` at R8 time.
+     * The if-branch (`IfBranchCode`) becomes unreachable and must be eliminated;
+     * the else-branch (`ElseBranchCode`) is the only live path and must survive.
      */
     @Test
-    fun `class behind disabled local flag is eliminated by R8`() {
-        val inputJar = workDir.resolve("input.jar").also { buildInputJar(it) }
-        val rulesFile = workDir.resolve("rules-false.pro").also { writeRulesFile(it) }
-        val outputJar = workDir.resolve("output-false.jar")
+    fun `if-branch class is eliminated when boolean flag returns false`() {
+        val inputJar = workDir.resolve("input.jar").also { buildBooleanInputJar(it) }
+        val rulesFile = workDir.resolve("rules.pro").also { writeBooleanRules(it, returnValue = false) }
+        val outputJar = workDir.resolve("output.jar")
 
         runR8(inputJar, rulesFile, outputJar)
 
-        assertClassPresent(outputJar, CALLER_INTERNAL)
-        assertClassAbsent(outputJar, BEHIND_FLAG_CODE_INTERNAL)
+        assertClassAbsent(outputJar, IF_BRANCH_CODE_INTERNAL)
+        assertClassPresent(outputJar, ELSE_BRANCH_CODE_INTERNAL)
+        assertClassPresent(outputJar, BIFURCATED_CALLER_INTERNAL)
+    }
+
+    /**
+     * With `return true`, `isDarkModeEnabled` is pinned to `true` at R8 time.
+     * The else-branch (`ElseBranchCode`) becomes unreachable and must be eliminated;
+     * the if-branch (`IfBranchCode`) is the only live path and must survive.
+     */
+    @Test
+    fun `else-branch class is eliminated when boolean flag returns true`() {
+        val inputJar = workDir.resolve("input.jar").also { buildBooleanInputJar(it) }
+        val rulesFile = workDir.resolve("rules.pro").also { writeBooleanRules(it, returnValue = true) }
+        val outputJar = workDir.resolve("output.jar")
+
+        runR8(inputJar, rulesFile, outputJar)
+
+        assertClassPresent(outputJar, IF_BRANCH_CODE_INTERNAL)
+        assertClassAbsent(outputJar, ELSE_BRANCH_CODE_INTERNAL)
+        assertClassPresent(outputJar, BIFURCATED_CALLER_INTERNAL)
     }
 
     /**
      * Without any `-assumevalues` rule R8 cannot determine the return value of
-     * `isDarkModeEnabled` (it depends on an unknown boolean parameter). Both branches
-     * are potentially reachable, so [BEHIND_FLAG_CODE_INTERNAL] must survive R8.
+     * `isDarkModeEnabled` (it depends on the unknown `enabled` parameter). Both branches
+     * are potentially reachable, so both `IfBranchCode` and `ElseBranchCode` must survive.
      *
-     * Together with the first test this proves that dead-code elimination is caused
+     * Together with the two tests above this proves that dead-code elimination is caused
      * specifically by the generated rule, not by R8's own constant-folding.
      */
     @Test
-    fun `class behind flag survives R8 when no assumevalues rule is present`() {
-        val inputJar = workDir.resolve("input.jar").also { buildInputJar(it) }
-        val rulesFile = workDir.resolve("rules-no-assume.pro").also { writeRulesFileWithoutAssume(it) }
-        val outputJar = workDir.resolve("output-no-assume.jar")
+    fun `both branch classes survive when no boolean assumevalues rule is present`() {
+        val inputJar = workDir.resolve("input.jar").also { buildBooleanInputJar(it) }
+        val rulesFile = workDir.resolve("rules.pro").also { writeNoBooleanAssumeRules(it) }
+        val outputJar = workDir.resolve("output.jar")
 
         runR8(inputJar, rulesFile, outputJar)
 
-        assertClassPresent(outputJar, CALLER_INTERNAL)
-        assertClassPresent(outputJar, BEHIND_FLAG_CODE_INTERNAL)
+        assertClassPresent(outputJar, IF_BRANCH_CODE_INTERNAL)
+        assertClassPresent(outputJar, ELSE_BRANCH_CODE_INTERNAL)
     }
 
-    // ── Synthetic bytecode ────────────────────────────────────────────────────
+    // ── Int flag — elimination tests ──────────────────────────────────────────
 
-    private fun buildInputJar(dest: File) {
+    /**
+     * With `return 0`, `getMaxRetries` is pinned to `0`. R8 constant-folds `0 > 0` to
+     * `false`, making the if-branch dead code. `PositiveCountCode` must be eliminated.
+     */
+    @Test
+    fun `guarded class is eliminated when int flag is assumed to return zero`() {
+        val inputJar = workDir.resolve("input.jar").also { buildIntInputJar(it) }
+        val rulesFile = workDir.resolve("rules.pro").also { writeIntRules(it, returnValue = 0) }
+        val outputJar = workDir.resolve("output.jar")
+
+        runR8(inputJar, rulesFile, outputJar)
+
+        assertClassAbsent(outputJar, POSITIVE_COUNT_CODE_INTERNAL)
+        assertClassPresent(outputJar, INT_CALLER_INTERNAL)
+    }
+
+    /**
+     * Without `-assumevalues` R8 cannot determine `getMaxRetries`'s return value.
+     * The if-branch is potentially reachable so `PositiveCountCode` must survive.
+     */
+    @Test
+    fun `guarded class survives when int flag has no assumevalues rule`() {
+        val inputJar = workDir.resolve("input.jar").also { buildIntInputJar(it) }
+        val rulesFile = workDir.resolve("rules.pro").also { writeNoIntAssumeRules(it) }
+        val outputJar = workDir.resolve("output.jar")
+
+        runR8(inputJar, rulesFile, outputJar)
+
+        assertClassPresent(outputJar, POSITIVE_COUNT_CODE_INTERNAL)
+        assertClassPresent(outputJar, INT_CALLER_INTERNAL)
+    }
+
+    // ── Boolean bytecode builders ─────────────────────────────────────────────
+
+    private fun buildBooleanInputJar(dest: File) {
         JarOutputStream(dest.outputStream()).use { jos ->
-            putClass(jos, CONFIG_VALUES_INTERNAL, configValuesBytes())
-            putClass(jos, EXTENSIONS_INTERNAL, extensionsBytes())
-            putClass(jos, BEHIND_FLAG_CODE_INTERNAL, behindFlagCodeBytes())
-            putClass(jos, CALLER_INTERNAL, callerBytes())
+            putClass(jos, CONFIG_VALUES_INTERNAL, booleanConfigValuesBytes())
+            putClass(jos, BOOL_EXTENSIONS_INTERNAL, booleanExtensionsBytes())
+            putClass(jos, IF_BRANCH_CODE_INTERNAL, sideEffectClassBytes(IF_BRANCH_CODE_INTERNAL))
+            putClass(jos, ELSE_BRANCH_CODE_INTERNAL, sideEffectClassBytes(ELSE_BRANCH_CODE_INTERNAL))
+            putClass(jos, BIFURCATED_CALLER_INTERNAL, bifurcatedCallerBytes())
         }
-    }
-
-    private fun putClass(
-        jos: JarOutputStream,
-        internalName: String,
-        bytes: ByteArray,
-    ) {
-        jos.putNextEntry(JarEntry("$internalName.class"))
-        jos.write(bytes)
-        jos.closeEntry()
     }
 
     /**
      * `class ConfigValues { boolean enabled; ConfigValues(boolean) }`
      *
-     * The constructor parameter makes the field value unknown to R8 when `Caller.execute`
-     * forwards its own unknown parameter: `new ConfigValues(enabled)`.
+     * The constructor parameter makes the field value unknown to R8 when `BifurcatedCaller`
+     * forwards its own unknown `enabled` parameter: `new ConfigValues(enabled)`.
      */
-    private fun configValuesBytes(): ByteArray =
+    private fun booleanConfigValuesBytes(): ByteArray =
         safeClassWriter()
             .apply {
                 visit(V1_8, ACC_PUBLIC, CONFIG_VALUES_INTERNAL, null, OBJECT, null)
@@ -181,16 +229,19 @@ internal class R8EliminationTest {
      * Mirrors [ExtensionFunctionGenerator]'s output for module `":test"`:
      * `static boolean isDarkModeEnabled(ConfigValues cv) { return cv.enabled; }`
      *
-     * Reading an instance field whose value derives from an unknown parameter is
-     * something R8 cannot constant-fold — exactly like the real extension function
-     * that reads from `ConfigValues` at runtime.  The `-assumevalues` rule
-     * overrides this return value to a build-time constant.
+     * The `-assumevalues` rule overrides this return value to a build-time constant.
      */
-    private fun extensionsBytes(): ByteArray =
+    private fun booleanExtensionsBytes(): ByteArray =
         safeClassWriter()
             .apply {
-                visit(V1_8, ACC_PUBLIC, EXTENSIONS_INTERNAL, null, OBJECT, null)
-                visitMethod(ACC_PUBLIC or ACC_STATIC, IS_DARK_MODE_ENABLED, "(L$CONFIG_VALUES_INTERNAL;)Z", null, null).apply {
+                visit(V1_8, ACC_PUBLIC, BOOL_EXTENSIONS_INTERNAL, null, OBJECT, null)
+                visitMethod(
+                    ACC_PUBLIC or ACC_STATIC,
+                    IS_DARK_MODE_ENABLED,
+                    "(L$CONFIG_VALUES_INTERNAL;)Z",
+                    null,
+                    null,
+                ).apply {
                     visitCode()
                     visitVarInsn(ALOAD, 0)
                     visitFieldInsn(GETFIELD, CONFIG_VALUES_INTERNAL, "enabled", "Z")
@@ -202,15 +253,181 @@ internal class R8EliminationTest {
             }.toByteArray()
 
     /**
-     * Code that must be absent when the flag is disabled.
+     * Entry point with both if and else branches:
      *
-     * `doWork()` writes to a public static field so R8 cannot treat the call as a
-     * no-op and remove the instantiation when the branch is live.
+     * ```java
+     * static void execute(boolean enabled) {
+     *     ConfigValues cv = new ConfigValues(enabled);
+     *     if (BoolExtensions.isDarkModeEnabled(cv)) {
+     *         new IfBranchCode().doWork();
+     *     } else {
+     *         new ElseBranchCode().doWork();
+     *     }
+     * }
+     * ```
+     *
+     * A single input JAR covers all four Boolean scenarios:
+     * `flag=false/true` × `if/else` branch elimination.
      */
-    private fun behindFlagCodeBytes(): ByteArray =
+    private fun bifurcatedCallerBytes(): ByteArray =
         safeClassWriter()
             .apply {
-                visit(V1_8, ACC_PUBLIC, BEHIND_FLAG_CODE_INTERNAL, null, OBJECT, null)
+                visit(V1_8, ACC_PUBLIC, BIFURCATED_CALLER_INTERNAL, null, OBJECT, null)
+                visitMethod(ACC_PUBLIC or ACC_STATIC, "execute", "(Z)V", null, null).apply {
+                    visitCode()
+                    visitTypeInsn(NEW, CONFIG_VALUES_INTERNAL)
+                    visitInsn(DUP)
+                    visitVarInsn(ILOAD, 0)
+                    visitMethodInsn(INVOKESPECIAL, CONFIG_VALUES_INTERNAL, "<init>", "(Z)V", false)
+                    visitVarInsn(ASTORE, 1)
+                    visitVarInsn(ALOAD, 1)
+                    visitMethodInsn(
+                        INVOKESTATIC,
+                        BOOL_EXTENSIONS_INTERNAL,
+                        IS_DARK_MODE_ENABLED,
+                        "(L$CONFIG_VALUES_INTERNAL;)Z",
+                        false,
+                    )
+                    val elseLabel = Label()
+                    val endLabel = Label()
+                    visitJumpInsn(IFEQ, elseLabel)
+                    // if-branch
+                    visitTypeInsn(NEW, IF_BRANCH_CODE_INTERNAL)
+                    visitInsn(DUP)
+                    visitMethodInsn(INVOKESPECIAL, IF_BRANCH_CODE_INTERNAL, "<init>", "()V", false)
+                    visitMethodInsn(INVOKEVIRTUAL, IF_BRANCH_CODE_INTERNAL, "doWork", "()V", false)
+                    visitJumpInsn(GOTO, endLabel)
+                    // else-branch
+                    visitLabel(elseLabel)
+                    visitTypeInsn(NEW, ELSE_BRANCH_CODE_INTERNAL)
+                    visitInsn(DUP)
+                    visitMethodInsn(INVOKESPECIAL, ELSE_BRANCH_CODE_INTERNAL, "<init>", "()V", false)
+                    visitMethodInsn(INVOKEVIRTUAL, ELSE_BRANCH_CODE_INTERNAL, "doWork", "()V", false)
+                    visitLabel(endLabel)
+                    visitInsn(RETURN)
+                    visitMaxs(0, 0)
+                    visitEnd()
+                }
+                visitEnd()
+            }.toByteArray()
+
+    // ── Int bytecode builders ─────────────────────────────────────────────────
+
+    private fun buildIntInputJar(dest: File) {
+        JarOutputStream(dest.outputStream()).use { jos ->
+            putClass(jos, INT_CONFIG_VALUES_INTERNAL, intConfigValuesBytes())
+            putClass(jos, INT_EXTENSIONS_INTERNAL, intExtensionsBytes())
+            putClass(jos, POSITIVE_COUNT_CODE_INTERNAL, sideEffectClassBytes(POSITIVE_COUNT_CODE_INTERNAL))
+            putClass(jos, INT_CALLER_INTERNAL, intCallerBytes())
+        }
+    }
+
+    /**
+     * `class IntConfigValues { int count; IntConfigValues(int) }`
+     */
+    private fun intConfigValuesBytes(): ByteArray =
+        safeClassWriter()
+            .apply {
+                visit(V1_8, ACC_PUBLIC, INT_CONFIG_VALUES_INTERNAL, null, OBJECT, null)
+                visitField(ACC_PUBLIC, "count", "I", null, null).visitEnd()
+                visitMethod(ACC_PUBLIC, "<init>", "(I)V", null, null).apply {
+                    visitCode()
+                    visitVarInsn(ALOAD, 0)
+                    visitMethodInsn(INVOKESPECIAL, OBJECT, "<init>", "()V", false)
+                    visitVarInsn(ALOAD, 0)
+                    visitVarInsn(ILOAD, 1)
+                    visitFieldInsn(PUTFIELD, INT_CONFIG_VALUES_INTERNAL, "count", "I")
+                    visitInsn(RETURN)
+                    visitMaxs(0, 0)
+                    visitEnd()
+                }
+                visitEnd()
+            }.toByteArray()
+
+    /**
+     * Mirrors [ExtensionFunctionGenerator]'s output for module `":int-test"`:
+     * `static int getMaxRetries(IntConfigValues cv) { return cv.count; }`
+     */
+    private fun intExtensionsBytes(): ByteArray =
+        safeClassWriter()
+            .apply {
+                visit(V1_8, ACC_PUBLIC, INT_EXTENSIONS_INTERNAL, null, OBJECT, null)
+                visitMethod(
+                    ACC_PUBLIC or ACC_STATIC,
+                    GET_MAX_RETRIES,
+                    "(L$INT_CONFIG_VALUES_INTERNAL;)I",
+                    null,
+                    null,
+                ).apply {
+                    visitCode()
+                    visitVarInsn(ALOAD, 0)
+                    visitFieldInsn(GETFIELD, INT_CONFIG_VALUES_INTERNAL, "count", "I")
+                    visitInsn(IRETURN)
+                    visitMaxs(0, 0)
+                    visitEnd()
+                }
+                visitEnd()
+            }.toByteArray()
+
+    /**
+     * ```java
+     * static void execute(int count) {
+     *     IntConfigValues cv = new IntConfigValues(count);
+     *     if (IntExtensions.getMaxRetries(cv) > 0) {
+     *         new PositiveCountCode().doWork();
+     *     }
+     * }
+     * ```
+     *
+     * `IFLE` (jump if ≤ 0) is the branch that skips the block when count is zero.
+     * With `-assumevalues return 0`, R8 folds `0 > 0` to `false` and eliminates the block.
+     */
+    private fun intCallerBytes(): ByteArray =
+        safeClassWriter()
+            .apply {
+                visit(V1_8, ACC_PUBLIC, INT_CALLER_INTERNAL, null, OBJECT, null)
+                visitMethod(ACC_PUBLIC or ACC_STATIC, "execute", "(I)V", null, null).apply {
+                    visitCode()
+                    visitTypeInsn(NEW, INT_CONFIG_VALUES_INTERNAL)
+                    visitInsn(DUP)
+                    visitVarInsn(ILOAD, 0)
+                    visitMethodInsn(INVOKESPECIAL, INT_CONFIG_VALUES_INTERNAL, "<init>", "(I)V", false)
+                    visitVarInsn(ASTORE, 1)
+                    visitVarInsn(ALOAD, 1)
+                    visitMethodInsn(
+                        INVOKESTATIC,
+                        INT_EXTENSIONS_INTERNAL,
+                        GET_MAX_RETRIES,
+                        "(L$INT_CONFIG_VALUES_INTERNAL;)I",
+                        false,
+                    )
+                    val skipLabel = Label()
+                    visitJumpInsn(IFLE, skipLabel)
+                    visitTypeInsn(NEW, POSITIVE_COUNT_CODE_INTERNAL)
+                    visitInsn(DUP)
+                    visitMethodInsn(INVOKESPECIAL, POSITIVE_COUNT_CODE_INTERNAL, "<init>", "()V", false)
+                    visitMethodInsn(INVOKEVIRTUAL, POSITIVE_COUNT_CODE_INTERNAL, "doWork", "()V", false)
+                    visitLabel(skipLabel)
+                    visitInsn(RETURN)
+                    visitMaxs(0, 0)
+                    visitEnd()
+                }
+                visitEnd()
+            }.toByteArray()
+
+    // ── Shared bytecode builder ───────────────────────────────────────────────
+
+    /**
+     * Builds a class with:
+     * - `public static int sideEffect` — keeps R8 from treating `doWork()` as a no-op
+     * - `public void doWork()` — increments `sideEffect`
+     *
+     * Used for all branch-target classes so they share the same structure.
+     */
+    private fun sideEffectClassBytes(internalName: String): ByteArray =
+        safeClassWriter()
+            .apply {
+                visit(V1_8, ACC_PUBLIC, internalName, null, OBJECT, null)
                 visitField(ACC_PUBLIC or ACC_STATIC, "sideEffect", "I", null, 0).visitEnd()
                 visitMethod(ACC_PUBLIC, "<init>", "()V", null, null).apply {
                     visitCode()
@@ -222,10 +439,10 @@ internal class R8EliminationTest {
                 }
                 visitMethod(ACC_PUBLIC, "doWork", "()V", null, null).apply {
                     visitCode()
-                    visitFieldInsn(GETSTATIC, BEHIND_FLAG_CODE_INTERNAL, "sideEffect", "I")
+                    visitFieldInsn(GETSTATIC, internalName, "sideEffect", "I")
                     visitInsn(ICONST_1)
                     visitInsn(IADD)
-                    visitFieldInsn(PUTSTATIC, BEHIND_FLAG_CODE_INTERNAL, "sideEffect", "I")
+                    visitFieldInsn(PUTSTATIC, internalName, "sideEffect", "I")
                     visitInsn(RETURN)
                     visitMaxs(0, 0)
                     visitEnd()
@@ -233,69 +450,84 @@ internal class R8EliminationTest {
                 visitEnd()
             }.toByteArray()
 
-    /**
-     * Entry point: `static void execute(boolean enabled)`.
-     *
-     * The boolean parameter is unknown at R8 time because `execute` is public and kept.
-     * That makes `isDarkModeEnabled`'s return value unknown — unless overridden by
-     * `-assumevalues`.
-     */
-    private fun callerBytes(): ByteArray =
-        safeClassWriter()
-            .apply {
-                visit(V1_8, ACC_PUBLIC, CALLER_INTERNAL, null, OBJECT, null)
-                visitMethod(ACC_PUBLIC or ACC_STATIC, "execute", "(Z)V", null, null).apply {
-                    visitCode()
-                    visitTypeInsn(NEW, CONFIG_VALUES_INTERNAL)
-                    visitInsn(DUP)
-                    visitVarInsn(ILOAD, 0)
-                    visitMethodInsn(INVOKESPECIAL, CONFIG_VALUES_INTERNAL, "<init>", "(Z)V", false)
-                    visitVarInsn(ASTORE, 1)
-                    visitVarInsn(ALOAD, 1)
-                    visitMethodInsn(INVOKESTATIC, EXTENSIONS_INTERNAL, IS_DARK_MODE_ENABLED, "(L$CONFIG_VALUES_INTERNAL;)Z", false)
-                    val skipLabel = Label()
-                    visitJumpInsn(IFEQ, skipLabel)
-                    visitTypeInsn(NEW, BEHIND_FLAG_CODE_INTERNAL)
-                    visitInsn(DUP)
-                    visitMethodInsn(INVOKESPECIAL, BEHIND_FLAG_CODE_INTERNAL, "<init>", "()V", false)
-                    visitMethodInsn(INVOKEVIRTUAL, BEHIND_FLAG_CODE_INTERNAL, "doWork", "()V", false)
-                    visitLabel(skipLabel)
-                    visitInsn(RETURN)
-                    visitMaxs(0, 0)
-                    visitEnd()
-                }
-                visitEnd()
-            }.toByteArray()
+    private fun putClass(
+        jos: JarOutputStream,
+        internalName: String,
+        bytes: ByteArray,
+    ) {
+        jos.putNextEntry(JarEntry("$internalName.class"))
+        jos.write(bytes)
+        jos.closeEntry()
+    }
 
     // ── ProGuard rules ────────────────────────────────────────────────────────
 
     /**
-     * Approximates the output of [ProguardRulesGenerator.generate] for module `":test"`,
-     * Boolean flag `"dark_mode"` with `defaultValue = false`. The `-keep` and `-dontwarn`
-     * directives are test scaffolding, not generator output.
+     * Approximates [ProguardRulesGenerator] output for a Boolean flag `"dark_mode"` in
+     * module `":test"`. The `-keep` and `-dontwarn` directives are test scaffolding only.
+     *
+     * `-keepclassmembers` pins the `sideEffect` field of the **surviving** branch class so
+     * that R8 cannot treat the `doWork()` call as a no-op and eliminate the class via
+     * write-only field optimisation. The dead branch class intentionally has no such rule,
+     * so R8 is free to eliminate it once the branch becomes unreachable.
      */
-    private fun writeRulesFile(dest: File) {
+    private fun writeBooleanRules(
+        dest: File,
+        returnValue: Boolean,
+    ) {
+        val survivingClass = if (returnValue) IF_BRANCH_CODE_FQN else ELSE_BRANCH_CODE_FQN
         dest.writeText(
             """
-            -assumevalues class $EXTENSIONS_FQN {
-                boolean $IS_DARK_MODE_ENABLED($CONFIG_VALUES_FQN) return false;
+            -assumevalues class $BOOL_EXTENSIONS_FQN {
+                boolean $IS_DARK_MODE_ENABLED($CONFIG_VALUES_FQN) return $returnValue;
             }
-            -keep class $CALLER_FQN { *; }
+            -keep class $BIFURCATED_CALLER_FQN { *; }
+            -keepclassmembers class $survivingClass { public static int sideEffect; }
             -dontwarn **
             """.trimIndent(),
         )
     }
 
     /**
-     * Rules without any `-assumevalues` block.
-     * [BehindFlagCode.sideEffect] is kept so R8 cannot treat `doWork()` as a no-op
-     * when the branch is live (unknown flag value).
+     * No `-assumevalues` block — R8 cannot constant-fold the flag value.
+     * The `-keepclassmembers` rules ensure the `sideEffect` field is not stripped
+     * while the branch-target classes remain alive via reachability from the kept caller.
      */
-    private fun writeRulesFileWithoutAssume(dest: File) {
+    private fun writeNoBooleanAssumeRules(dest: File) {
         dest.writeText(
             """
-            -keep class $CALLER_FQN { *; }
-            -keepclassmembers class $BEHIND_FLAG_CODE_FQN { public static int sideEffect; }
+            -keep class $BIFURCATED_CALLER_FQN { *; }
+            -keepclassmembers class $IF_BRANCH_CODE_FQN { public static int sideEffect; }
+            -keepclassmembers class $ELSE_BRANCH_CODE_FQN { public static int sideEffect; }
+            -dontwarn **
+            """.trimIndent(),
+        )
+    }
+
+    /**
+     * Approximates [ProguardRulesGenerator] output for an Int flag `"max_retries"` in
+     * module `":int-test"` with the given [returnValue].
+     */
+    private fun writeIntRules(
+        dest: File,
+        returnValue: Int,
+    ) {
+        dest.writeText(
+            """
+            -assumevalues class $INT_EXTENSIONS_FQN {
+                int $GET_MAX_RETRIES($INT_CONFIG_VALUES_FQN) return $returnValue;
+            }
+            -keep class $INT_CALLER_FQN { *; }
+            -dontwarn **
+            """.trimIndent(),
+        )
+    }
+
+    private fun writeNoIntAssumeRules(dest: File) {
+        dest.writeText(
+            """
+            -keep class $INT_CALLER_FQN { *; }
+            -keepclassmembers class $POSITIVE_COUNT_CODE_FQN { public static int sideEffect; }
             -dontwarn **
             """.trimIndent(),
         )
@@ -349,19 +581,40 @@ internal class R8EliminationTest {
     // ── Constants ─────────────────────────────────────────────────────────────
 
     private companion object {
+        // Boolean flag — class names (JVM internal form)
         const val CONFIG_VALUES_INTERNAL = "dev/androidbroadcast/featured/ConfigValues"
-        const val BEHIND_FLAG_CODE_INTERNAL = "BehindFlagCode"
-        const val CALLER_INTERNAL = "Caller"
+        const val IF_BRANCH_CODE_INTERNAL = "IfBranchCode"
+        const val ELSE_BRANCH_CODE_INTERNAL = "ElseBranchCode"
+        const val BIFURCATED_CALLER_INTERNAL = "BifurcatedCaller"
 
-        val EXTENSIONS_INTERNAL =
+        val BOOL_EXTENSIONS_INTERNAL =
             "dev/androidbroadcast/featured/generated/${ExtensionFunctionGenerator.jvmFileName(":test")}"
 
+        // Boolean flag — FQN form for ProGuard rules
         const val CONFIG_VALUES_FQN = "dev.androidbroadcast.featured.ConfigValues"
-        const val CALLER_FQN = "Caller"
-        const val BEHIND_FLAG_CODE_FQN = "BehindFlagCode"
-        val EXTENSIONS_FQN = EXTENSIONS_INTERNAL.replace('/', '.')
+        const val IF_BRANCH_CODE_FQN = "IfBranchCode"
+        const val ELSE_BRANCH_CODE_FQN = "ElseBranchCode"
+        const val BIFURCATED_CALLER_FQN = "BifurcatedCaller"
+        val BOOL_EXTENSIONS_FQN = BOOL_EXTENSIONS_INTERNAL.replace('/', '.')
 
         const val IS_DARK_MODE_ENABLED = "isDarkModeEnabled"
+
+        // Int flag — class names (JVM internal form)
+        const val INT_CONFIG_VALUES_INTERNAL = "dev/androidbroadcast/featured/IntConfigValues"
+        const val POSITIVE_COUNT_CODE_INTERNAL = "PositiveCountCode"
+        const val INT_CALLER_INTERNAL = "IntCaller"
+
+        val INT_EXTENSIONS_INTERNAL =
+            "dev/androidbroadcast/featured/generated/${ExtensionFunctionGenerator.jvmFileName(":int-test")}"
+
+        // Int flag — FQN form for ProGuard rules
+        const val INT_CONFIG_VALUES_FQN = "dev.androidbroadcast.featured.IntConfigValues"
+        const val POSITIVE_COUNT_CODE_FQN = "PositiveCountCode"
+        const val INT_CALLER_FQN = "IntCaller"
+        val INT_EXTENSIONS_FQN = INT_EXTENSIONS_INTERNAL.replace('/', '.')
+
+        const val GET_MAX_RETRIES = "getMaxRetries"
+
         const val OBJECT = "java/lang/Object"
     }
 }
