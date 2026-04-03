@@ -302,24 +302,6 @@
   
 
       
-        
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../adr/001-configvalues-multi-module/" class="md-tabs__link">
-          
-  
-  ADRs
-
-        </a>
-      </li>
-    
-  
-
-      
     </ul>
   </div>
 </nav>
@@ -691,28 +673,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#annotations" class="md-nav__link">
+  <a href="#gradle-dsl" class="md-nav__link">
     <span class="md-ellipsis">
-      Annotations
+      Gradle DSL
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Annotations">
+    <nav class="md-nav" aria-label="Gradle DSL">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#localflag" class="md-nav__link">
+  <a href="#generated-types" class="md-nav__link">
     <span class="md-ellipsis">
-      @LocalFlag
+      Generated types
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#remoteflag" class="md-nav__link">
+  <a href="#key-tasks" class="md-nav__link">
     <span class="md-ellipsis">
-      @RemoteFlag
+      Key tasks
     </span>
   </a>
   
@@ -780,74 +762,6 @@
   
 
       </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    ADRs
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            ADRs
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../adr/001-configvalues-multi-module/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    ADR 001: ConfigValues Multi-Module
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -939,28 +853,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#annotations" class="md-nav__link">
+  <a href="#gradle-dsl" class="md-nav__link">
     <span class="md-ellipsis">
-      Annotations
+      Gradle DSL
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Annotations">
+    <nav class="md-nav" aria-label="Gradle DSL">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#localflag" class="md-nav__link">
+  <a href="#generated-types" class="md-nav__link">
     <span class="md-ellipsis">
-      @LocalFlag
+      Generated types
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#remoteflag" class="md-nav__link">
+  <a href="#key-tasks" class="md-nav__link">
     <span class="md-ellipsis">
-      @RemoteFlag
+      Key tasks
     </span>
   </a>
   
@@ -1111,28 +1025,91 @@
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">}</span>
 </code></pre></div>
 <hr />
-<h2 id="annotations">Annotations<a class="headerlink" href="#annotations" title="Permanent link">&para;</a></h2>
-<h3 id="localflag"><code>@LocalFlag</code><a class="headerlink" href="#localflag" title="Permanent link">&para;</a></h3>
-<p>Marks a <code>ConfigParam</code> property for scanning by the Gradle plugin. The plugin uses this annotation to generate R8 rules (Android/JVM) and xcconfig conditions (iOS).</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nd">@Target</span><span class="p">(</span><span class="n">AnnotationTarget</span><span class="p">.</span><span class="na">PROPERTY</span><span class="p">)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nd">@Retention</span><span class="p">(</span><span class="n">AnnotationRetention</span><span class="p">.</span><span class="na">SOURCE</span><span class="p">)</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kd">annotation</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">LocalFlag</span>
+<h2 id="gradle-dsl">Gradle DSL<a class="headerlink" href="#gradle-dsl" title="Permanent link">&para;</a></h2>
+<p>Flags are declared in <code>build.gradle.kts</code> using the <code>featured { }</code> extension block provided by the <code>dev.androidbroadcast.featured</code> Gradle plugin.</p>
+<div class="highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">featured</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="n">localFlags</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">        </span><span class="n">boolean</span><span class="p">(</span><span class="s">&quot;dark_mode&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">category</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;UI&quot;</span><span class="p">;</span><span class="w"> </span><span class="n">expiresAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;2026-06-01&quot;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">        </span><span class="n">int</span><span class="p">(</span><span class="s">&quot;max_retries&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="p">)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="n">remoteFlags</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">        </span><span class="n">boolean</span><span class="p">(</span><span class="s">&quot;promo_banner&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Show promo banner&quot;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">        </span><span class="n">string</span><span class="p">(</span><span class="s">&quot;api_url&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://api.example.com&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="remoteflag"><code>@RemoteFlag</code><a class="headerlink" href="#remoteflag" title="Permanent link">&para;</a></h3>
-<p>Marks a <code>ConfigParam</code> as remote-only. Remote-only flags are excluded from code-generation tasks.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nd">@Target</span><span class="p">(</span><span class="n">AnnotationTarget</span><span class="p">.</span><span class="na">PROPERTY</span><span class="p">)</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nd">@Retention</span><span class="p">(</span><span class="n">AnnotationRetention</span><span class="p">.</span><span class="na">SOURCE</span><span class="p">)</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kd">annotation</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">RemoteFlag</span>
-</code></pre></div>
+<h3 id="generated-types">Generated types<a class="headerlink" href="#generated-types" title="Permanent link">&para;</a></h3>
+<p>The plugin generates:</p>
+<table>
+<thead>
+<tr>
+<th>Generated type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>internal object GeneratedLocalFlags</code></td>
+<td>Typed <code>ConfigParam</code> properties for every local flag</td>
+</tr>
+<tr>
+<td><code>internal object GeneratedRemoteFlags</code></td>
+<td>Typed <code>ConfigParam</code> properties for every remote flag</td>
+</tr>
+<tr>
+<td>Extension functions on <code>ConfigValues</code></td>
+<td>Local boolean flag → <code>fun ConfigValues.is&lt;Name&gt;Enabled(): Boolean</code>; local non-boolean → <code>fun ConfigValues.get&lt;Name&gt;(): T</code>; remote → <code>fun ConfigValues.get&lt;Name&gt;(): ConfigValue&lt;T&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="key-tasks">Key tasks<a class="headerlink" href="#key-tasks" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>resolveFeatureFlags</code></td>
+<td>Resolves DSL-declared flags; runs before all code-generation tasks</td>
+</tr>
+<tr>
+<td><code>generateConfigParam</code></td>
+<td>Generates <code>GeneratedLocalFlags</code> and <code>GeneratedRemoteFlags</code> objects</td>
+</tr>
+<tr>
+<td><code>generateFlagRegistrar</code></td>
+<td>Generates flag registrar for the debug UI</td>
+</tr>
+<tr>
+<td><code>generateProguardRules</code></td>
+<td>Generates per-function R8 <code>-assumevalues</code> rules for local boolean flags</td>
+</tr>
+<tr>
+<td><code>generateIosConstVal</code></td>
+<td>Generates <code>expect</code>/<code>actual const val</code> for local flags (iOS)</td>
+</tr>
+<tr>
+<td><code>generateXcconfig</code></td>
+<td>Generates xcconfig with <code>DISABLE_*</code> conditions for local boolean flags</td>
+</tr>
+<tr>
+<td><code>scanAllLocalFlags</code></td>
+<td>Aggregator task — collects flags across all modules</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="compose-extensions-featured-compose">Compose extensions (featured-compose)<a class="headerlink" href="#compose-extensions-featured-compose" title="Permanent link">&para;</a></h2>
 <h3 id="configvaluescollectasstate"><code>ConfigValues.collectAsState</code><a class="headerlink" href="#configvaluescollectasstate" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nd">@Composable</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">.</span><span class="nf">collectAsState</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">State</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nd">@Composable</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ConfigValues</span><span class="p">.</span><span class="nf">collectAsState</span><span class="p">(</span><span class="n">param</span><span class="p">:</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">State</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
 </code></pre></div>
 <p>Collects the current and future values of <code>param</code> as Compose <code>State</code>.</p>
 <h3 id="localconfigvalues"><code>LocalConfigValues</code><a class="headerlink" href="#localconfigvalues" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">LocalConfigValues</span><span class="p">:</span><span class="w"> </span><span class="n">ProvidableCompositionLocal</span><span class="o">&lt;</span><span class="n">ConfigValues</span><span class="o">&gt;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">LocalConfigValues</span><span class="p">:</span><span class="w"> </span><span class="n">ProvidableCompositionLocal</span><span class="o">&lt;</span><span class="n">ConfigValues</span><span class="o">&gt;</span>
 </code></pre></div>
 <p>Composition local for providing a <code>ConfigValues</code> instance through the composition tree.</p>
 <hr />

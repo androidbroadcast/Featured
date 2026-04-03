@@ -302,24 +302,6 @@
   
 
       
-        
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../../adr/001-configvalues-multi-module/" class="md-tabs__link">
-          
-  
-  ADRs
-
-        </a>
-      </li>
-    
-  
-
-      
     </ul>
   </div>
 </nav>
@@ -533,9 +515,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-declare-flags-in-kotlin-shared-module" class="md-nav__link">
+  <a href="#2-declare-flags-in-the-shared-module" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Declare flags in Kotlin (shared module)
+      2. Declare flags in the shared module
     </span>
   </a>
   
@@ -795,74 +777,6 @@
   
 
     
-      
-      
-  
-  
-  
-  
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    ADRs
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            ADRs
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../adr/001-configvalues-multi-module/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    ADR 001: ConfigValues Multi-Module
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
   </ul>
 </nav>
                   </div>
@@ -899,9 +813,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-declare-flags-in-kotlin-shared-module" class="md-nav__link">
+  <a href="#2-declare-flags-in-the-shared-module" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Declare flags in Kotlin (shared module)
+      2. Declare flags in the shared module
     </span>
   </a>
   
@@ -1056,20 +970,17 @@
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="p">]</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="p">)</span>
 </code></pre></div>
-<h2 id="2-declare-flags-in-kotlin-shared-module">2. Declare flags in Kotlin (shared module)<a class="headerlink" href="#2-declare-flags-in-kotlin-shared-module" title="Permanent link">&para;</a></h2>
-<p>Flags live in the shared Kotlin module and are exported to Swift. Annotate them with <code>@LocalFlag</code> so the Gradle plugin can scan them:</p>
-<div class="highlight"><span class="filename">shared/src/commonMain/kotlin/com/example/FeatureFlags.kt</span><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.ConfigParam</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">dev.androidbroadcast.featured.LocalFlag</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kd">object</span><span class="w"> </span><span class="nc">FeatureFlags</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nd">@LocalFlag</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">newCheckout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConfigParam</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="p">(</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;new_checkout&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="n">defaultValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">        </span><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enable the new checkout flow&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="p">)</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">}</span>
+<h2 id="2-declare-flags-in-the-shared-module">2. Declare flags in the shared module<a class="headerlink" href="#2-declare-flags-in-the-shared-module" title="Permanent link">&para;</a></h2>
+<p>Declare flags in the shared module's <code>build.gradle.kts</code> using the <code>featured { }</code> DSL block. The plugin generates typed helpers automatically.</p>
+<div class="highlight"><span class="filename">shared/build.gradle.kts</span><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">featured</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">localFlags</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="n">boolean</span><span class="p">(</span><span class="s">&quot;new_checkout&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">default</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">            </span><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Enable the new checkout flow&quot;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">}</span>
 </code></pre></div>
+<p>The plugin generates <code>internal object GeneratedLocalFlags</code> with typed <code>ConfigParam</code> properties and public extension functions on <code>ConfigValues</code> such as <code>fun ConfigValues.isNewCheckoutEnabled(): Boolean</code>. These generated types are exported to Swift via the KMP framework.</p>
 <h2 id="3-initialize-configvalues-in-swift">3. Initialize <code>ConfigValues</code> in Swift<a class="headerlink" href="#3-initialize-configvalues-in-swift" title="Permanent link">&para;</a></h2>
 <p>Call <code>initialize()</code> at app launch (before serving any screen) to activate values fetched during the previous session. Then trigger a background fetch so the next launch sees fresh values.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">import</span><span class="w"> </span><span class="nc">FeaturedCore</span>
@@ -1174,7 +1085,7 @@
 <a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="p">}</span>
 </code></pre></div>
 <h2 id="7-swift-dead-code-elimination-via-xcconfig">7. Swift dead-code elimination via xcconfig<a class="headerlink" href="#7-swift-dead-code-elimination-via-xcconfig" title="Permanent link">&para;</a></h2>
-<p>The Gradle plugin generates an xcconfig file that feeds Swift compilation conditions into Xcode. For every <code>@LocalFlag</code>-annotated <code>ConfigParam&lt;Boolean&gt;</code> with <code>defaultValue = false</code>, a <code>DISABLE_&lt;FLAG_KEY&gt;</code> condition is generated.</p>
+<p>The Gradle plugin generates an xcconfig file that feeds Swift compilation conditions into Xcode. For every local boolean flag declared in <code>featured { localFlags { } }</code> with <code>default = false</code>, a <code>DISABLE_&lt;FLAG_KEY&gt;</code> condition is generated.</p>
 <h3 id="key-transformation">Key transformation<a class="headerlink" href="#key-transformation" title="Permanent link">&para;</a></h3>
 <table>
 <thead>

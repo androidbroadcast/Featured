@@ -302,24 +302,6 @@
   
 
       
-        
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../adr/001-configvalues-multi-module/" class="md-tabs__link">
-          
-  
-  ADRs
-
-        </a>
-      </li>
-    
-  
-
-      
     </ul>
   </div>
 </nav>
@@ -783,74 +765,6 @@
   
 
     
-      
-      
-  
-  
-  
-  
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    ADRs
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            ADRs
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../adr/001-configvalues-multi-module/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    ADR 001: ConfigValues Multi-Module
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
   </ul>
 </nav>
                   </div>
@@ -1019,8 +933,8 @@
 <p>This guide explains how to use the <code>featured-gradle-plugin</code> xcconfig output to eliminate
 disabled feature-flag code paths from your iOS Release binaries at compile time.</p>
 <h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<p>For every <code>@LocalFlag</code>-annotated <code>ConfigParam&lt;Boolean&gt;</code> with <code>defaultValue = false</code> in
-your shared Kotlin module, the plugin generates a <code>DISABLE_&lt;FLAG_KEY&gt;</code> Swift compilation
+<p>For every local boolean flag declared in <code>featured { localFlags { } }</code> with <code>default = false</code>
+in your shared Kotlin module, the plugin generates a <code>DISABLE_&lt;FLAG_KEY&gt;</code> Swift compilation
 condition. Xcode reads these conditions from an xcconfig file and passes them to the Swift
 compiler, which removes any <code>#if !DISABLE_*</code> guarded block from the binary entirely —
 with no runtime overhead.</p>
@@ -1047,10 +961,10 @@ with no runtime overhead.</p>
 </tr>
 </tbody>
 </table>
-<p>Only Boolean flags with <code>defaultValue = false</code> produce a condition. Flags with
-<code>defaultValue = true</code>, non-boolean flags, and <code>@RemoteFlag</code> declarations are excluded.</p>
+<p>Only local boolean flags with <code>default = false</code> produce a condition. Flags with
+<code>default = true</code>, non-boolean flags, and flags declared in <code>remoteFlags { }</code> are excluded.</p>
 <h2 id="step-1-generate-the-xcconfig-file">Step 1: Generate the xcconfig file<a class="headerlink" href="#step-1-generate-the-xcconfig-file" title="Permanent link">&para;</a></h2>
-<p>Run the Gradle task from the module that contains your <code>@LocalFlag</code> declarations
+<p>Run the Gradle task from the module that contains your <code>featured { localFlags { } }</code> DSL declarations
 (usually your <code>shared</code> or <code>core</code> module):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>./gradlew<span class="w"> </span>:shared:generateXcconfig
 </code></pre></div>
@@ -1092,7 +1006,7 @@ so all features remain reachable during development.</p>
 <p>Wrap every Swift entry point for a feature behind the corresponding <code>#if !DISABLE_*</code>
 condition. The Swift compiler removes the entire guarded block from Release binaries.</p>
 <h3 id="view-entry-point">View entry point<a class="headerlink" href="#view-entry-point" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1">// Entry point guarded by @LocalFlag new_checkout (defaultValue = false)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1">// Entry point guarded by local boolean flag new_checkout (default = false)</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="cp">#if</span><span class="w"> </span><span class="o">!</span><span class="cp">DISABLE_NEW_CHECKOUT</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">NewCheckoutButton</span><span class="p">()</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="cp">#endif</span>
@@ -1128,6 +1042,8 @@ to your Xcode target (before the Compile Sources phase):</p>
 <ul>
 <li><code>FeatureFlags.swift</code> — Swift wrapper with usage examples and setup guidance</li>
 <li><code>iosApp/Configuration/FeatureFlags.generated.xcconfig</code> — placeholder / copy destination</li>
+<li><code>generateIosConstVal</code> — Gradle task that generates <code>expect</code>/<code>actual const val</code> for local flags</li>
+<li><code>resolveFeatureFlags</code> — Gradle task that resolves DSL-declared flags before code generation</li>
 <li><code>GenerateXcconfigTask.kt</code> — Gradle task that writes the xcconfig</li>
 <li><code>XcconfigGenerator.kt</code> — key transformation and file generation logic</li>
 </ul>
