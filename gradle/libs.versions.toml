@@ -26,7 +26,6 @@ robolectric = "4.16.1"
 skie = "0.10.10"
 spotless = "8.4.0"
 ktlint = "1.8.0"
-bcv = "0.18.1"
 turbine = "1.2.1"
 mavenPublish = "0.36.0"
 dokka = "2.1.0"
@@ -90,7 +89,6 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-bcv = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "bcv" }
 mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }

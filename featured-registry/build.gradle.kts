@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.kover)
-    alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
     alias(libs.plugins.dokka)
 }

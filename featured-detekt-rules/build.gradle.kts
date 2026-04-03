@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.kotlinJvm)
-    alias(libs.plugins.bcv)
     alias(libs.plugins.mavenPublish)
 }
 

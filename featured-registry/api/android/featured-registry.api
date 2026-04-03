@@ -1,6 +1,0 @@
-public final class dev/androidbroadcast/featured/registry/FlagRegistry {
-	public static final field INSTANCE Ldev/androidbroadcast/featured/registry/FlagRegistry;
-	public final fun all ()Ljava/util/List;
-	public final fun register (Ldev/androidbroadcast/featured/ConfigParam;)V
-}
-
