@@ -19,19 +19,8 @@ import org.gradle.api.tasks.TaskAction
  * [ExtensionFunctionGenerator], so R8 can propagate the exact constant and eliminate
  * dead branches in release builds.
  *
- * Wire the generated file into your Android module's ProGuard configuration:
- * ```kotlin
- * android {
- *     buildTypes {
- *         release {
- *             proguardFiles(
- *                 getDefaultProguardFile("proguard-android-optimize.txt"),
- *                 layout.buildDirectory.file("featured/proguard-featured.pro").get().asFile,
- *             )
- *         }
- *     }
- * }
- * ```
+ * For Android projects the generated file is automatically wired into all variants via the
+ * AGP Variant API — no manual ProGuard configuration is required.
  */
 @CacheableTask
 public abstract class GenerateProguardRulesTask : DefaultTask() {
