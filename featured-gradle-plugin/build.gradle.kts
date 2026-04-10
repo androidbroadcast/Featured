@@ -54,7 +54,24 @@ mavenPublishing {
     }
 }
 
+// A separate configuration whose resolved jars are appended to the pluginUnderTestMetadata
+// classpath. This makes GradleRunner.withPluginClasspath() inject them into the TestKit
+// subprocess, which is necessary for compileOnly dependencies (like AGP) that the plugin
+// needs at runtime but that java-gradle-plugin does not include from runtimeClasspath.
+val testPluginClasspath: Configuration by configurations.creating {
+    isCanBeResolved = true
+    isCanBeConsumed = false
+    isVisible = false
+}
+
+tasks.pluginUnderTestMetadata {
+    pluginClasspath.from(testPluginClasspath)
+}
+
 dependencies {
+    // Inject AGP into the TestKit subprocess via pluginUnderTestMetadata so that the Featured
+    // plugin can access AndroidComponentsExtension when wireProguardToVariants() is called.
+    testPluginClasspath("com.android.tools.build:gradle:9.1.0")
     testImplementation(gradleTestKit())
     testImplementation(libs.kotlin.testJunit)
     testImplementation(libs.r8)
