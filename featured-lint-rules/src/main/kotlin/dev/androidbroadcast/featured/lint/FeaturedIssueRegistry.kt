@@ -13,7 +13,13 @@ import com.android.tools.lint.detector.api.Issue
  * hosts without silently dropping all rules.
  */
 public class FeaturedIssueRegistry : IssueRegistry() {
-    override val issues: List<Issue> = listOf(HardcodedFlagValueDetector.ISSUE)
+    override val issues: List<Issue> =
+        listOf(
+            HardcodedFlagValueDetector.ISSUE,
+            InvalidFlagReferenceDetector.ISSUE,
+            UncheckedFlagAccessDetector.ISSUE,
+            ExpiredFeatureFlagDetector.ISSUE,
+        )
 
     override val api: Int = CURRENT_API
 
