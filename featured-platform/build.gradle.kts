@@ -59,6 +59,10 @@ kotlin {
         iosMain.dependencies {
             implementation(project(":providers:nsuserdefaults"))
         }
+
+        jvmMain.dependencies {
+            implementation(project(":providers:javaprefs"))
+        }
     }
 }
 
