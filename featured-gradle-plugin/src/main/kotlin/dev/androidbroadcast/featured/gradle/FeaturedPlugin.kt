@@ -51,10 +51,15 @@ public class FeaturedPlugin : Plugin<Project> {
 
         registerConfigParamTask(target, resolveTask)
         registerFlagRegistrarTask(target, resolveTask)
-        registerProguardTask(target, resolveTask)
+        val proguardTask = registerProguardTask(target, resolveTask)
         registerIosConstValTask(target, resolveTask)
         registerXcconfigTask(target, resolveTask)
         wireToRootAggregator(target, resolveTask)
+        listOf("com.android.application", "com.android.library").forEach { pluginId ->
+            target.plugins.withId(pluginId) {
+                wireProguardToVariants(target, proguardTask)
+            }
+        }
     }
 
     private fun registerResolveFlagsTask(target: Project): TaskProvider<ResolveFlagsTask> =
@@ -99,7 +104,7 @@ public class FeaturedPlugin : Plugin<Project> {
     private fun registerProguardTask(
         target: Project,
         resolveTask: TaskProvider<ResolveFlagsTask>,
-    ) {
+    ): TaskProvider<GenerateProguardRulesTask> =
         target.tasks.register(GENERATE_PROGUARD_TASK_NAME, GenerateProguardRulesTask::class.java) { task ->
             task.group = "featured"
             task.description = "Generates ProGuard/R8 -assumevalues rules for local flags in '${target.path}'."
@@ -108,7 +113,6 @@ public class FeaturedPlugin : Plugin<Project> {
             task.outputFile.set(target.layout.buildDirectory.file("featured/proguard-featured.pro"))
             task.dependsOn(resolveTask)
         }
-    }
 
     private fun registerIosConstValTask(
         target: Project,
