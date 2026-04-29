@@ -10,22 +10,28 @@
       
       
       
+        <link rel="canonical" href="https://androidbroadcast.github.io/Featured/guides/r8-verification/">
       
       
+        <link rel="prev" href="../best-practices/">
       
-      <link rel="icon" href="/Featured/assets/images/favicon.png">
+      
+        <link rel="next" href="../../ios-integration/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.18">
     
     
       
-        <title>Featured</title>
+        <title>R8 DCE Verification - Featured</title>
       
     
     
-      <link rel="stylesheet" href="/Featured/assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.66ac8b77.min.css">
       
         
-        <link rel="stylesheet" href="/Featured/assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -44,7 +50,7 @@
       
     
     
-    <script>__md_scope=new URL("/Featured/",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -69,6 +75,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#r8-dead-code-elimination-verification" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -79,7 +90,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/Featured/." title="Featured" class="md-header__button md-logo" aria-label="Featured" data-md-component="logo">
+    <a href="../.." title="Featured" class="md-header__button md-logo" aria-label="Featured" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -99,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              R8 DCE Verification
             
           </span>
         </div>
@@ -208,7 +219,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/Featured/." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
     
@@ -225,7 +236,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/Featured/getting-started/" class="md-tabs__link">
+      <a href="../../getting-started/" class="md-tabs__link">
         
   
     
@@ -240,11 +251,13 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="/Featured/guides/android/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../android/" class="md-tabs__link">
           
   
   Guides
@@ -260,7 +273,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/Featured/api/" class="md-tabs__link">
+      <a href="../../api/" class="md-tabs__link">
         
   
     
@@ -277,7 +290,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/Featured/changelog/" class="md-tabs__link">
+      <a href="../../changelog/" class="md-tabs__link">
         
   
     
@@ -311,7 +324,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/Featured/." title="Featured" class="md-nav__button md-logo" aria-label="Featured" data-md-component="logo">
+    <a href="../.." title="Featured" class="md-nav__button md-logo" aria-label="Featured" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -341,7 +354,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Featured/." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -361,7 +374,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Featured/getting-started/" class="md-nav__link">
+      <a href="../../getting-started/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -378,25 +391,30 @@
       
   
   
+    
   
   
+  
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -407,7 +425,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             Guides
@@ -421,7 +439,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Featured/guides/android/" class="md-nav__link">
+      <a href="../android/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -442,7 +460,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Featured/guides/ios/" class="md-nav__link">
+      <a href="../ios/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -463,7 +481,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Featured/guides/jvm/" class="md-nav__link">
+      <a href="../jvm/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -484,7 +502,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Featured/guides/providers/" class="md-nav__link">
+      <a href="../providers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -505,7 +523,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Featured/guides/best-practices/" class="md-nav__link">
+      <a href="../best-practices/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -523,10 +541,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="/Featured/guides/r8-verification/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    R8 DCE Verification
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -535,6 +573,95 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why it matters
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How it works
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test scenarios
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Test scenarios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#boolean-flags-r8booleanflageliminationtest" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boolean flags (R8BooleanFlagEliminationTest)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#int-flags-r8intflageliminationtest" class="md-nav__link">
+    <span class="md-ellipsis">
+      Int flags (R8IntFlagEliminationTest)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running the tests
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-new-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding new scenarios
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -547,7 +674,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Featured/ios-integration/" class="md-nav__link">
+      <a href="../../ios-integration/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -575,7 +702,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Featured/api/" class="md-nav__link">
+      <a href="../../api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -595,7 +722,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Featured/changelog/" class="md-nav__link">
+      <a href="../../changelog/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -625,6 +752,85 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why it matters
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How it works
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test scenarios
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Test scenarios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#boolean-flags-r8booleanflageliminationtest" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boolean flags (R8BooleanFlagEliminationTest)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#int-flags-r8intflageliminationtest" class="md-nav__link">
+    <span class="md-ellipsis">
+      Int flags (R8IntFlagEliminationTest)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running the tests
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-new-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding new scenarios
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -636,8 +842,131 @@
             <div class="md-content" data-md-component="content">
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
 
+  
+  
+
+
+<h1 id="r8-dead-code-elimination-verification">R8 Dead-Code Elimination Verification<a class="headerlink" href="#r8-dead-code-elimination-verification" title="Permanent link">&para;</a></h1>
+<h2 id="why-it-matters">Why it matters<a class="headerlink" href="#why-it-matters" title="Permanent link">&para;</a></h2>
+<p>Featured's core guarantee for local flags is that when a flag value is fixed at build time,
+the code reachable only through the disabled branch is completely removed from the final APK.
+This relies on R8 honouring the <code>-assumevalues</code> ProGuard rules generated by
+<code>ProguardRulesGenerator</code>.</p>
+<p>A rule that is syntactically correct but semantically wrong would silently fail to eliminate
+dead code. The <code>featured-shrinker-tests</code> module gives automated, deterministic verification
+that the exact rule format produced by the plugin is sufficient for R8 to perform DCE.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<p>The tests use a three-step synthetic pipeline:</p>
+<ol>
+<li>
+<p><strong>Bytecode generation (ASM)</strong> — <code>SyntheticBytecodeFactory</code> builds <code>.class</code> files in
+   memory that mirror the structure the plugin generates at build time: a <code>ConfigValues</code>
+   holder, an extensions class that reads from it, branch-target classes (<code>IfBranchCode</code>,
+   <code>ElseBranchCode</code>, <code>PositiveCountCode</code>), and a caller entry point.</p>
+</li>
+<li>
+<p><strong>Rules generation</strong> — <code>ProguardRulesWriter</code> writes <code>.pro</code> files in the exact format
+   <code>ProguardRulesGenerator</code> produces, optionally including the <code>-assumevalues</code> block.</p>
+</li>
+<li>
+<p><strong>R8 invocation</strong> — <code>R8TestHarness.runR8()</code> calls R8 programmatically via
+   <code>R8Command.builder()</code>, producing an output JAR with DCE applied.</p>
+</li>
+</ol>
+<p>After each run, <code>JarAssertions</code> inspects the output JAR and asserts which classes are
+present or absent, proving that the rule caused (or did not cause) elimination.</p>
+<h2 id="test-scenarios">Test scenarios<a class="headerlink" href="#test-scenarios" title="Permanent link">&para;</a></h2>
+<h3 id="boolean-flags-r8booleanflageliminationtest">Boolean flags (<code>R8BooleanFlagEliminationTest</code>)<a class="headerlink" href="#boolean-flags-r8booleanflageliminationtest" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Rule</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>if-branch class is eliminated when boolean flag returns false</code></td>
+<td><code>-assumevalues … return false</code></td>
+<td><code>IfBranchCode</code> absent; <code>ElseBranchCode</code> present</td>
+</tr>
+<tr>
+<td><code>else-branch class is eliminated when boolean flag returns true</code></td>
+<td><code>-assumevalues … return true</code></td>
+<td><code>ElseBranchCode</code> absent; <code>IfBranchCode</code> present</td>
+</tr>
+<tr>
+<td><code>both branch classes survive when no boolean assumevalues rule is present</code></td>
+<td>No <code>-assumevalues</code></td>
+<td>Both classes present</td>
+</tr>
+</tbody>
+</table>
+<p>The third test is a control: it proves that elimination is caused by the rule, not by R8's
+own constant-folding.</p>
+<h3 id="int-flags-r8intflageliminationtest">Int flags (<code>R8IntFlagEliminationTest</code>)<a class="headerlink" href="#int-flags-r8intflageliminationtest" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Rule</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>guarded class is eliminated when int flag is assumed to return zero</code></td>
+<td><code>-assumevalues … return 0</code></td>
+<td><code>PositiveCountCode</code> absent; <code>IntCaller</code> present</td>
+</tr>
+<tr>
+<td><code>guarded class survives when int flag has no assumevalues rule</code></td>
+<td>No <code>-assumevalues</code></td>
+<td>Both classes present</td>
+</tr>
+</tbody>
+</table>
+<p>With <code>-assumevalues return 0</code>, R8 constant-folds <code>0 &gt; 0</code> to <code>false</code> and eliminates the
+guarded block entirely.</p>
+<h2 id="running-the-tests">Running the tests<a class="headerlink" href="#running-the-tests" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>./gradlew<span class="w"> </span>:featured-shrinker-tests:test
+</code></pre></div>
+<p>To run only one test class:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>./gradlew<span class="w"> </span>:featured-shrinker-tests:test<span class="w"> </span>--tests<span class="w"> </span><span class="s2">&quot;dev.androidbroadcast.featured.shrinker.r8.R8BooleanFlagEliminationTest&quot;</span>
+</code></pre></div>
+<h2 id="adding-new-scenarios">Adding new scenarios<a class="headerlink" href="#adding-new-scenarios" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>New flag type</strong> — add bytecode generators in <code>SyntheticBytecodeFactory.kt</code>, JAR
+   assembler functions in <code>JarAssembler.kt</code>, rule writers in <code>ProguardRulesWriter.kt</code>, and
+   a new test class in <code>r8/</code> that extends <code>R8TestHarness</code>.</p>
+</li>
+<li>
+<p><strong>New rule variant</strong> — add a <code>write*Rules()</code> function in <code>ProguardRulesWriter.kt</code> and a
+   corresponding <code>@Test</code> method in the relevant test class.</p>
+</li>
+<li>
+<p><strong>Verifying a rule format change</strong> — update the <code>write*Rules()</code> function to match the
+   new format produced by <code>ProguardRulesGenerator</code>, then run the tests to confirm DCE still
+   works.</p>
+</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
               </article>
             </div>
           
@@ -679,10 +1008,10 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "/Featured/", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "/Featured/assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="/Featured/assets/javascripts/bundle.3220b9d7.min.js"></script>
+      <script src="../../assets/javascripts/bundle.3220b9d7.min.js"></script>
       
     
   </body>
