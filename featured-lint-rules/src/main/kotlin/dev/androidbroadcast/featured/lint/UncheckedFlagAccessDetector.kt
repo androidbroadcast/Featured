@@ -110,6 +110,9 @@ public class UncheckedFlagAccessDetector :
                 // No context available here; evaluate without a context — literal strings
                 // evaluate to themselves without needing a JavaContext.
                 // PsiAnnotationMemberValue extends PsiElement; ?: return skips null values.
+                // If the annotation value cannot be cast to PsiElement, the flagName is
+                // unreadable. Conservatively treat the enclosing @BehindFlag as a valid guard
+                // to avoid false positives on unusual or partially-resolved annotation usage.
                 val psiValue = value as? com.intellij.psi.PsiElement ?: return true
                 val enclosingFlagName = ConstantEvaluator.evaluate(null, psiValue) as? String
                 if (enclosingFlagName == flagName) return true
@@ -125,7 +128,9 @@ public class UncheckedFlagAccessDetector :
                 }
 
                 is USwitchExpression -> {
-                    // Check the switch subject (e.g. `when (newCheckout) { ... }`).
+                    // Checks subject-form `when (flagName) { ... }`. Subjectless when —
+                    // `when { flagName -> ... }` — is not handled in v1; the Lint test
+                    // runner's IF_TO_WHEN rewrite is suppressed via skipTestModes().
                     if (parent.expression?.containsFlagReference(flagName) == true) return true
                 }
             }
