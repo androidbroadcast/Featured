@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,6 +29,7 @@ class MainActivity : ComponentActivity() {
             var showDebug by rememberSaveable { mutableStateOf(false) }
 
             if (showDebug) {
+                BackHandler { showDebug = false }
                 FeatureFlagsDebugScreen(configValues = configValues)
             } else {
                 SampleApp(
