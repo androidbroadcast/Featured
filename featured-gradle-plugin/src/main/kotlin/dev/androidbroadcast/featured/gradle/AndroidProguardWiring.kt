@@ -8,8 +8,10 @@ import org.gradle.api.tasks.TaskProvider
  * Wires the generated ProGuard rules file into every Android variant via the AGP Variant API.
  *
  * Called lazily — only when `com.android.application` or `com.android.library` is present on
- * the project. The task dependency is implicit through the [TaskProvider] chain, so no explicit
- * `dependsOn` is required.
+ * the project.
+ *
+ * AGP 9.x does not propagate implicit Gradle task dependencies through [Variant.proguardFiles],
+ * so [proguardTask] is also wired explicitly as a dependency of every `minify*WithR8` task.
  */
 internal fun wireProguardToVariants(
     project: Project,
@@ -22,5 +24,12 @@ internal fun wireProguardToVariants(
         variant.proguardFiles.add(
             proguardTask.flatMap { it.outputFile },
         )
+    }
+    // AGP 9.x does not propagate implicit task dependencies through variant.proguardFiles,
+    // so we wire an explicit dependsOn on every R8 minify task.
+    project.tasks.configureEach { task ->
+        if (task.name.startsWith("minify") && task.name.endsWith("WithR8")) {
+            task.dependsOn(proguardTask)
+        }
     }
 }
