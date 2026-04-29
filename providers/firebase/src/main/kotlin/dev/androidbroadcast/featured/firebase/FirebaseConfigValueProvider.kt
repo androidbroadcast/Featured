@@ -86,9 +86,13 @@ public class FirebaseConfigValueProvider(
      *
      * @param activate When `true`, calls `fetchAndActivate()` so values become available
      *   immediately after this call. When `false`, only fetches without activating.
-     * @throws FetchException if the Firebase fetch operation fails (e.g. network error,
-     *   timeout, or service unavailability). The [FetchException.cause] holds the original
-     *   exception for diagnostics. See [FetchException] for retry recommendations.
+     * @throws FetchException if the Firebase fetch operation fails for any reason, including
+     *   network errors, timeouts, or service unavailability. This wraps all non-cancellation
+     *   exceptions — including [RuntimeException] thrown by [kotlinx.coroutines.tasks.await]
+     *   on Firebase task failure. The [FetchException.cause] holds the original exception for
+     *   diagnostics. See [FetchException] for retry recommendations.
+     * @throws kotlinx.coroutines.CancellationException if the coroutine is cancelled while
+     *   the fetch is in progress; propagated without wrapping.
      */
     override suspend fun fetch(activate: Boolean) {
         val task =
