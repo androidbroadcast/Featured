@@ -8,7 +8,7 @@ import dev.androidbroadcast.featured.LocalConfigValueProvider
  * | Platform | Implementation |
  * |----------|----------------|
  * | iOS      | [dev.androidbroadcast.featured.nsuserdefaults.NSUserDefaultsConfigValueProvider] |
- * | JVM      | [dev.androidbroadcast.featured.InMemoryConfigValueProvider] (persistent provider pending #66) |
+ * | JVM      | [dev.androidbroadcast.featured.javaprefs.JavaPreferencesConfigValueProvider] |
  * | Android  | [dev.androidbroadcast.featured.InMemoryConfigValueProvider] (non-persistent, deprecated) |
  *
  * **Android note:** On Android this overload is deprecated and returns a non-persistent
