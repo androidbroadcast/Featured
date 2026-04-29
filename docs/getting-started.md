@@ -26,7 +26,7 @@ dependencies {
     implementation(platform("dev.androidbroadcast.featured:featured-bom:<version>"))
 
     // Core runtime — always required
-    implementation("dev.androidbroadcast.featured:core")
+    implementation("dev.androidbroadcast.featured:featured-core")
 
     // Optional modules — add only what you use
     implementation("dev.androidbroadcast.featured:featured-compose")         // Compose extensions
@@ -34,11 +34,11 @@ dependencies {
     debugImplementation("dev.androidbroadcast.featured:featured-debug-ui")   // Debug screen
 
     // Local persistence providers — pick one (or both)
-    implementation("dev.androidbroadcast.featured:datastore-provider")
-    implementation("dev.androidbroadcast.featured:sharedpreferences-provider")
+    implementation("dev.androidbroadcast.featured:featured-datastore-provider")
+    implementation("dev.androidbroadcast.featured:featured-sharedpreferences-provider")
 
     // Remote provider
-    implementation("dev.androidbroadcast.featured:firebase-provider")
+    implementation("dev.androidbroadcast.featured:featured-firebase-provider")
 }
 ```
 

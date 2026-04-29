@@ -1,7 +1,7 @@
 # Featured
 
 [![CI](https://github.com/AndroidBroadcast/Featured/actions/workflows/ci.yml/badge.svg)](https://github.com/AndroidBroadcast/Featured/actions/workflows/ci.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/dev.androidbroadcast.featured/core.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dev.androidbroadcast.featured)
+[![Maven Central](https://img.shields.io/maven-central/v/dev.androidbroadcast.featured/featured-core.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dev.androidbroadcast.featured)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Featured** is a type-safe, reactive feature-flag and configuration management library for Kotlin Multiplatform (Android, iOS, JVM). Declare flags in shared Kotlin code, read them at runtime from local or remote providers, and let the Gradle plugin dead-code-eliminate disabled flags from your production binaries.
@@ -67,7 +67,7 @@ dependencies {
     implementation(platform("dev.androidbroadcast.featured:featured-bom:<version>"))
 
     // Core runtime — always required
-    implementation("dev.androidbroadcast.featured:core")
+    implementation("dev.androidbroadcast.featured:featured-core")
 
     // Optional modules — add only what you use
     implementation("dev.androidbroadcast.featured:featured-compose")         // Compose extensions
@@ -75,11 +75,11 @@ dependencies {
     debugImplementation("dev.androidbroadcast.featured:featured-debug-ui")   // Debug screen
 
     // Local persistence providers — pick one (or both)
-    implementation("dev.androidbroadcast.featured:datastore-provider")
-    implementation("dev.androidbroadcast.featured:sharedpreferences-provider")
+    implementation("dev.androidbroadcast.featured:featured-datastore-provider")
+    implementation("dev.androidbroadcast.featured:featured-sharedpreferences-provider")
 
     // Remote provider
-    implementation("dev.androidbroadcast.featured:firebase-provider")
+    implementation("dev.androidbroadcast.featured:featured-firebase-provider")
 }
 ```
 
