@@ -53,6 +53,12 @@ kotlin {
 
             implementation(project(":core"))
             implementation(project(":featured-registry"))
+            implementation(project(":featured-debug-ui"))
+        }
+
+        androidMain.dependencies {
+            implementation(project(":featured-platform"))
+            implementation(libs.androidx.activity.compose)
         }
 
         jvmMain.dependencies {
