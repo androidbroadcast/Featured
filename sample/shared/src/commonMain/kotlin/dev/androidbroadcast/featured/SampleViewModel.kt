@@ -15,7 +15,8 @@ public class SampleViewModel(
     // --- @LocalFlag: main_button_red ---
 
     public val flagActive: StateFlow<Boolean> =
-        configValues.observeValue(SampleFeatureFlags.mainButtonRed)
+        configValues
+            .observeValue(SampleFeatureFlags.mainButtonRed)
             .stateIn(
                 initialValue = SampleFeatureFlags.mainButtonRed.defaultValue,
                 scope = viewModelScope,
@@ -45,7 +46,8 @@ public class SampleViewModel(
      * Demonstrates the [ConfigParam.isEnabled] guard pattern for entry-point gating.
      */
     public val newFeatureSectionEnabled: StateFlow<Boolean> =
-        configValues.observeValue(SampleFeatureFlags.newFeatureSectionEnabled)
+        configValues
+            .observeValue(SampleFeatureFlags.newFeatureSectionEnabled)
             .stateIn(
                 initialValue = SampleFeatureFlags.newFeatureSectionEnabled.defaultValue,
                 scope = viewModelScope,
@@ -59,7 +61,8 @@ public class SampleViewModel(
      * In production this would be driven by Firebase Remote Config.
      */
     public val promoBannerEnabled: StateFlow<Boolean> =
-        configValues.observeValue(SampleFeatureFlags.promoBannerEnabled)
+        configValues
+            .observeValue(SampleFeatureFlags.promoBannerEnabled)
             .stateIn(
                 initialValue = SampleFeatureFlags.promoBannerEnabled.defaultValue,
                 scope = viewModelScope,
@@ -73,7 +76,8 @@ public class SampleViewModel(
      * Demonstrates multivariate enum flags resolved from a remote provider.
      */
     public val checkoutVariant: StateFlow<CheckoutVariant> =
-        configValues.observeValue(SampleFeatureFlags.checkoutVariant)
+        configValues
+            .observeValue(SampleFeatureFlags.checkoutVariant)
             .stateIn(
                 initialValue = SampleFeatureFlags.checkoutVariant.defaultValue,
                 scope = viewModelScope,
@@ -91,10 +95,4 @@ public class SampleViewModel(
     }
 }
 
-/**
- * Extracts the raw [T] value from a [ConfigValue] stream.
- * Shorthand for `.observe(param).map { it.value }`, used when [stateIn] is chained
- * directly without additional transformation.
- */
-private fun <T> ConfigValues.observeValue(param: ConfigParam<T>): Flow<T> =
-    observe(param).map { it.value }
+private fun <T : Any> ConfigValues.observeValue(param: ConfigParam<T>): Flow<T> = observe(param).map { it.value }
