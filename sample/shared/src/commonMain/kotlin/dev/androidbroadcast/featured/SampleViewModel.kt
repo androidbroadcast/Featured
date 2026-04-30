@@ -2,7 +2,6 @@ package dev.androidbroadcast.featured
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -12,16 +11,8 @@ import kotlinx.coroutines.launch
 public class SampleViewModel(
     private val configValues: ConfigValues,
 ) : ViewModel() {
-    // --- @LocalFlag: main_button_red ---
-
     public val flagActive: StateFlow<Boolean> =
-        configValues
-            .observeValue(SampleFeatureFlags.mainButtonRed)
-            .stateIn(
-                initialValue = SampleFeatureFlags.mainButtonRed.defaultValue,
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
-            )
+        configValues.asStateFlow(SampleFeatureFlags.mainButtonRed, viewModelScope)
 
     public val mainButtonColor: StateFlow<MainButtonColor> =
         flagActive
@@ -39,50 +30,26 @@ public class SampleViewModel(
         }
     }
 
-    // --- @LocalFlag: new_feature_section_enabled (isEnabled guard pattern) ---
-
     /**
      * Controls visibility of the "New Feature" section.
      * Demonstrates the [ConfigParam.isEnabled] guard pattern for entry-point gating.
      */
     public val newFeatureSectionEnabled: StateFlow<Boolean> =
-        configValues
-            .observeValue(SampleFeatureFlags.newFeatureSectionEnabled)
-            .stateIn(
-                initialValue = SampleFeatureFlags.newFeatureSectionEnabled.defaultValue,
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
-            )
-
-    // --- @RemoteFlag: promo_banner_enabled ---
+        configValues.asStateFlow(SampleFeatureFlags.newFeatureSectionEnabled, viewModelScope)
 
     /**
      * Whether the promotional banner should be shown.
      * In production this would be driven by Firebase Remote Config.
      */
     public val promoBannerEnabled: StateFlow<Boolean> =
-        configValues
-            .observeValue(SampleFeatureFlags.promoBannerEnabled)
-            .stateIn(
-                initialValue = SampleFeatureFlags.promoBannerEnabled.defaultValue,
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
-            )
-
-    // --- @RemoteFlag: checkout_variant ---
+        configValues.asStateFlow(SampleFeatureFlags.promoBannerEnabled, viewModelScope)
 
     /**
      * The active checkout variant, driven remotely.
      * Demonstrates multivariate enum flags resolved from a remote provider.
      */
     public val checkoutVariant: StateFlow<CheckoutVariant> =
-        configValues
-            .observeValue(SampleFeatureFlags.checkoutVariant)
-            .stateIn(
-                initialValue = SampleFeatureFlags.checkoutVariant.defaultValue,
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
-            )
+        configValues.asStateFlow(SampleFeatureFlags.checkoutVariant, viewModelScope)
 
     public sealed interface MainButtonColor {
         public data object Red : MainButtonColor
@@ -94,5 +61,3 @@ public class SampleViewModel(
         }
     }
 }
-
-private fun <T : Any> ConfigValues.observeValue(param: ConfigParam<T>): Flow<T> = observe(param).map { it.value }
