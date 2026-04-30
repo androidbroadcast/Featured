@@ -2,9 +2,9 @@ package dev.androidbroadcast.featured.sample
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
     // In production, move to Application or a DI singleton to avoid
     // recreating (and re-opening) the DataStore file on every rotation.
     private val configValues by lazy {
-        ConfigValues(localProvider = defaultLocalProvider(this))
+        ConfigValues(localProvider = defaultLocalProvider(applicationContext))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
