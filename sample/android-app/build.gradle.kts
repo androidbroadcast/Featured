@@ -17,7 +17,7 @@ android {
                 .get()
                 .toInt()
         targetSdk =
-            libs.versions.android.compileSdk
+            libs.versions.android.targetSdk
                 .get()
                 .toInt()
         versionCode = 1
