@@ -64,6 +64,16 @@ kotlin {
     }
 }
 
+configurations.named("lintPublish") {
+    // kotlin-stdlib is provided by the lint host at runtime; exclude it so AGP
+    // sees exactly one JAR in lintPublish and does not fail with "Found more than one jar".
+    isTransitive = false
+}
+
+dependencies {
+    lintPublish(project(":featured-lint-rules"))
+}
+
 // Zips the release XCFramework for distribution via Swift Package Manager.
 // Output: build/xcframeworks/FeaturedCore.xcframework.zip
 val zipXCFramework by tasks.registering(Zip::class) {
