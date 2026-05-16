@@ -10,6 +10,6 @@ import platform.UIKit.UIViewController
 public fun MainViewController(): UIViewController {
     val configValues = ConfigValues(localProvider = InMemoryConfigValueProvider())
     return ComposeUIViewController {
-        FeaturedSample(configValues = configValues)
+        SampleApp(configValues = configValues)
     }
 }

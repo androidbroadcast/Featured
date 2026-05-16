@@ -40,7 +40,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":sample"))
+    implementation(project(":sample:shared"))
     implementation(project(":featured-debug-ui"))
     implementation(project(":featured-platform"))
     implementation(libs.androidx.activity.compose)

@@ -14,7 +14,7 @@ fun main() {
             onCloseRequest = ::exitApplication,
             title = "Featured",
         ) {
-            FeaturedSample(configValues = configValues)
+            SampleApp(configValues = configValues)
         }
     }
 }

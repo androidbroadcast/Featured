@@ -37,8 +37,9 @@ plugins {
 }
 
 include(":featured-gradle-plugin")
-include(":sample")
+include(":sample:shared")
 include(":sample:android-app")
+include(":sample:desktop")
 include(":core")
 include(":featured-compose")
 include(":featured-registry")
