@@ -22,7 +22,7 @@ let package = Package(
             name: "FeaturedCore",
             // Updated automatically by CI on each release.
             url: "https://github.com/AndroidBroadcast/Featured/releases/download/v1.0.0-Beta1/FeaturedCore.xcframework.zip",
-            checksum: "e9e4d2de9ec4ff56bc86a39bc4cae7d26a44ba068b01b02a3988e2e181d09429"
+            checksum: "cebaef358e5ec71f0ee2128ae5c91a8a4257e63da4d0b4b93c7c8a74784e373b"
         ),
     ]
 )
