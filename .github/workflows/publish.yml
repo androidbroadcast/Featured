@@ -46,7 +46,9 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_KEY_PASSWORD }}
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
-        run: ./gradlew --no-daemon publishAllPublicationsToMavenCentralRepository
+        # publishToMavenCentral = manual promotion (no auto-release); --no-configuration-cache for
+        # release-pipeline debuggability (runs once per tag, CC savings are zero).
+        run: ./gradlew --no-daemon publishToMavenCentral --no-configuration-cache
 
   publish-xcframework:
     name: Publish XCFramework to GitHub Release
