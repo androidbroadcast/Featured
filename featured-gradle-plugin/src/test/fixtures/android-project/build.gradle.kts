@@ -25,5 +25,6 @@ android {
 featured {
     localFlags {
         boolean("dark_mode", default = false)
+        enum("checkout_variant", typeFqn = "dev.androidbroadcast.featured.testapp.CheckoutVariant", default = "LEGACY")
     }
 }

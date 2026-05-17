@@ -5,7 +5,8 @@ package dev.androidbroadcast.featured.gradle
  *
  * @property key The configuration key string (e.g. `"dark_mode"`). Acts as the unique identifier.
  * @property defaultValue The default value serialised to a string (e.g. `"false"`, `"42"`).
- * @property type The Kotlin type name: `"Boolean"`, `"Int"`, `"Long"`, `"Float"`, `"Double"`, or `"String"`.
+ * @property type The Kotlin type name: `"Boolean"`, `"Int"`, `"Long"`, `"Float"`, `"Double"`, `"String"`,
+ *   or a fully-qualified enum class name (e.g. `"com.example.CheckoutVariant"`).
  * @property description Optional human-readable description passed to the generated [ConfigParam].
  * @property category Optional grouping label shown in the debug UI.
  * @property expiresAt Optional ISO-8601 date (`"YYYY-MM-DD"`) after which the flag is considered stale.

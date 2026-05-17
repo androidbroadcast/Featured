@@ -2,6 +2,7 @@ package dev.androidbroadcast.featured.gradle
 
 import kotlin.test.Test
 import kotlin.test.assertContains
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class IosConstValGeneratorTest {
@@ -162,5 +163,71 @@ class IosConstValGeneratorTest {
     fun `generateExpect is empty when entries list is empty`() {
         val result = IosConstValGenerator.generateExpect(emptyList())
         assertTrue(result.isBlank(), "Expected blank output for empty entries, got: '$result'")
+    }
+
+    // ── enum flag exclusion ───────────────────────────────────────────────────
+
+    @Test
+    fun `generate skips enum-typed entries`() {
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "dark_mode", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+                LocalFlagEntry(
+                    key = "checkout_variant",
+                    defaultValue = "LEGACY",
+                    type = "com.example.CheckoutVariant",
+                    moduleName = ":app",
+                ),
+            )
+        val result = IosConstValGenerator.generate(entries)
+        assertContains(result, "public actual const val dark_mode: Boolean = false")
+        assertFalse(result.contains("checkout_variant"), "Enum flags must not appear in iOS const val output")
+    }
+
+    @Test
+    fun `generate returns blank when only enum entries are present`() {
+        val entries =
+            listOf(
+                LocalFlagEntry(
+                    key = "checkout_variant",
+                    defaultValue = "LEGACY",
+                    type = "com.example.CheckoutVariant",
+                    moduleName = ":app",
+                ),
+            )
+        val result = IosConstValGenerator.generate(entries)
+        assertTrue(result.isBlank(), "Expected blank output when all entries are enums, got: '$result'")
+    }
+
+    @Test
+    fun `generateExpect skips enum-typed entries`() {
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "dark_mode", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+                LocalFlagEntry(
+                    key = "checkout_variant",
+                    defaultValue = "LEGACY",
+                    type = "com.example.CheckoutVariant",
+                    moduleName = ":app",
+                ),
+            )
+        val result = IosConstValGenerator.generateExpect(entries)
+        assertContains(result, "public expect val dark_mode: Boolean")
+        assertFalse(result.contains("checkout_variant"), "Enum flags must not appear in iOS expect declarations")
+    }
+
+    @Test
+    fun `generateExpect returns blank when only enum entries are present`() {
+        val entries =
+            listOf(
+                LocalFlagEntry(
+                    key = "checkout_variant",
+                    defaultValue = "LEGACY",
+                    type = "com.example.CheckoutVariant",
+                    moduleName = ":app",
+                ),
+            )
+        val result = IosConstValGenerator.generateExpect(entries)
+        assertTrue(result.isBlank(), "Expected blank output when all entries are enums, got: '$result'")
     }
 }

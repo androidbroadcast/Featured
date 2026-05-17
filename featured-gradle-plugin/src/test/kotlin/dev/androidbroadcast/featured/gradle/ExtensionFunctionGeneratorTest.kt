@@ -78,6 +78,23 @@ class ExtensionFunctionGeneratorTest {
         assertContains(source, "fun ConfigValues.getApiUrl(): String")
     }
 
+    // ── local enum flag ───────────────────────────────────────────────────────
+
+    @Test
+    fun `generates get… extension for local enum flag`() {
+        val entries = listOf(localEntry("checkout_variant", "com.example.CheckoutVariant"))
+        val source = ExtensionFunctionGenerator.generate(entries, modulePath)
+        assertContains(source, "fun ConfigValues.getCheckoutVariant(): com.example.CheckoutVariant")
+        assertContains(source, "getValue(GeneratedLocalFlags.checkoutVariant).value")
+    }
+
+    @Test
+    fun `enum extension uses get… prefix, not is…Enabled`() {
+        val entries = listOf(localEntry("checkout_variant", "com.example.CheckoutVariant"))
+        val source = ExtensionFunctionGenerator.generate(entries, modulePath)
+        assertFalse(source.contains("isCheckoutVariantEnabled"), "Enum flag must not use is…Enabled naming")
+    }
+
     // ── remote flag ───────────────────────────────────────────────────────────
 
     @Test

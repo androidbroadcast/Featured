@@ -36,7 +36,7 @@ internal fun String.capitalized(): String = replaceFirstChar { it.uppercase() }
  * Returns the name of the generated `ConfigValues` extension function for this flag.
  *
  * - Boolean flags: `is<Name>Enabled` (e.g. `isDarkModeEnabled`)
- * - All other types: `get<Name>` (e.g. `getMaxRetries`)
+ * - All other types (including enum): `get<Name>` (e.g. `getMaxRetries`, `getCheckoutVariant`)
  */
 internal fun LocalFlagEntry.extensionFunctionName(): String {
     val capitalized = propertyName.capitalized()

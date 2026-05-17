@@ -5,7 +5,8 @@ package dev.androidbroadcast.featured.gradle
  *
  * @property key The configuration key string (e.g. `"dark_mode"`).
  * @property defaultValue The default value as a raw string (e.g. `"false"`, `"42"`).
- * @property type The Kotlin type name: `"Boolean"`, `"Int"`, `"Long"`, `"Float"`, `"Double"`, or `"String"`.
+ * @property type The Kotlin type name: `"Boolean"`, `"Int"`, `"Long"`, `"Float"`, `"Double"`, `"String"`,
+ *   or a fully-qualified enum class name (e.g. `"com.example.CheckoutVariant"`).
  * @property moduleName The Gradle module path that declares this flag (e.g. `":feature:checkout"`).
  * @property propertyName The camelCase property name derived from [key] (e.g. `"darkMode"`).
  * @property flagType Either `"local"` or `"remote"`.
@@ -25,6 +26,17 @@ public data class LocalFlagEntry(
     public val expiresAt: String? = null,
 ) {
     public val isLocal: Boolean get() = flagType == FLAG_TYPE_LOCAL
+
+    /**
+     * Returns `true` when this flag's type is an enum (i.e. a fully-qualified class name
+     * containing a `.`) rather than a built-in Kotlin primitive or `String`.
+     *
+     * Enum flags require special handling in code generators:
+     * - ProGuard `-assumevalues` rules are skipped (enum values are not assumable at build time).
+     * - iOS `const val` generation is skipped (`const` only supports primitive types and `String`).
+     * - The generated `ConfigParam` default expression uses `TypeFqn.CONSTANT_NAME` syntax.
+     */
+    public val isEnum: Boolean get() = '.' in type
 
     /**
      * Returns the Kotlin reference used in the generated `FlagRegistry.register(...)` call.

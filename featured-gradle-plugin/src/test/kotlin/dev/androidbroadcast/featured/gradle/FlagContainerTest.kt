@@ -101,4 +101,42 @@ class FlagContainerTest {
     fun `empty container has no flags`() {
         assertTrue(FlagContainer().flags.isEmpty())
     }
+
+    @Test
+    fun `enum flag stores fully-qualified type name`() {
+        val container =
+            FlagContainer().apply {
+                enum("checkout_variant", typeFqn = "com.example.CheckoutVariant", default = "LEGACY")
+            }
+        val flag = container.flags.single()
+        assertEquals("checkout_variant", flag.key)
+        assertEquals("com.example.CheckoutVariant", flag.type)
+        assertEquals("LEGACY", flag.defaultValue)
+    }
+
+    @Test
+    fun `enum flag configure block sets description and category`() {
+        val container =
+            FlagContainer().apply {
+                enum("checkout_variant", typeFqn = "com.example.CheckoutVariant", default = "LEGACY") {
+                    description = "Checkout flow variant"
+                    category = "Checkout"
+                }
+            }
+        val flag = container.flags.single()
+        assertEquals("Checkout flow variant", flag.description)
+        assertEquals("Checkout", flag.category)
+    }
+
+    @Test
+    fun `enum flag descriptor contains type fqn and default constant`() {
+        val container =
+            FlagContainer().apply {
+                enum("checkout_variant", typeFqn = "com.example.CheckoutVariant", default = "LEGACY")
+            }
+        val descriptor = container.toDescriptors().single()
+        assertContains(descriptor, "checkout_variant")
+        assertContains(descriptor, "com.example.CheckoutVariant")
+        assertContains(descriptor, "LEGACY")
+    }
 }

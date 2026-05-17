@@ -18,6 +18,10 @@ package dev.androidbroadcast.featured.gradle
  * cannot be assumed at build time.
  *
  * Supported return types: `boolean`, `int`, `long`, `float`, `double`, `java.lang.String`.
+ *
+ * **Enum flags are intentionally excluded** — their runtime values are resolved from providers
+ * and cannot be assumed at build time (see issue #162). [jvmType] returns `null` for any
+ * unrecognised type (including enum FQNs), which causes those entries to be filtered out.
  */
 public object ProguardRulesGenerator {
     private const val PACKAGE = "dev.androidbroadcast.featured.generated"

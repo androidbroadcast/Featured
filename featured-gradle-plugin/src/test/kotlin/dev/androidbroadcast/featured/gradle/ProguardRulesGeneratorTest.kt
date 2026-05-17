@@ -122,6 +122,27 @@ class ProguardRulesGeneratorTest {
         assertFalse(rules.contains("isRemoteFlagEnabled"), "Remote flags must not appear in ProGuard rules")
     }
 
+    @Test
+    fun `excludes enum flags from rules`() {
+        val entries =
+            listOf(
+                entry("dark_mode", "false", "Boolean"),
+                entry("checkout_variant", "LEGACY", "com.example.CheckoutVariant"),
+            )
+        val rules = ProguardRulesGenerator.generate(entries, modulePath)
+        assertContains(rules, "isDarkModeEnabled")
+        assertFalse(rules.contains("checkoutVariant"), "Enum flags must not produce -assumevalues rules")
+    }
+
+    @Test
+    fun `returns blank when only enum flags are present`() {
+        val entries = listOf(entry("checkout_variant", "LEGACY", "com.example.CheckoutVariant"))
+        assertTrue(
+            ProguardRulesGenerator.generate(entries, modulePath).isBlank(),
+            "Expected blank rules when only enum flags are declared",
+        )
+    }
+
     // ── module-path-based class name ─────────────────────────────────────────
 
     @Test
