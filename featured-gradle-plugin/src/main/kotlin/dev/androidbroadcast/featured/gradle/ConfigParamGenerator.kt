@@ -63,10 +63,11 @@ public object ConfigParamGenerator {
     }
 
     private fun LocalFlagEntry.formatDefault(): String =
-        when (type) {
-            "String" -> defaultValue
-            "Long" -> "${defaultValue}L"
-            "Float" -> "${defaultValue}f"
+        when {
+            isEnum -> "$type.$defaultValue"
+            type == "String" -> defaultValue
+            type == "Long" -> "${defaultValue}L"
+            type == "Float" -> "${defaultValue}f"
             else -> defaultValue
         }
 }

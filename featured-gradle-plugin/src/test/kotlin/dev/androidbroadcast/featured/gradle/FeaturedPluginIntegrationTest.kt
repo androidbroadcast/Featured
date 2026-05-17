@@ -100,7 +100,8 @@ class FeaturedPluginIntegrationTest {
 
     /**
      * Asserts that [content] contains a well-formed `-assumevalues` block targeting the
-     * extensions class for the root module (`:`) and the `dark_mode` boolean flag.
+     * extensions class for the root module (`:`) and the `dark_mode` boolean flag,
+     * and that the enum flag `checkout_variant` is NOT present in the rules.
      *
      * Expected output (from [ProguardRulesGenerator]):
      * ```proguard
@@ -111,6 +112,9 @@ class FeaturedPluginIntegrationTest {
      *
      * The root module path `:` produces the identifier `Root` via [String.modulePathToIdentifier],
      * so the JVM class name is `FeaturedRoot_FlagExtensionsKt`.
+     *
+     * Enum flags (`checkout_variant`) must not appear in `-assumevalues` rules — their values
+     * are resolved at runtime from providers and cannot be assumed at build time (issue #162).
      */
     private fun assertContainsAssumevaluesBlock(content: String) {
         assertTrue(
@@ -120,6 +124,10 @@ class FeaturedPluginIntegrationTest {
         assertTrue(
             content.contains("boolean $IS_DARK_MODE_ENABLED($CONFIG_VALUES_FQN) return false;"),
             "Expected 'boolean $IS_DARK_MODE_ENABLED($CONFIG_VALUES_FQN) return false;' in rules\nActual content:\n$content",
+        )
+        assertTrue(
+            !content.contains("checkoutVariant"),
+            "Enum flag 'checkout_variant' must not appear in -assumevalues rules\nActual content:\n$content",
         )
     }
 

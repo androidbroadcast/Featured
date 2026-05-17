@@ -10,6 +10,7 @@ package dev.androidbroadcast.featured.gradle
  *         boolean("dark_mode", default = false) { category = "UI" }
  *         int("retry_count", default = 3)
  *         string("api_base_url", default = "https://example.com")
+ *         enum("checkout_variant", typeFqn = "com.example.CheckoutVariant", default = "LEGACY")
  *     }
  *     remoteFlags {
  *         boolean("promo_banner_enabled", default = false) {
@@ -78,6 +79,26 @@ public class FlagContainer {
         configure: FlagSpec.() -> Unit = {},
     ) {
         _flags += FlagSpec(key, "\"$default\"", "String").apply(configure)
+    }
+
+    /**
+     * Declares an enum-typed feature flag.
+     *
+     * Enum flags are intentionally excluded from R8 `-assumevalues` DCE rules — the value
+     * cannot be assumed at build time (it is resolved at runtime from providers).
+     *
+     * @param key The configuration key string (e.g. `"checkout_variant"`).
+     * @param typeFqn The fully-qualified Kotlin class name of the enum (e.g. `"com.example.CheckoutVariant"`).
+     * @param default The name of the default enum constant (e.g. `"LEGACY"`).
+     * @param configure Optional block to set [FlagSpec.description], [FlagSpec.category], or [FlagSpec.expiresAt].
+     */
+    public fun enum(
+        key: String,
+        typeFqn: String,
+        default: String,
+        configure: FlagSpec.() -> Unit = {},
+    ) {
+        _flags += FlagSpec(key = key, defaultValue = default, type = typeFqn).apply(configure)
     }
 
     /** Serialises all flags to pipe-delimited descriptors for [ResolveFlagsTask] inputs. */
