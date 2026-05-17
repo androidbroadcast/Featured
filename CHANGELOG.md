@@ -76,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Swift API: `ConfigParam.description` is now exposed as `.summary` (via `@ObjCName`), avoiding the SKIE-generated `description_` workaround for the `NSObject.description()` collision
 - `ConfigValues.observe()` not reacting to remote provider changes
 - Xcode build: `JAVA_HOME`, `FRAMEWORK_SEARCH_PATHS`, and Swift module import
 - `@MainActor` and `Sendable` conformance in `FeatureFlags.swift` (#85)
