@@ -19,6 +19,7 @@ jobs:
   publish:
     name: Publish to Maven Central
     runs-on: ubuntu-latest
+    environment: Main
 
     steps:
       - uses: actions/checkout@v6
