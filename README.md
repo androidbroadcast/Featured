@@ -17,6 +17,7 @@
 - [Release build optimization](#release-build-optimization)
 - [iOS integration](#ios-integration)
 - [Multi-module setup](#multi-module-setup)
+- [Configuration cache](#configuration-cache)
 - [API reference](#api-reference)
 
 ---
@@ -496,6 +497,42 @@ Run code generation tasks across all modules at once:
 ```
 
 Declare a single shared `ConfigValues` in your app module and inject it into feature modules through dependency injection. Feature modules declare their own `ConfigParam` objects but do not create `ConfigValues` themselves.
+
+---
+
+## Configuration cache
+
+`featured-gradle-plugin` officially supports the Gradle [Configuration Cache](https://docs.gradle.org/current/userguide/configuration_cache.html) on **Gradle 9+** and **AGP 9+**. Every task registered by the plugin (`resolveFeatureFlags`, `generateProguardRules`, `generateConfigParam`, `generateFlagRegistrar`, `generateIosConstVal`, `generateXcconfig`) stores and reuses CC entries without violations.
+
+### Enabling
+
+Add the following to `gradle.properties`:
+
+```properties
+org.gradle.configuration-cache=true
+```
+
+### Known gap — AGP 9.x `proguardFiles` provider propagation
+
+AGP 9.x exposes `variant.proguardFiles` as a `ListProperty<RegularFile>`, but on the AGP releases verified during the 1.0.0-Beta cycle (9.1.0) the provider's dependency does **not** propagate to the underlying R8 / minification tasks. As a result, wiring the plugin's generated `proguard-featured.pro` purely through `variant.proguardFiles.add(...)` is insufficient — the R8 task will not see the file as an input dependency and will run before the rules are generated.
+
+`featured-gradle-plugin` retains a `tasks.configureEach { … }` fallback inside [`AndroidProguardWiring.kt`](featured-gradle-plugin/src/main/kotlin/dev/androidbroadcast/featured/gradle/AndroidProguardWiring.kt) that explicitly establishes the task dependency. The fallback is CC-safe (no `Project` reference at execution time, no eager configuration). It will be revisited on every AGP minor and removed when the upstream provider propagation gap is fixed.
+
+Audit artefact: [`docs/cc-verification/agp-propagation-check-2026-05-16.md`](docs/cc-verification/agp-propagation-check-2026-05-16.md).
+
+### Upstream limitations
+
+No known upstream Configuration Cache limitations attributable to third-party plugins were observed at time of release across the sample modules (`:sample:android-app`, `:sample:desktop`, `:sample:shared`).
+
+### Verification artefacts
+
+All verification artefacts live under `docs/cc-verification/`:
+
+- [`fixture-report-2026-05-17.md`](docs/cc-verification/fixture-report-2026-05-17.md) — plugin test fixture audit (AC-3).
+- [`sample-report-2026-05-17.md`](docs/cc-verification/sample-report-2026-05-17.md) — sample modules audit (AC-4).
+- [`agp-propagation-check-2026-05-16.md`](docs/cc-verification/agp-propagation-check-2026-05-16.md) — AGP `proguardFiles` provider propagation audit (AC-5a).
+
+Isolated-projects support is tracked separately — see [`docs/known-limitations.md`](docs/known-limitations.md).
 
 ---
 
