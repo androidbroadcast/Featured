@@ -70,30 +70,114 @@ class FeaturedPluginIntegrationTest {
     }
 
     @Test
-    fun `assembleRelease wires proguard rules and completes successfully`() {
+    fun `assembleRelease without configuration cache wires proguard rules and completes successfully`() {
+        runAssembleReleaseAndAssert(cc = false)
+    }
+
+    /**
+     * Parametrization for AC-1 / AC-2: same assembleRelease assertions, but with
+     * `--configuration-cache --configuration-cache-problems=fail` and a second run
+     * that MUST reuse the cache.
+     *
+     * Cache reuse signal: directory-snapshot of `build/reports/configuration-cache/`
+     * top-level subdirectories. Run 1 must STORE (exactly one new subdir appears);
+     * run 2 must LOAD (no new subdir appears). Per spec, free-text grep of TestKit
+     * output and HTML/JSON report parsing are explicitly forbidden as cache-reuse
+     * signals — neither is a Gradle public API contract.
+     */
+    @Test
+    fun `assembleRelease with configuration cache stores then reuses the cache`() {
+        val before = ccHashDirs(projectDir)
+
+        val firstRun = runAssembleReleaseAndAssert(cc = true)
+        val afterRun1 = ccHashDirs(projectDir)
+        assertTrue(
+            afterRun1.isNotEmpty(),
+            "build/reports/configuration-cache/ MUST exist after run 1 — empty set means CC was not enabled by the build at all.\n${firstRun.output}",
+        )
+        val newRun1 = afterRun1 - before
+        assertEquals(
+            1,
+            newRun1.size,
+            "First CC run must STORE — expected exactly one new top-level subdir under build/reports/configuration-cache/, got new=$newRun1 (before=$before, after=$afterRun1)\n${firstRun.output}",
+        )
+
+        val secondRun = runAssembleReleaseAndAssert(cc = true)
+        val afterRun2 = ccHashDirs(projectDir)
+        assertTrue(
+            afterRun2.isNotEmpty(),
+            "build/reports/configuration-cache/ MUST exist after run 2 — empty set means CC was not enabled by the build at all.\n${secondRun.output}",
+        )
+        assertEquals(
+            afterRun1,
+            afterRun2,
+            "Second CC run must LOAD (reuse) — no new top-level subdir expected. Delta: ${afterRun2 - afterRun1}\n${secondRun.output}",
+        )
+    }
+
+    // ── Shared helpers for AC-1 parametrization ───────────────────────────────
+
+    /**
+     * Runs `assembleRelease`, optionally with CC flags, and asserts the same outcomes
+     * for both parametrized scenarios. Returns the [BuildResult] so callers can layer
+     * extra CC-specific assertions (e.g. directory snapshots) on top.
+     */
+    private fun runAssembleReleaseAndAssert(cc: Boolean): org.gradle.testkit.runner.BuildResult {
+        val args =
+            buildList {
+                add("assembleRelease")
+                add("--stacktrace")
+                if (cc) {
+                    add("--configuration-cache")
+                    add("--configuration-cache-problems=fail")
+                }
+            }
+
         val result =
             gradleRunner(projectDir)
-                .withArguments("assembleRelease", "--stacktrace")
+                .withArguments(args)
                 .build()
 
         // generateProguardRules must have run as part of the release build.
         val proguardOutcome = result.task(":generateProguardRules")?.outcome
         assertTrue(
-            proguardOutcome == TaskOutcome.SUCCESS || proguardOutcome == TaskOutcome.UP_TO_DATE,
-            "Expected :generateProguardRules to participate in assembleRelease, got $proguardOutcome\n${result.output}",
+            proguardOutcome == TaskOutcome.SUCCESS ||
+                proguardOutcome == TaskOutcome.UP_TO_DATE ||
+                proguardOutcome == TaskOutcome.FROM_CACHE,
+            "Expected :generateProguardRules to participate in assembleRelease (cc=$cc), got $proguardOutcome\n${result.output}",
         )
 
+        // On the second CC-enabled run, the cache is reused AND all task outputs are unchanged,
+        // so :assembleRelease reports UP_TO_DATE rather than SUCCESS. Both outcomes mean "build
+        // completed without re-doing work that did not need to be re-done"; either is acceptable.
         val assembleOutcome = result.task(":assembleRelease")?.outcome
-        assertEquals(
-            TaskOutcome.SUCCESS,
-            assembleOutcome,
-            "Expected :assembleRelease to succeed, got $assembleOutcome\n${result.output}",
+        assertTrue(
+            assembleOutcome == TaskOutcome.SUCCESS || assembleOutcome == TaskOutcome.UP_TO_DATE,
+            "Expected :assembleRelease to succeed or be up-to-date (cc=$cc), got $assembleOutcome\n${result.output}",
         )
 
         // Verify the .pro file content is correct even after the full build.
         val proFile = projectDir.resolve("build/featured/proguard-featured.pro")
-        assertTrue(proFile.exists(), "Expected proguard-featured.pro to exist after assembleRelease")
+        assertTrue(proFile.exists(), "Expected proguard-featured.pro to exist after assembleRelease (cc=$cc)")
         assertContainsAssumevaluesBlock(proFile.readText())
+
+        return result
+    }
+
+    /**
+     * Snapshot the set of top-level subdirectory names under
+     * `build/reports/configuration-cache/`. Each name is a Gradle CC hash directory;
+     * a new directory appearing across runs signals a STORE, an unchanged set signals
+     * a LOAD (cache reuse). See AC-1 in the spec.
+     */
+    private fun ccHashDirs(projectDir: File): Set<String> {
+        val root = projectDir.resolve("build/reports/configuration-cache")
+        if (!root.exists()) return emptySet()
+        return root
+            .listFiles { f -> f.isDirectory }
+            ?.map { it.name }
+            ?.toSet()
+            .orEmpty()
     }
 
     // ── Assertions ────────────────────────────────────────────────────────────
