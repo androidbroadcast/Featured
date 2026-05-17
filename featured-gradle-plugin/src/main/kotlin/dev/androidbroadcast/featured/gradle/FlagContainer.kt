@@ -98,6 +98,9 @@ public class FlagContainer {
         default: String,
         configure: FlagSpec.() -> Unit = {},
     ) {
+        require('.' in typeFqn) {
+            "typeFqn must be a fully-qualified class name (e.g. \"com.example.MyEnum\"), got \"$typeFqn\""
+        }
         _flags += FlagSpec(key = key, defaultValue = default, type = typeFqn).apply(configure)
     }
 

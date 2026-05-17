@@ -13,6 +13,7 @@ featured {
     localFlags {
         boolean("dark_mode", default = false) { category = "UI" }
         int("max_retries", default = 3)
+        enum("checkout_variant", typeFqn = "com.example.CheckoutVariant", default = "LEGACY")
     }
     remoteFlags {
         boolean("promo_banner", default = false) { description = "Show promo banner" }
