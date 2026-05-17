@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `clear()` method on `LocalConfigValueProvider` interface (#101)
 - Graceful error handling when a provider fails (#100)
 - Multivariate flag support — `enum` and sealed class `ConfigParam` types (#99)
-- SKIE 0.10.5 bridge for Swift interop (coroutines, sealed classes, default arguments)
+- SKIE 0.10.10 bridge for Swift interop (coroutines, sealed classes, default arguments)
 - Combine `Publisher` support in `FeatureFlags.swift` (#88)
 - XCFramework published as Swift Package Manager artifact (#91)
 
@@ -66,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Migrated to AGP 9.1.0 + Gradle 9.3.1 with full KMP plugin support (#135)
+- Migrated to AGP 9.1.0 + Gradle 9.4.1 with full KMP plugin support (#135)
 - Moved all provider modules under `providers/` directory (#128)
 
 ### Removed
