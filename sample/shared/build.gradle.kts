@@ -50,7 +50,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            implementation(project(":core"))
+            // :core types (ConfigValues, ConfigParam, InMemoryConfigValueProvider) appear in
+            // the public signatures of SampleApp / SampleViewModel — must be api to compile
+            // downstream consumers like :sample:desktop. Pre-existing leak from #182.
+            api(project(":core"))
             implementation(project(":featured-registry"))
         }
     }

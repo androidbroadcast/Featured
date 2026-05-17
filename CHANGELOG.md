@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Configuration Cache support (Gradle 9+, AGP 9+) for `featured-gradle-plugin`
 - `NSUserDefaultsConfigValueProvider` for iOS/macOS local storage (#104)
 - `clear()` method on `LocalConfigValueProvider` interface (#101)
 - Graceful error handling when a provider fails (#100)
