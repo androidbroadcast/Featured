@@ -1,7 +1,9 @@
 @file:Suppress("unused")
+@file:OptIn(kotlin.experimental.ExperimentalObjCName::class)
 
 package dev.androidbroadcast.featured
 
+import kotlin.native.ObjCName
 import kotlin.reflect.KClass
 
 /**
@@ -44,6 +46,7 @@ public class ConfigParam<T : Any>
          * An optional description for the configuration parameter.
          * This can be used to provide additional context or information about the parameter.
          */
+        @property:ObjCName("summary")
         public val description: String? = null,
         /**
          * Category or group name for organizing related parameters.
