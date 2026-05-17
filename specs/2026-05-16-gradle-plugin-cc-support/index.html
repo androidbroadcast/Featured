@@ -1,0 +1,1182 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Type-safe, reactive feature-flag and configuration management for Kotlin Multiplatform">
+      
+      
+      
+        <link rel="canonical" href="https://androidbroadcast.github.io/Featured/specs/2026-05-16-gradle-plugin-cc-support/">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.18">
+    
+    
+      
+        <title>Spec: featured-gradle-plugin Configuration Cache Compatibility - Featured</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.66ac8b77.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spec-featured-gradle-plugin-configuration-cache-compatibility" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Featured" class="md-header__button md-logo" aria-label="Featured" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Featured
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Spec: featured-gradle-plugin Configuration Cache Compatibility
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/AndroidBroadcast/Featured" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AndroidBroadcast/Featured
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/android/" class="md-tabs__link">
+          
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../api/" class="md-tabs__link">
+        
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Featured" class="md-nav__button md-logo" aria-label="Featured" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Featured
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/AndroidBroadcast/Featured" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AndroidBroadcast/Featured
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Guides
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/android/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Android
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/ios/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    iOS
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/jvm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    JVM
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/providers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Providers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/best-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Best Practices
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/r8-verification/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    R8 DCE Verification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ios-integration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    iOS Dead-Code Elimination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context-and-motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Context and Motivation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#acceptance-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      Acceptance Criteria
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#affected-modules-and-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Affected Modules and Files
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      Technical Approach
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Technical Constraints
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisions-made" class="md-nav__link">
+    <span class="md-ellipsis">
+      Decisions Made
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      Out of Scope
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Open Questions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-phases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Future Phases
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="spec-featured-gradle-plugin-configuration-cache-compatibility">Spec: featured-gradle-plugin Configuration Cache Compatibility<a class="headerlink" href="#spec-featured-gradle-plugin-configuration-cache-compatibility" title="Permanent link">&para;</a></h1>
+<p>Date: 2026-05-16
+Status: approved
+Slug: gradle-plugin-cc-support</p>
+<hr />
+<h2 id="context-and-motivation">Context and Motivation<a class="headerlink" href="#context-and-motivation" title="Permanent link">&para;</a></h2>
+<p><code>featured-gradle-plugin</code> must support Gradle Configuration Cache (CC) cleanly for consumers running Gradle 9+ and AGP 9+. CC is a baseline expectation for any Gradle plugin in 2026; if our plugin breaks CC, every consumer's build silently degrades or fails. Consumers on CC see meaningfully faster Gradle invocations on cached builds (a flat configuration-time cost is replaced by a near-instant cache load); a plugin that breaks CC forces consumers to either disable CC project-wide (losing the benefit on every module) or stop using the plugin.</p>
+<p>Research conducted ahead of this spec (architecture-expert deep dive + codebase inventory + Gradle/AGP 9 best-practice review) established that the plugin is <strong>already structurally CC-compatible</strong>: all six tasks are <code>@CacheableTask</code> with <code>Property</code>/<code>Provider</code>/<code>RegularFileProperty</code> inputs and proper <code>@Input</code>/<code>@OutputFile</code>/<code>@OutputDirectory</code> annotations; all <code>@TaskAction</code> bodies are <code>Project</code>-free; all code generators are pure Kotlin functions; AGP integration uses the documented <code>androidComponents.onVariants { variant.proguardFiles.add(provider) }</code> pattern. The five sites that reference <code>Project</code> (<code>extensions.create</code>, <code>afterEvaluate</code>, <code>plugins.withId</code>, <code>rootProject.tasks</code>, <code>tasks.configureEach</code>) all execute at configuration time, which CC allows.</p>
+<p>The real gap is <strong>verification and documentation</strong>: no automated test currently asserts CC compatibility (<code>FeaturedPluginIntegrationTest</code> runs without <code>--configuration-cache</code>), and no consumer-facing documentation states the support level or known upstream limitations. This spec defines the work to verify, prove, and document CC support for v1.0.0-Beta.</p>
+<p><strong>Success metric (outcome).</strong> A consumer enables Configuration Cache (<code>org.gradle.configuration-cache=true</code> in <code>gradle.properties</code>), applies <code>featured-gradle-plugin</code> to their module, and observes (a) zero Configuration Cache report entries attributed to <code>featured-gradle-plugin</code> source, and (b) the second build in the same project directory reuses the cache (LOAD, no new hash directory created under <code>build/reports/configuration-cache/</code>). The test fixture under <code>featured-gradle-plugin/src/test/fixtures/android-project/</code> serves as the canonical consumer surrogate — verification on it is the proxy for verification across consumer projects. AC-1 through AC-8 are the proof artifacts of this outcome; they exist to make the success metric automatically verifiable in CI.</p>
+<h2 id="acceptance-criteria">Acceptance Criteria<a class="headerlink" href="#acceptance-criteria" title="Permanent link">&para;</a></h2>
+<p>The feature is complete when ALL of the following are true.</p>
+<ul>
+<li>[ ] <strong>AC-1</strong> — <code>FeaturedPluginIntegrationTest</code> is parametrized over <code>cc: Boolean</code>. When <code>cc=true</code>, <code>GradleRunner</code> invocations include <code>--configuration-cache --configuration-cache-problems=fail</code>, and the test runs the build twice in the same project directory. Cache state is asserted via <strong>directory-snapshot of <code>build/reports/configuration-cache/</code></strong>:</li>
+<li>Before run 1: snapshot the set of top-level subdirectories (<code>hashSetBefore</code>).</li>
+<li>Run 1 (must STORE): assert exactly one new top-level subdirectory appears (<code>hashSetAfter1 - hashSetBefore == { exactly one new entry }</code>). This entry is the freshly-stored CC state.</li>
+<li>Run 2 (must LOAD): assert no new top-level subdirectory appears (<code>hashSetAfter2 == hashSetAfter1</code>). Identical-set means Gradle reused the existing CC entry rather than creating a new one.</li>
+<li>Tests MUST also fail if <code>build/reports/configuration-cache/</code> is absent after either run — that indicates CC was not actually enabled by the build at all.</li>
+<li>Free-text grep of TestKit output (e.g. <code>"Reusing configuration cache."</code>) and Configuration Cache HTML report parsing are both explicitly NOT acceptable — the log strings and report internals are not part of Gradle's public API and change across minors. Directory existence and set comparison are observable filesystem state.</li>
+<li>[ ] <strong>AC-2</strong> — Both parametrized scenarios (<code>cc=false</code>, <code>cc=true</code>) pass in the CI test job. No new CI job is required.</li>
+<li>[ ] <strong>AC-3</strong> — Manual run of <code>./gradlew assembleRelease --configuration-cache --configuration-cache-problems=fail</code> against the test fixture under <code>featured-gradle-plugin/src/test/fixtures/android-project/</code> completes successfully. The configuration-cache HTML report (located via <code>find build/reports/configuration-cache -name configuration-cache-report.html</code>) contains zero violations attributable to <code>featured-gradle-plugin</code> source. <strong>Audit artifact</strong> committed at <code>docs/cc-verification/fixture-report-2026-05-16.md</code> (Markdown summary only — raw HTML reports MUST NOT be committed) with the following content schema, all sections present:</li>
+<li>Gradle version used (output of <code>./gradlew --version</code>)</li>
+<li>AGP version used (from fixture <code>build.gradle.kts</code>)</li>
+<li>Exact command invoked</li>
+<li>Total violation count</li>
+<li>Per-violation table with columns: <code>source plugin | violation category | upstream issue link (if any)</code> (empty table acceptable if zero violations)</li>
+<li>Conclusion paragraph (one sentence stating whether AC-3 passes and why)</li>
+<li>[ ] <strong>AC-4</strong> — Discovery run of <code>./gradlew assembleRelease --configuration-cache --configuration-cache-problems=warn</code> against <code>:sample:android-app</code> (and equivalent task on <code>:sample:shared</code> and <code>:sample:desktop</code>) is performed. Audit artifact committed at <code>docs/cc-verification/sample-report-2026-05-16.md</code> using the <strong>same content schema as AC-3</strong> (Gradle/AGP versions, commands, violation count, per-violation table, conclusion). <strong>Pass/fail criterion (explicit):</strong> AC-4 passes if all violations are categorized as third-party (AGP, Compose, Kotlin, Dokka, Kover, vanniktech publish, etc.). AC-4 fails if any violation traces to <code>featured-gradle-plugin</code> source — because the plugin is not applied to <code>:sample:*</code> modules per scope, a plugin-attributable violation would contradict the architectural assumption and trigger scope re-evaluation, not a fix in this spec.</li>
+<li>[ ] <strong>AC-5a</strong> — AGP variant.proguardFiles propagation verification on AGP 9.1 is performed via the following preflight + experiment, and the methodology + outcome are committed at <code>docs/cc-verification/agp-propagation-check-2026-05-16.md</code>:</li>
+<li><strong>Preflight 1 (provider exposure):</strong> Read <code>FeaturedPlugin.kt</code> task registration site for <code>GenerateProguardRulesTask</code> and the call in <code>AndroidProguardWiring.kt:23-27</code>. Confirm <code>proguardTask.flatMap { it.outputFile }</code> is the form passed to <code>variant.proguardFiles.add(...)</code>. If the form is a raw <code>Provider&lt;RegularFile&gt;</code> divorced from the task (no <code>flatMap</code>/<code>map</code> over <code>TaskProvider</code>), propagation cannot work; document, abort the experiment, and treat the AC-5b outcome as «keep unchanged». A separate fix to the exposure shape MAY be applied inside this spec (see Affected Modules: <code>FeaturedPlugin.kt</code> conditional) only if the change is mechanically trivial (≤ 5-line diff, no semantic change beyond replacing raw provider with <code>flatMap</code>); otherwise defer to a follow-up issue.</li>
+<li><strong>Preflight 2 (re-validation of Prerequisite #3):</strong> Re-confirm the fixture is still an Android application with R8 actually invoked (<code>build/outputs/mapping/release/mapping.txt</code> present after a one-shot test run). This is a re-check, not an independent verification — Prerequisite #3 is the source of truth; preflight 2 catches regressions introduced between prerequisite check and AC-5a execution.</li>
+<li><strong>Experiment:</strong> Temporarily remove the <code>tasks.configureEach</code> block at <code>AndroidProguardWiring.kt:30-34</code>. Run the E2E fixture test with <code>--configuration-cache --info</code>. <strong>Assert two things, both required:</strong><ol>
+<li><code>:generateProguardRules</code> appears in the executed task graph <strong>before</strong> the R8 task (e.g. <code>:minifyReleaseWithR8</code>), via <code>--info</code> log inspection or TestKit <code>BuildResult.tasks</code>.</li>
+<li><strong>The generated rules are actually consumed by R8.</strong> Use a marker-string technique: temporarily inject a marker into the generated <code>proguard-rules.pro</code> (e.g. <code>-keep class dev.androidbroadcast.featured.${moduleName}.cc_marker_$RANDOM</code>), then after R8 runs assert the marker appears in R8's merged input — discoverable in <code>build/intermediates/r8_d8_compat_proguard/release/...</code> or via <code>--info</code> log lines naming R8 input files. Task-graph ordering alone is INSUFFICIENT evidence; both assertions must pass to conclude propagation works.</li>
+</ol>
+</li>
+<li><strong>Outcome recorded:</strong> verification artifact contains preflight findings, experiment commands, observed task graph, R8 input verification result, and conclusion: propagation works / propagation does not work.</li>
+<li>[ ] <strong>AC-5b</strong> — Based on AC-5a outcome:</li>
+<li>If propagation <strong>works</strong> → <code>AndroidProguardWiring.kt:30-34</code> fallback block is <strong>deleted</strong>. Verification: <code>git log -p AndroidProguardWiring.kt</code> shows the deletion of lines 30-34 in this spec's commit AND post-commit <code>grep -n "tasks.configureEach" AndroidProguardWiring.kt</code> returns no matches. (Source-pattern grep alone is fragile to refactors; the commit-diff anchors the change to this spec.)</li>
+<li>If propagation <strong>does NOT work</strong> → fallback is <strong>kept unchanged</strong>, and the limitation is documented under AC-6 README section as a known AGP 9.x gap with link to the upstream issue if any. <strong>Narrowing to internal AGP types (e.g., <code>com.android.build.gradle.internal.tasks.R8Task</code>) is explicitly FORBIDDEN</strong> — there is no public R8 task type in AGP 9.x, and <code>internal</code> packages are excluded from AGP's public API contract.</li>
+<li>[ ] <strong>AC-6</strong> — <code>README.md</code> contains a "Configuration cache" section stating: plugin officially supports CC on Gradle 9+ / AGP 9+; lists any third-party upstream limitations discovered during AC-4 (or states "no known upstream limitations at time of release"); if AC-5b kept the fallback, documents the AGP 9.x propagation gap and the workaround. Includes a one-line snippet showing how to enable CC (<code>org.gradle.configuration-cache=true</code> in <code>gradle.properties</code>).</li>
+<li>[ ] <strong>AC-7</strong> — <code>CHANGELOG.md</code> <code>[1.0.0-Beta]</code> entry mentions Configuration Cache support in the <code>### Added</code> section (single bullet line).</li>
+<li>[ ] <strong>AC-8</strong> — <code>docs/known-limitations.md</code> (new file) contains an entry stating that <code>wireToRootAggregator.rootProject</code> access in <code>FeaturedPlugin.kt:157</code> is CC-safe today but isolated-projects-unsafe. Entry links to an existing GitHub issue tracking this for v1.1.0. <strong>External proof requirement (not self-referential):</strong> <code>gh issue view &lt;number&gt; --json title,milestone,state</code> MUST return a non-404 result with <code>state: OPEN</code>, <code>milestone.title: v1.1.0</code>, and a title beginning with <code>isolated projects:</code>. The same <code>&lt;number&gt;</code> MUST appear as the linked URL in <code>docs/known-limitations.md</code>. Issue creation is part of this AC, not a prerequisite — but the proof is the live issue lookup, not the link the agent wrote into a file it controls.</li>
+</ul>
+<p><strong>Authoritative definition of done.</strong> The implementing agent validates against this list before marking any task complete.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Prerequisite</th>
+<th>Status</th>
+<th>Owner</th>
+<th>Exit criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gradle 9.1, AGP 9.1 pinned</td>
+<td>✅ Done</td>
+<td>—</td>
+<td>Verified post-#129–#134 migration; <code>libs.versions.toml</code> and fixture <code>build.gradle.kts</code> reference these versions</td>
+</tr>
+<tr>
+<td><code>featured-shrinker-tests</code> is Gradle-free</td>
+<td>✅ Done</td>
+<td>—</td>
+<td>Per #165; pure-JVM R8 harness; CC-orthogonal — no work needed; confirmed via <code>featured-shrinker-tests/build.gradle.kts</code> applying only <code>kotlinJvm</code></td>
+</tr>
+<tr>
+<td>Test fixture is an Android <strong>application</strong></td>
+<td>⬜ Todo</td>
+<td>Agent</td>
+<td>Inspect <code>featured-gradle-plugin/src/test/fixtures/android-project/build.gradle.kts</code> — MUST apply <code>com.android.application</code> plugin and define an <code>assembleRelease</code>-bearing variant. If library-only, surface as a blocker BEFORE AC-1; convert the fixture as a sub-step within this spec's scope</td>
+</tr>
+<tr>
+<td>Test fixture has R8 actually running on release</td>
+<td>⬜ Todo</td>
+<td>Agent</td>
+<td>The <code>.kts</code> fixture MUST set <code>isMinifyEnabled = true</code> (Kotlin DSL spelling — not the Groovy <code>minifyEnabled</code>) on the release build type. Verify by running once and confirming <code>build/outputs/mapping/release/mapping.txt</code> is produced (mapping.txt presence is the canonical signal that R8 ran). <code>isShrinkResources</code> is unrelated to R8 invocation and is NOT required by this prerequisite</td>
+</tr>
+<tr>
+<td>Test framework in <code>FeaturedPluginIntegrationTest.kt</code> is identified</td>
+<td>⬜ Todo</td>
+<td>Agent</td>
+<td>Read <code>FeaturedPluginIntegrationTest.kt</code> and its <code>build.gradle.kts</code> test dependencies. Pre-decide parametrization path: JUnit 4 → two distinct test methods (<code>testCcDisabled</code>, <code>testCcEnabled</code>) sharing a private helper (do NOT add <code>@RunWith(Parameterized.class)</code> if other runners are in use); JUnit 5 → <code>@ParameterizedTest</code> with <code>@ValueSource(booleans = [false, true])</code>. Kotest table-driven if and only if Kotest is already on the test classpath. Decision recorded in the implementation PR description. <strong>Do NOT migrate test frameworks</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="affected-modules-and-files">Affected Modules and Files<a class="headerlink" href="#affected-modules-and-files" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Module / File</th>
+<th>Change type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>featured-gradle-plugin/src/test/kotlin/.../FeaturedPluginIntegrationTest.kt</code></td>
+<td>Modified</td>
+<td>Parametrize over <code>cc: Boolean</code>; second-run cache assertion via directory-snapshot of <code>build/reports/configuration-cache/</code> per AC-1</td>
+</tr>
+<tr>
+<td><code>featured-gradle-plugin/src/main/kotlin/.../AndroidProguardWiring.kt</code></td>
+<td>Modified (conditional)</td>
+<td>Per AC-5b: either delete lines 30-34 fallback (if AC-5a propagation works) OR leave unchanged (if propagation broken). No narrowing to internal AGP types. Deletion verified by commit diff</td>
+</tr>
+<tr>
+<td><code>featured-gradle-plugin/src/main/kotlin/.../FeaturedPlugin.kt</code></td>
+<td>Modified (conditional)</td>
+<td>Per AC-5a Preflight 1: only if exposure form is a raw <code>Provider&lt;RegularFile&gt;</code> AND the fix is ≤ 5 lines (replace with <code>proguardTask.flatMap { it.outputFile }</code>). Otherwise leave unchanged and defer to follow-up issue</td>
+</tr>
+<tr>
+<td><code>featured-gradle-plugin/src/test/fixtures/android-project/build.gradle.kts</code></td>
+<td>Modified (conditional)</td>
+<td>Only if Prerequisites #3/#4 surface a gap — convert to application module / enable R8</td>
+</tr>
+<tr>
+<td><code>README.md</code></td>
+<td>Modified</td>
+<td>New "Configuration cache" section (AC-6) — support statement, upstream limitations from AC-4, AGP 9.x gap from AC-5b (if applicable), enable snippet</td>
+</tr>
+<tr>
+<td><code>CHANGELOG.md</code></td>
+<td>Modified</td>
+<td>Add CC support line to <code>[1.0.0-Beta]</code> → <code>### Added</code> (AC-7)</td>
+</tr>
+<tr>
+<td><code>docs/known-limitations.md</code></td>
+<td>New</td>
+<td>Isolated-projects deferral with linked GitHub issue number that passes <code>gh issue view</code> lookup (AC-8)</td>
+</tr>
+<tr>
+<td><code>docs/cc-verification/fixture-report-2026-05-16.md</code></td>
+<td>New</td>
+<td>Audit artifact for AC-3 with content schema enforced</td>
+</tr>
+<tr>
+<td><code>docs/cc-verification/sample-report-2026-05-16.md</code></td>
+<td>New</td>
+<td>Audit artifact for AC-4 with content schema enforced</td>
+</tr>
+<tr>
+<td><code>docs/cc-verification/agp-propagation-check-2026-05-16.md</code></td>
+<td>New</td>
+<td>Audit artifact for AC-5a (preflight findings, experiment commands, observed task graph, R8 input verification, outcome conclusion)</td>
+</tr>
+</tbody>
+</table>
+<p>Key integration points:
+- TestKit <code>GradleRunner.withArguments(...)</code> — conditionally append CC flags
+- Directory-snapshot of <code>build/reports/configuration-cache/</code> — observable filesystem state, no parsing of Gradle internals required
+- <code>androidComponents.onVariants { variant.proguardFiles.add(provider) }</code> — already CC-safe, retained as-is</p>
+<h2 id="technical-approach">Technical Approach<a class="headerlink" href="#technical-approach" title="Permanent link">&para;</a></h2>
+<p><strong>Test parametrization (AC-1, AC-2).</strong> Resolve the framework per Prerequisite #5 before writing the test. Pseudocode (JUnit 4 path):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// helper: snapshot top-level subdirs under build/reports/configuration-cache/</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kd">private</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">ccHashDirs</span><span class="p">(</span><span class="n">projectDir</span><span class="p">:</span><span class="w"> </span><span class="n">File</span><span class="p">):</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">projectDir</span><span class="p">.</span><span class="na">resolve</span><span class="p">(</span><span class="s">&quot;build/reports/configuration-cache&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">root</span><span class="p">.</span><span class="na">exists</span><span class="p">())</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">emptySet</span><span class="p">()</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">root</span><span class="p">.</span><span class="na">listFiles</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="na">isDirectory</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="o">?.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">name</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">        </span><span class="o">?.</span><span class="na">toSet</span><span class="p">()</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">        </span><span class="o">?:</span><span class="w"> </span><span class="n">emptySet</span><span class="p">()</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="kd">private</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">runAssembleRelease</span><span class="p">(</span><span class="n">projectDir</span><span class="p">:</span><span class="w"> </span><span class="n">File</span><span class="p">,</span><span class="w"> </span><span class="n">cc</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="p">):</span><span class="w"> </span><span class="n">BuildResult</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buildList</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">        </span><span class="n">add</span><span class="p">(</span><span class="s">&quot;assembleRelease&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">        </span><span class="n">add</span><span class="p">(</span><span class="s">&quot;--stacktrace&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cc</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">            </span><span class="n">add</span><span class="p">(</span><span class="s">&quot;--configuration-cache&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">            </span><span class="n">add</span><span class="p">(</span><span class="s">&quot;--configuration-cache-problems=fail&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">GradleRunner</span><span class="p">.</span><span class="na">create</span><span class="p">()</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">        </span><span class="p">.</span><span class="na">withProjectDir</span><span class="p">(</span><span class="n">projectDir</span><span class="p">)</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">        </span><span class="p">.</span><span class="na">withArguments</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">        </span><span class="p">.</span><span class="na">withPluginClasspath</span><span class="p">()</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">()</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="p">}</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="nd">@Test</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">testCcDisabled</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="w">    </span><span class="n">runAssembleRelease</span><span class="p">(</span><span class="n">projectDir</span><span class="p">,</span><span class="w"> </span><span class="n">cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="p">}</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="nd">@Test</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">testCcEnabled</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">before</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ccHashDirs</span><span class="p">(</span><span class="n">projectDir</span><span class="p">)</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="w">    </span><span class="n">runAssembleRelease</span><span class="p">(</span><span class="n">projectDir</span><span class="p">,</span><span class="w"> </span><span class="n">cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">afterRun1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ccHashDirs</span><span class="p">(</span><span class="n">projectDir</span><span class="p">)</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">newRun1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">afterRun1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">before</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="w">    </span><span class="n">assertTrue</span><span class="p">(</span><span class="n">newRun1</span><span class="p">.</span><span class="na">size</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">1</span><span class="p">,</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="w">        </span><span class="s">&quot;First CC run must STORE — expected one new hash directory under build/reports/configuration-cache/, got: </span><span class="si">$</span><span class="n">newRun1</span><span class="s"> (before=</span><span class="si">$</span><span class="n">before</span><span class="s">, after=</span><span class="si">$</span><span class="n">afterRun1</span><span class="s">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="w">    </span><span class="n">runAssembleRelease</span><span class="p">(</span><span class="n">projectDir</span><span class="p">,</span><span class="w"> </span><span class="n">cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">afterRun2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ccHashDirs</span><span class="p">(</span><span class="n">projectDir</span><span class="p">)</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="w">    </span><span class="n">assertEquals</span><span class="p">(</span><span class="n">afterRun1</span><span class="p">,</span><span class="w"> </span><span class="n">afterRun2</span><span class="p">,</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="w">        </span><span class="s">&quot;Second CC run must LOAD (reuse) — no new hash directory expected. Delta: </span><span class="si">${</span><span class="n">afterRun2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">afterRun1</span><span class="si">}</span><span class="s">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a><span class="p">}</span>
+</code></pre></div>
+<p>The directory-snapshot mechanism observes filesystem state Gradle creates regardless of report HTML/JSON internals, and disambiguates run attribution (no walk-the-tree ordering hazards). If Gradle changes the layout in a future minor and the snapshot strategy starts producing false negatives, the implementing agent SHOULD update the helper to a structurally equivalent observation (e.g., snapshot at the nested-hash level) — but MUST NOT fall back to TestKit output string matching.</p>
+<p><strong>Manual fixture verification (AC-3).</strong> Run from the fixture directory with a Gradle 9.1 installation (not the project wrapper, so the fixture is exercised in isolation): <code>cd featured-gradle-plugin/src/test/fixtures/android-project &amp;&amp; gradle assembleRelease --configuration-cache --configuration-cache-problems=fail</code>. Locate the HTML report via <code>find . -name configuration-cache-report.html</code>. Triage violations:
+- Attributable to <code>featured-gradle-plugin</code> source → fix in this spec.
+- Attributable to AGP, Kotlin Gradle Plugin, or other third-party → not in scope; document in the audit artifact.</p>
+<p>The audit artifact (<code>docs/cc-verification/fixture-report-2026-05-16.md</code>) must follow the schema in AC-3. Do not commit the raw HTML report — it is multi-MB and not human-readable in a code review.</p>
+<p><strong>Manual sample discovery (AC-4).</strong> Same procedure as AC-3 but against <code>:sample:android-app</code>, <code>:sample:shared</code>, <code>:sample:desktop</code>, with <code>--configuration-cache-problems=warn</code> so the build completes and the report captures all violations. Same audit schema. AC-4 explicitly tolerates third-party violations (documented) but fails on any plugin-attributable violation per the criterion.</p>
+<p><strong>AGP propagation check (AC-5a/AC-5b).</strong> Procedure:</p>
+<ol>
+<li>
+<p><strong>Preflight 1 — provider exposure shape.</strong> Read <code>FeaturedPlugin.kt</code> ProGuard task registration block. The line registering <code>proguardTask</code> and the call site <code>variant.proguardFiles.add(...)</code> in <code>AndroidProguardWiring.kt:23-27</code> must use <code>proguardTask.flatMap { it.outputFile }</code>. If they do — proceed. If they use a raw <code>Provider&lt;RegularFile&gt;</code> (no <code>flatMap</code>/<code>map</code> over <code>TaskProvider</code>) — propagation is structurally impossible, abort the experiment, set AC-5b outcome to "keep unchanged", and OPTIONALLY apply a ≤ 5-line fix to switch to <code>flatMap</code> (see Affected Modules conditional). Document either path in the audit artifact.</p>
+</li>
+<li>
+<p><strong>Preflight 2 — fixture state re-validation.</strong> Confirm the fixture meets Prerequisites #3 and #4 by running a one-shot <code>gradle assembleRelease</code> against it and verifying <code>build/outputs/mapping/release/mapping.txt</code> is produced (R8 actually ran). If not, abort and re-open Prerequisite #4 — do not run the experiment against an R8-skipping fixture.</p>
+</li>
+<li>
+<p><strong>Experiment.</strong> Locally remove <code>AndroidProguardWiring.kt:30-34</code> (or comment out). Inject a marker into the generated ProGuard rules — extend <code>ProguardRulesGenerator</code> to append a comment <code># featured-cc-marker: ${UUID}</code> (UUID generated per run, captured in test) to the output. Run the fixture E2E with <code>--configuration-cache --info</code>. Assert <strong>both</strong>:</p>
+</li>
+<li><code>:generateProguardRules</code> appears in the executed task graph BEFORE the R8 task (parse <code>--info</code> log or use TestKit <code>BuildResult.tasks</code> ordering).</li>
+<li>
+<p>The marker UUID appears in R8's merged input — search candidate locations: <code>build/intermediates/proguard_files/release/*</code>, <code>build/intermediates/r8_d8_compat_proguard/release/*</code>, or grep <code>--info</code> log lines that name files R8 read. The implementing agent identifies the actual location during the experiment and records it in the audit artifact.</p>
+</li>
+<li>
+<p><strong>Outcome.</strong> Both assertions pass → propagation works → AC-5b deletes the fallback. Either assertion fails → propagation broken → AC-5b keeps the fallback unchanged + AC-6 documents the gap.</p>
+</li>
+</ol>
+<p><strong>Documentation (AC-6, AC-7, AC-8).</strong>
+- README "Configuration cache" section: 1-2 paragraphs of support statement + bulleted list of upstream limitations (or "no known upstream limitations at time of release") + one-line <code>gradle.properties</code> example. Reference audit artifacts at <code>docs/cc-verification/*.md</code> for transparency.
+- CHANGELOG: single line under <code>[1.0.0-Beta]</code> → <code>### Added</code> → <code>- Configuration Cache support (Gradle 9+, AGP 9+)</code>. Format consistent with existing entries.
+- <code>docs/known-limitations.md</code>: structured by topic — Configuration Cache, isolated projects, third-party plugin gaps. Each entry: short statement + link to upstream issue + target Featured version for resolution. The isolated-projects entry MUST link to a GitHub issue passing the <code>gh issue view</code> external proof in AC-8 (use <code>gh issue create --milestone v1.1.0 --title "isolated projects: migrate wireToRootAggregator away from rootProject access"</code>).</p>
+<h2 id="technical-constraints">Technical Constraints<a class="headerlink" href="#technical-constraints" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Plugin supports Gradle 9+ and AGP 9+ for v1.0.0-Beta. Wider compatibility is NOT promised and may be evaluated for v1.0.0 stable based on Beta feedback.</li>
+<li>No new runtime dependencies. Test parametrization MUST use the test framework already present in the module (no migration from JUnit 4 to JUnit 5 just for parametrization).</li>
+<li>Do NOT refactor existing tasks to BuildService or rewrite generators. They are already CC-compatible per architecture-expert review; refactoring would be invented work with non-zero regression risk.</li>
+<li>Do NOT touch <code>wireToRootAggregator</code> (<code>FeaturedPlugin.kt:157</code>). It is CC-safe today; isolated-projects migration is separate v1.1.0 work.</li>
+<li><strong>Internal AGP types (e.g., <code>com.android.build.gradle.internal.tasks.R8Task</code>) MUST NOT be referenced from <code>featured-gradle-plugin</code> source.</strong> AGP packages under <code>internal</code> are excluded from AGP's public API contract and break on AGP minor versions. This rules out the "narrow to <code>tasks.withType&lt;R8Task&gt;</code>" path as a resolution to AC-5b.</li>
+<li>Cache reuse assertion in AC-1 MUST use the directory-snapshot mechanism. Free-text grep of TestKit output and parsing of Configuration Cache HTML report fields are both FORBIDDEN — neither is a Gradle public API contract.</li>
+<li>Sample modules (<code>:sample:android-app</code>, <code>:sample:shared</code>, <code>:sample:desktop</code>) MUST NOT have <code>featured-gradle-plugin</code> applied as part of this spec. Sample-plugin-application is a separate scope decision.</li>
+<li>Audit artifacts MUST be Markdown summaries following the AC-3 schema, not raw HTML reports.</li>
+<li>AC-8 isolated-projects issue MUST exist as a real GitHub issue verified via <code>gh issue view</code> lookup, not just a link in a file the agent controls.</li>
+</ul>
+<h2 id="decisions-made">Decisions Made<a class="headerlink" href="#decisions-made" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Choice</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Approach</td>
+<td>Defensive (verify-and-prove)</td>
+<td>architecture-expert confirmed plugin already CC-compatible; holistic refactor would be invented work and carry regression risk</td>
+</tr>
+<tr>
+<td>AGP / Gradle floor</td>
+<td>Gradle 9+ / AGP 9+</td>
+<td>User-confirmed; project already pinned post-#129; allows leveraging current variant API</td>
+</tr>
+<tr>
+<td>Third-party CC issues</td>
+<td>Document only, do not fix</td>
+<td>User scope decision: our plugin in scope, third-party out of scope</td>
+</tr>
+<tr>
+<td><code>featured-shrinker-tests</code></td>
+<td>Out of scope</td>
+<td>Pure-JVM, R8 invoked programmatically, no Gradle, no CC relevance</td>
+</tr>
+<tr>
+<td><code>wireToRootAggregator</code> rootProject access</td>
+<td>Deferred to v1.1.0 (AC-8)</td>
+<td>CC-safe today; isolated-projects is a separate Gradle consistency tier</td>
+</tr>
+<tr>
+<td>CI gate</td>
+<td>Existing test job covers via test parametrization; no new CI job</td>
+<td>Minimal CI surface, leverages existing infrastructure</td>
+</tr>
+<tr>
+<td><code>AndroidProguardWiring.kt:30-34</code> fallback</td>
+<td>Verify propagation on AGP 9.1 (AC-5a). If works — delete (AC-5b). If broken — keep unchanged + document (AC-5b + AC-6). <strong>Do NOT narrow to internal <code>R8Task</code></strong></td>
+<td>AGP exposes no public R8 task type; using internal types breaks on AGP minors. Verify-or-leave is the only safe binary</td>
+</tr>
+<tr>
+<td>Sample modules CC verification</td>
+<td>Discovery-only (AC-4, <code>--problems=warn</code>), not gate; fail if plugin-attributable violation found</td>
+<td>Sample does not apply our plugin; signal is only about third-party upstream limitations</td>
+</tr>
+<tr>
+<td>Applying plugin to sample modules</td>
+<td>Out of scope</td>
+<td>Separate concern from CC compatibility; not blocking Beta</td>
+</tr>
+<tr>
+<td>Test parameterization framework</td>
+<td>Match existing test infra (pre-resolved in Prerequisite #5)</td>
+<td>Avoid introducing new test dependency or runner conflict</td>
+</tr>
+<tr>
+<td>Cache reuse assertion mechanism</td>
+<td>Directory-snapshot of <code>build/reports/configuration-cache/</code> top-level subdirs</td>
+<td>TestKit output strings and CC report HTML/JSON internals are not stable Gradle public API; directory existence and set comparison are observable filesystem state</td>
+</tr>
+<tr>
+<td>Audit artifact format</td>
+<td>Markdown summary with enforced schema</td>
+<td>Reviewable in code review; raw HTML is multi-MB and not human-readable</td>
+</tr>
+<tr>
+<td>AC-5 split into 5a (verification) and 5b (result)</td>
+<td>Two binary ACs instead of one bundled AC</td>
+<td>Separates process audit from result diff so each is independently falsifiable</td>
+</tr>
+<tr>
+<td>AC-5a experiment requires R8-input verification, not just task-graph order</td>
+<td>Marker-string technique + R8 input inspection</td>
+<td>Task-graph ordering does not prove R8 consumed the generated rules; could yield green build with silently-dropped rules in production</td>
+</tr>
+<tr>
+<td>AC-5b deletion proof</td>
+<td>Commit-diff check (<code>git log -p</code>) + post-commit absence grep</td>
+<td>Source-pattern grep alone is fragile to refactor; commit diff anchors the change to this spec</td>
+</tr>
+<tr>
+<td>AC-8 issue creation proof</td>
+<td>External <code>gh issue view &lt;number&gt;</code> lookup, not file-controlled URL</td>
+<td>A URL the agent wrote into a file it controls is self-referential; live issue lookup is independent</td>
+</tr>
+<tr>
+<td>Follow-up issue for v1.1.0 isolated projects</td>
+<td>Part of AC-8, not a prerequisite</td>
+<td>An action item inside the spec is not a precondition for starting it</td>
+</tr>
+<tr>
+<td>Provider exposure fix in <code>FeaturedPlugin.kt</code></td>
+<td>Conditional in-spec fix if ≤ 5 lines and mechanical; otherwise defer</td>
+<td>Avoids invented work; but a trivial mechanical fix that unlocks fallback deletion is worth absorbing</td>
+</tr>
+</tbody>
+</table>
+<h2 id="out-of-scope">Out of Scope<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h2>
+<ul>
+<li>BuildService rewrite or holistic refactor of existing tasks. No violations exist that would justify it.</li>
+<li><code>wireToRootAggregator</code> migration to a settings plugin. Deferred to v1.1.0.</li>
+<li>CC compatibility for Featured's own non-plugin modules (<code>:core</code>, <code>:providers/*</code>, <code>:featured-debug-ui</code>, <code>:featured-compose</code>, etc.). These are library artifacts, not Gradle plugins.</li>
+<li>Fixing CC violations in AGP, Dokka, Kover, vanniktech publish, or any other third-party Gradle plugin. Documented only.</li>
+<li>AGP 8.x or Gradle 8.x compatibility. Narrowed to Gradle 9+ / AGP 9+ for v1.0.0-Beta.</li>
+<li>Migration to Gradle isolated projects mode. Future direction.</li>
+<li>Applying <code>featured-gradle-plugin</code> to <code>:sample:*</code> modules. Separate decision.</li>
+<li>Use of internal AGP types (<code>com.android.build.gradle.internal.*</code>) anywhere in the plugin source. Excluded by Technical Constraints.</li>
+<li>Free-text grep of TestKit output or Configuration Cache HTML/JSON report parsing as cache-reuse signal. Excluded by Technical Constraints.</li>
+<li>Committing raw HTML Configuration Cache reports to the repo. Markdown summaries only.</li>
+<li>Consumer-side CC education or guidance (e.g., advice on consumer's own <code>build.gradle.kts</code> CC hygiene). README states our plugin's compatibility, not consumer-side patterns.</li>
+<li>Provider exposure refactor beyond a trivial ≤ 5-line <code>flatMap</code> fix in <code>FeaturedPlugin.kt</code> if Preflight 1 surfaces a structural gap.</li>
+</ul>
+<h2 id="open-questions">Open Questions<a class="headerlink" href="#open-questions" title="Permanent link">&para;</a></h2>
+<p>None — spec is complete.</p>
+<h2 id="future-phases">Future Phases<a class="headerlink" href="#future-phases" title="Permanent link">&para;</a></h2>
+<p><strong>v1.0.0 stable (or v1.1.0):</strong> consider broadening AGP/Gradle floor if consumer demand surfaces during Beta. Decision driven by Beta feedback.</p>
+<p><strong>v1.1.0 — isolated-projects support:</strong> migrate <code>wireToRootAggregator.rootProject</code> access to a settings plugin or alternative architecture. Verify all plugin entry points under isolated configuration. Specced separately.</p>
+<p><strong>v1.1.0 — project-wide CC verification:</strong> extend automated CC coverage to non-plugin modules (<code>:core</code>, <code>:providers/*</code>, etc.) if there is a demonstrated consumer need. Specced separately if pursued.</p>
+<p><strong>Post-v1.0.0:</strong> evaluate applying <code>featured-gradle-plugin</code> to sample modules as a demo/showcase. Independent of CC scope.</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.3220b9d7.min.js"></script>
+      
+    
+  </body>
+</html>
