@@ -10,8 +10,8 @@ resolved.
 `featured-gradle-plugin` officially supports the Gradle Configuration Cache
 on Gradle 9.x and AGP 9.x. Verification artefacts:
 
-- `docs/cc-verification/fixture-report-2026-05-16.md` — fixture project audit
-- `docs/cc-verification/sample-report-2026-05-16.md` — sample modules audit
+- `docs/cc-verification/fixture-report-2026-05-17.md` — fixture project audit
+- `docs/cc-verification/sample-report-2026-05-17.md` — sample modules audit
 - `docs/cc-verification/agp-propagation-check-2026-05-16.md` — AGP provider
   propagation audit (see `AndroidProguardWiring` fallback)
 
@@ -44,6 +44,6 @@ Tracking issue:
 
 Third-party Gradle plugins occasionally introduce Configuration Cache
 violations through transitive plugin application. We track such gaps in the
-sample audit (`docs/cc-verification/sample-report-2026-05-16.md`) when they
+sample audit (`docs/cc-verification/sample-report-2026-05-17.md`) when they
 surface. None of these are caused by `featured-gradle-plugin` itself; the
 plugin's own task graph is CC-clean per the fixture audit.
