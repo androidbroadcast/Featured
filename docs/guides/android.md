@@ -245,7 +245,7 @@ The Gradle plugin generates per-function `-assumevalues` rules for the generated
 The task runs automatically when you build a release variant. To run it manually:
 
 ```bash
-./gradlew :app:generateProguardRules
+./gradlew :app:generateFeaturedProguardRules
 ```
 
 Output: `app/build/featured/proguard-featured.pro`
