@@ -11,6 +11,12 @@ For the full release history with diff links, see the
 
 _Changes on `main` not yet tagged for release._
 
+### Changed
+- Renamed the Gradle ProGuard/R8 generation task from `generateProguardRules` to
+  `generateFeaturedProguardRules` to avoid task-name clashes with consumer scripts.
+  Migration: update any CI/build scripts that invoke `generateProguardRules` to use
+  the new name. The old task name is no longer registered. (#190)
+
 ---
 
 ## Contributing a changelog entry

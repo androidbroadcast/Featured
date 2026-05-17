@@ -502,7 +502,7 @@ Declare a single shared `ConfigValues` in your app module and inject it into fea
 
 ## Configuration cache
 
-`featured-gradle-plugin` officially supports the Gradle [Configuration Cache](https://docs.gradle.org/current/userguide/configuration_cache.html) on **Gradle 9+** and **AGP 9+**. Every task registered by the plugin (`resolveFeatureFlags`, `generateFeaturedProguardRules`, `generateConfigParam`, `generateFlagRegistrar`, `generateIosConstVal`, `generateXcconfig`) stores and reuses CC entries without violations.
+`featured-gradle-plugin` officially supports the Gradle [Configuration Cache](https://docs.gradle.org/current/userguide/configuration_cache.html) on **Gradle 9+** and **AGP 9+**. Every task registered by the plugin (`resolveFeatureFlags`, `generateFeaturedProguardRules`, `generateConfigParam`, `generateFlagRegistrar`, `generateIosConstVal`, `generateXcconfig`, `scanAllLocalFlags`) stores and reuses CC entries without violations.
 
 ### Enabling
 
