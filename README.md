@@ -4,586 +4,72 @@
 [![Maven Central](https://img.shields.io/maven-central/v/dev.androidbroadcast.featured/featured-core.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=dev.androidbroadcast.featured)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Featured** is a type-safe, reactive feature-flag and configuration management library for Kotlin Multiplatform (Android, iOS, JVM). Declare flags in shared Kotlin code, read them at runtime from local or remote providers, and let the Gradle plugin dead-code-eliminate disabled flags from your production binaries.
+Featured is a type-safe, reactive feature-flag and configuration management library for Kotlin Multiplatform — Android, iOS (via SKIE), and JVM.
 
-## Table of contents
+## Highlights
 
-- [Overview](#overview)
-- [Installation](#installation)
-- [Quick start](#quick-start)
-- [Using flags at runtime](#using-flags-at-runtime)
-- [Providers](#providers)
-- [Debug UI](#debug-ui)
-- [Release build optimization](#release-build-optimization)
-- [iOS integration](#ios-integration)
-- [Multi-module setup](#multi-module-setup)
-- [Configuration cache](#configuration-cache)
-- [API reference](#api-reference)
+- **Type-safe flags** — declared in the Gradle DSL, accessed via generated typed extensions on `ConfigValues`. No string keys, no unchecked casts.
+- **Dead-code elimination in release builds** — a flag with `default = false` makes the guarded code unreachable. The Gradle plugin emits R8 `-assumevalues` rules (Android/JVM) and an xcconfig with `DISABLE_<FLAG>` Swift compilation conditions (iOS), so the respective compilers physically strip disabled branches from release binaries.
+- **Reactive** — every value is observable via `Flow`; Compose and SwiftUI/Combine integrations included.
+- **Multiple providers** — DataStore, SharedPreferences, NSUserDefaults, JavaPreferences, Firebase Remote Config, ConfigCat, or a custom one.
+- **Debug UI** — a ready-made Compose screen for overriding flags at runtime.
 
----
-
-## Overview
-
-**Use cases**
-
-- Ship code guarded by a flag that is off by default; enable it via Firebase Remote Config when you are ready to roll out.
-- Override individual flags during development or QA without touching a remote backend.
-- Eliminate dead code from Release binaries: the Gradle plugin generates R8 rules (Android/JVM) and an xcconfig file (iOS) that let the respective compilers strip disabled flag code paths at build time.
-
-**Key types**
-
-| Type | Role |
-|------|------|
-| `ConfigParam<T>` | Declares a named, typed configuration key with a default value |
-| `ConfigValue<T>` | Wraps a param's current value and its source (DEFAULT / LOCAL / REMOTE) |
-| `ConfigValues` | Container that composes local and remote providers |
-| `LocalConfigValueProvider` | Interface for writable, observable local storage |
-| `RemoteConfigValueProvider` | Interface for fetch-based remote configuration |
-
----
-
-## Installation
-
-### Gradle version catalog
-
-Add the BOM to manage all module versions from a single place, then declare only the artifacts you need.
+## Quick example
 
 ```kotlin
-// settings.gradle.kts
-dependencyResolutionManagement {
-    repositories {
-        mavenCentral()
-        google()
-    }
-}
-```
-
-```kotlin
-// build.gradle.kts (root or app module)
+// build.gradle.kts — declare the flag
 plugins {
     id("dev.androidbroadcast.featured") version "<version>"
 }
 
 dependencies {
     implementation(platform("dev.androidbroadcast.featured:featured-bom:<version>"))
-
-    // Core runtime — always required
     implementation("dev.androidbroadcast.featured:featured-core")
-
-    // Optional modules — add only what you use
-    implementation("dev.androidbroadcast.featured:featured-compose")         // Compose extensions
-    debugImplementation("dev.androidbroadcast.featured:featured-registry")   // Flag registry for debug UI
-    debugImplementation("dev.androidbroadcast.featured:featured-debug-ui")   // Debug screen
-
-    // Local persistence providers — pick one (or both)
     implementation("dev.androidbroadcast.featured:featured-datastore-provider")
-    implementation("dev.androidbroadcast.featured:featured-sharedpreferences-provider")
-
-    // Remote provider
-    implementation("dev.androidbroadcast.featured:featured-firebase-provider")
 }
-```
 
-> The Gradle plugin ID is `dev.androidbroadcast.featured`. It is also published to Maven Central under the artifact `dev.androidbroadcast.featured:featured-gradle-plugin`.
-
-### iOS — Swift Package Manager
-
-Add the package in Xcode (**File › Add Package Dependencies**) or in `Package.swift`:
-
-```swift
-.package(
-    url: "https://github.com/AndroidBroadcast/Featured",
-    from: "<version>"
-)
-```
-
-Then add `FeaturedCore` as a target dependency:
-
-```swift
-.target(
-    name: "MyApp",
-    dependencies: [
-        .product(name: "FeaturedCore", package: "Featured")
-    ]
-)
-```
-
----
-
-## Quick start
-
-### 1. Declare a flag
-
-Declare flags in `build.gradle.kts` using the `featured { }` DSL block. The plugin generates typed helpers automatically.
-
-```kotlin title="build.gradle.kts"
 featured {
     localFlags {
         boolean("new_checkout", default = false) {
             description = "Enable the new checkout flow"
-            category = "Checkout"
-        }
-        int("max_cart_items", default = 10) {
-            description = "Maximum items allowed in cart"
         }
     }
 }
 ```
 
-The plugin generates `internal object GeneratedLocalFlags` with typed `ConfigParam` properties, and public extension functions on `ConfigValues` — for example `fun ConfigValues.isNewCheckoutEnabled(): Boolean` and `fun ConfigValues.getMaxCartItems(): Int`.
-
-### 2. Create a `ConfigValues` instance
-
-Wire up providers once, typically in your dependency injection setup or `Application.onCreate`.
-
 ```kotlin
-// Android
-val configValues = ConfigValues(
-    localProvider = DataStoreConfigValueProvider(preferencesDataStore),
-    remoteProvider = FirebaseConfigValueProvider(),
-)
-```
+// Application.kt — wire up ConfigValues once
+val dataStore = PreferenceDataStoreFactory.create { context.dataStoreFile("feature_flags.preferences_pb") }
 
-`ConfigValues` requires at least one provider. Both `localProvider` and `remoteProvider` are optional individually, but at least one must be non-null.
-
-### 3. Read a flag value
-
-```kotlin
-// Suspend function — call from a coroutine
-val value: ConfigValue<Boolean> = configValues.getValue(FeatureFlags.newCheckout)
-val isEnabled: Boolean = value.value      // the actual value
-val source: ConfigValue.Source = value.source  // DEFAULT, LOCAL, or REMOTE
-```
-
----
-
-## Using flags at runtime
-
-### One-shot read
-
-```kotlin
-val configValue: ConfigValue<Boolean> = configValues.getValue(FeatureFlags.newCheckout)
-if (configValue.value) {
-    // feature is active
-}
-```
-
-### Reactive observation (Flow)
-
-```kotlin
-// Emits immediately with the current value, then on every change
-configValues.observe(FeatureFlags.newCheckout)
-    .collect { configValue ->
-        println("new_checkout = ${configValue.value} (source: ${configValue.source})")
-    }
-
-// Convenience: emit only the raw value, not the ConfigValue wrapper
-configValues.observeValue(FeatureFlags.newCheckout)
-    .collect { isEnabled: Boolean -> /* … */ }
-
-// Convert to StateFlow
-val isEnabled: StateFlow<Boolean> = configValues.asStateFlow(
-    param = FeatureFlags.newCheckout,
-    scope = viewModelScope,
-)
-```
-
-### Compose extension
-
-```kotlin
-@Composable
-fun CheckoutScreen(configValues: ConfigValues) {
-    val isEnabled: State<Boolean> = configValues.collectAsState(FeatureFlags.newCheckout)
-
-    if (isEnabled.value) {
-        NewCheckoutContent()
-    } else {
-        LegacyCheckoutContent()
-    }
-}
-```
-
-Use `LocalConfigValues` to provide a `ConfigValues` through the composition tree:
-
-```kotlin
-// In your root composable
-CompositionLocalProvider(LocalConfigValues provides configValues) {
-    AppContent()
-}
-
-// Anywhere below
-@Composable
-fun SomeDeepComponent() {
-    val configValues = LocalConfigValues.current
-    val enabled by configValues.collectAsState(FeatureFlags.newCheckout)
-    // …
-}
-```
-
-### iOS (Swift)
-
-The `FeatureFlags` Swift class wraps `CoreConfigValues` (the KMP-exported type). Define your flags as `FeatureFlag` values that reference the shared `CoreConfigParam` exported from Kotlin:
-
-```swift
-import FeaturedCore
-
-// Map a Kotlin ConfigParam to a Swift FeatureFlag
-let newCheckoutFlag = FeatureFlag<Bool>(
-    param: CoreFeatureFlagsCompanion().newCheckout,
-    defaultValue: false
-)
-
-let featureFlags = FeatureFlags(configValues)
-
-// Async read
-let isEnabled = try await featureFlags.value(of: newCheckoutFlag)
-
-// AsyncStream — use in a Task or async for-await loop
-for await value in featureFlags.stream(of: newCheckoutFlag) {
-    updateUI(value)
-}
-
-// Combine publisher
-featureFlags.publisher(for: newCheckoutFlag)
-    .receive(on: DispatchQueue.main)
-    .sink { isEnabled in updateUI(isEnabled) }
-    .store(in: &cancellables)
-```
-
----
-
-## Providers
-
-### InMemoryConfigValueProvider (built-in)
-
-No setup required. Values are stored in memory and lost on process restart. Useful for tests and previews.
-
-```kotlin
-val configValues = ConfigValues(
-    localProvider = InMemoryConfigValueProvider(),
-)
-```
-
-### DataStoreConfigValueProvider
-
-Persists overrides to Jetpack DataStore Preferences.
-
-```kotlin
-// Declare once per file, outside any function or class
-private val Context.featureFlagsDataStore: DataStore<Preferences>
-    by preferencesDataStore(name = "feature_flags")
-
-val configValues = ConfigValues(
-    localProvider = DataStoreConfigValueProvider(context.featureFlagsDataStore),
-)
-```
-
-### SharedPreferencesProviderConfig
-
-Android-only. Persists overrides to SharedPreferences.
-
-```kotlin
-val prefs = context.getSharedPreferences("feature_flags", Context.MODE_PRIVATE)
-
-val configValues = ConfigValues(
-    localProvider = SharedPreferencesProviderConfig(prefs),
-)
-```
-
-### FirebaseConfigValueProvider (remote)
-
-Wraps Firebase Remote Config. Remote values override local values.
-
-```kotlin
 val configValues = ConfigValues(
     localProvider = DataStoreConfigValueProvider(dataStore),
-    remoteProvider = FirebaseConfigValueProvider(),
 )
-
-// Fetch and activate — suspend function, call from a coroutine (e.g., on app start)
-lifecycleScope.launch { configValues.fetch() }
-```
-
-`FirebaseConfigValueProvider` uses `FirebaseRemoteConfig.getInstance()` by default. Pass a custom instance if you manage the Firebase lifecycle yourself:
-
-```kotlin
-FirebaseConfigValueProvider(remoteConfig = FirebaseRemoteConfig.getInstance())
-```
-
-### Override and reset at runtime
-
-```kotlin
-// Write a local override — survives remote fetches
-configValues.override(FeatureFlags.newCheckout, true)
-
-// Revert to the provider's stored or default value
-configValues.resetOverride(FeatureFlags.newCheckout)
-```
-
----
-
-## Debug UI
-
-`featured-debug-ui` provides a ready-made Compose screen that lists all registered flags with their current values and sources, and lets you toggle or override them at runtime.
-
-### 1. Register flags
-
-Register each `ConfigParam` in the `FlagRegistry` so the debug screen can discover them:
-
-```kotlin
-import dev.androidbroadcast.featured.registry.FlagRegistry
-
-// Call once on app start (e.g., in Application.onCreate or your DI module)
-FlagRegistry.register(FeatureFlags.newCheckout)
-FlagRegistry.register(FeatureFlags.maxCartItems)
-```
-
-### 2. Show the debug screen
-
-```kotlin
-import dev.androidbroadcast.featured.debugui.FeatureFlagsDebugScreen
-
-@Composable
-fun DebugMenuScreen(configValues: ConfigValues) {
-    FeatureFlagsDebugScreen(configValues = configValues)
-}
-```
-
-Only include `featured-debug-ui` and `featured-registry` in debug builds (they are already declared that way in the installation section above):
-
----
-
-## Release build optimization
-
-### Android / JVM — R8 rules
-
-The Gradle plugin generates per-function ProGuard / R8 `-assumevalues` rules for the generated extension functions of every local boolean flag with `default = false`. These rules instruct R8 to treat the flag as a constant `false` at shrink time, so all code guarded by the generated accessor is removed from the release APK. Remote flags are excluded since their values are dynamic.
-
-The task runs automatically when you build a release variant. To run it manually:
-
-```bash
-./gradlew :app:generateFeaturedProguardRules
-```
-
-Output: `app/build/featured/proguard-featured.pro`
-
-No extra configuration is needed — the plugin wires the output into the R8 pipeline automatically.
-
-### iOS — xcconfig for Swift DCE
-
-See the [iOS integration](#ios-integration) section below.
-
----
-
-## iOS integration
-
-The Gradle plugin generates an xcconfig file that feeds Swift compilation conditions into Xcode. For every local boolean flag declared in `featured { localFlags { } }` with `default = false`, a `DISABLE_<FLAG_KEY>` condition is generated.
-
-### Key transformation
-
-| Kotlin flag key | Generated condition |
-|-----------------|---------------------|
-| `new_checkout` | `DISABLE_NEW_CHECKOUT` |
-| `experimentalUi` | `DISABLE_EXPERIMENTAL_UI` |
-
-### Step 1 — Generate the xcconfig
-
-```bash
-./gradlew :shared:generateXcconfig
-```
-
-Output: `shared/build/featured/FeatureFlags.generated.xcconfig`
-
-Example content:
-
-```xcconfig
-# Auto-generated by featured-gradle-plugin — do not edit
-SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DISABLE_NEW_CHECKOUT DISABLE_EXPERIMENTAL_UI
-```
-
-### Step 2 — Make the file available to Xcode
-
-Copy or symlink the file to a stable path inside your Xcode project tree:
-
-```bash
-# Copy (re-run after each generateXcconfig invocation)
-cp shared/build/featured/FeatureFlags.generated.xcconfig \
-   iosApp/Configuration/FeatureFlags.generated.xcconfig
-
-# Symlink (resolved automatically)
-ln -sf ../../shared/build/featured/FeatureFlags.generated.xcconfig \
-   iosApp/Configuration/FeatureFlags.generated.xcconfig
-```
-
-Add the generated file to `.gitignore` if you use the copy approach:
-
-```gitignore
-iosApp/Configuration/FeatureFlags.generated.xcconfig
-```
-
-### Step 3 — Configure Xcode (one-time)
-
-1. Open your `.xcodeproj` in Xcode.
-2. Select the project in the Navigator → **Info** tab → **Configurations**.
-3. Expand the **Release** configuration.
-4. Set the configuration file for your app target to `FeatureFlags.generated.xcconfig`.
-
-Only assign the xcconfig to Release. Debug builds intentionally omit it so every feature remains reachable during development.
-
-### Step 4 — Guard Swift entry points with `#if`
-
-```swift
-// Entry point for the new checkout feature
-#if !DISABLE_NEW_CHECKOUT
-NewCheckoutButton()
-#endif
-
-// Deep-link handler
-#if !DISABLE_NEW_CHECKOUT
-case .newCheckout: NewCheckoutCoordinator.start()
-#endif
-
-// AppDelegate / SceneDelegate
-#if !DISABLE_NEW_CHECKOUT
-setupNewCheckoutObservers()
-#endif
-```
-
-The Swift compiler removes the entire guarded block from Release binaries — zero runtime overhead.
-
-### Automate with a pre-build Run Script phase
-
-Add this script to your Xcode target's Build Phases (before Compile Sources). Set **Based on dependency analysis** to **off**:
-
-```bash
-cd "${SRCROOT}/.."
-./gradlew :shared:generateXcconfig --quiet
-cp shared/build/featured/FeatureFlags.generated.xcconfig \
-   iosApp/Configuration/FeatureFlags.generated.xcconfig
-```
-
----
-
-## Multi-module setup
-
-In a multi-module project, apply the Gradle plugin to every module that declares flags in `featured { }`. The plugin registers a `resolveFeatureFlags` task per module and an aggregator task `scanAllLocalFlags` at the root that collects flags across all modules.
-
-```kotlin
-// :feature:checkout module build.gradle.kts
-plugins {
-    id("dev.androidbroadcast.featured")
-    // … other plugins
-}
 ```
 
 ```kotlin
-// :feature:profile module build.gradle.kts
-plugins {
-    id("dev.androidbroadcast.featured")
-}
+// Read the generated extension anywhere
+val isEnabled: Boolean = configValues.isNewCheckoutEnabled()
 ```
 
-Run code generation tasks across all modules at once:
+## Documentation
 
-```bash
-# Resolve and aggregate flags across all modules
-./gradlew scanAllLocalFlags
+Full documentation lives in the [Wiki](https://github.com/AndroidBroadcast/Featured/wiki):
 
-# Generate R8 rules for all Android modules
-./gradlew generateFeaturedProguardRules
+- [Getting Started](https://github.com/AndroidBroadcast/Featured/wiki/Getting-Started)
+- [Installation](https://github.com/AndroidBroadcast/Featured/wiki/Installation)
+- [Providers](https://github.com/AndroidBroadcast/Featured/wiki/Providers)
+- [Release Optimization (DCE)](https://github.com/AndroidBroadcast/Featured/wiki/Release-Optimization) — how flags get stripped from release binaries
+- [iOS Usage](https://github.com/AndroidBroadcast/Featured/wiki/iOS-Usage)
+- [Best Practices](https://github.com/AndroidBroadcast/Featured/wiki/Best-Practices)
 
-# Generate xcconfig across all modules
-./gradlew generateXcconfig
-```
+## Contributing
 
-Declare a single shared `ConfigValues` in your app module and inject it into feature modules through dependency injection. Feature modules declare their own `ConfigParam` objects but do not create `ConfigValues` themselves.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
----
+## Security
 
-## Configuration cache
+See [SECURITY.md](SECURITY.md).
 
-`featured-gradle-plugin` officially supports the Gradle [Configuration Cache](https://docs.gradle.org/current/userguide/configuration_cache.html) on **Gradle 9+** and **AGP 9+**. Every task registered by the plugin (`resolveFeatureFlags`, `generateFeaturedProguardRules`, `generateConfigParam`, `generateFlagRegistrar`, `generateIosConstVal`, `generateXcconfig`, `scanAllLocalFlags`) stores and reuses CC entries without violations.
+## License
 
-### Enabling
-
-Add the following to `gradle.properties`:
-
-```properties
-org.gradle.configuration-cache=true
-```
-
-### Known gap — AGP 9.x `proguardFiles` provider propagation
-
-AGP 9.x exposes `variant.proguardFiles` as a `ListProperty<RegularFile>`, but on the AGP releases verified during the 1.0.0-Beta cycle (9.1.0) the provider's dependency does **not** propagate to the underlying R8 / minification tasks. As a result, wiring the plugin's generated `proguard-featured.pro` purely through `variant.proguardFiles.add(...)` is insufficient — the R8 task will not see the file as an input dependency and will run before the rules are generated.
-
-`featured-gradle-plugin` retains a `tasks.configureEach { … }` fallback inside [`AndroidProguardWiring.kt`](featured-gradle-plugin/src/main/kotlin/dev/androidbroadcast/featured/gradle/AndroidProguardWiring.kt) that explicitly establishes the task dependency. The fallback is CC-safe (no `Project` reference at execution time, no eager configuration). It will be revisited on every AGP minor and removed when the upstream provider propagation gap is fixed.
-
-Audit artefact: [`docs/cc-verification/agp-propagation-check-2026-05-16.md`](docs/cc-verification/agp-propagation-check-2026-05-16.md).
-
-### Upstream limitations
-
-No known upstream Configuration Cache limitations attributable to third-party plugins were observed at time of release across the sample modules (`:sample:android-app`, `:sample:desktop`, `:sample:shared`).
-
-### Verification artefacts
-
-All verification artefacts live under `docs/cc-verification/`:
-
-- [`fixture-report-2026-05-17.md`](docs/cc-verification/fixture-report-2026-05-17.md) — plugin test fixture audit (AC-3).
-- [`sample-report-2026-05-17.md`](docs/cc-verification/sample-report-2026-05-17.md) — sample modules audit (AC-4).
-- [`agp-propagation-check-2026-05-16.md`](docs/cc-verification/agp-propagation-check-2026-05-16.md) — AGP `proguardFiles` provider propagation audit (AC-5a).
-
-Isolated-projects support is tracked separately — see [`docs/known-limitations.md`](docs/known-limitations.md).
-
----
-
-## Running the sample app
-
-The `sample` module is a Kotlin Multiplatform app (Android + iOS + Desktop) that demonstrates
-all provider options available in Featured.
-
-### Default (DataStore)
-
-No extra configuration needed. The sample uses `defaultLocalProvider(context)` from
-`:featured-platform`, which returns a `DataStoreConfigValueProvider` on Android. Flag overrides
-written via the debug UI persist across app restarts.
-
-```bash
-./gradlew :sample:assembleDebug
-```
-
-### SharedPreferences provider
-
-To see how `SharedPreferencesProviderConfig` is wired up, look at `buildConfigValues()` in
-`SampleApplication.kt`. Swap the commented-out `localProvider` assignment for the active one.
-
-### Running with Firebase Remote Config
-
-Firebase Remote Config requires a `google-services.json` file from the Firebase console.
-
-1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com).
-2. Register the Android app with package name `dev.androidbroadcast.featured`.
-3. Download `google-services.json` and place it at `sample/google-services.json`.
-4. Build the sample with the `hasFirebase` flag:
-
-```bash
-./gradlew :sample:assembleDebug -PhasFirebase=true
-```
-
-The build system detects `sample/google-services.json` automatically, so step 4 can also be
-run without `-PhasFirebase=true` once the file is present.
-
-5. In `SampleApplication.kt`, uncomment the `FirebaseConfigValueProvider` lines inside
-   `buildConfigValues()` and rebuild.
-
-> **Note:** `google-services.json` is excluded from version control (`.gitignore`). Never commit
-> credentials to the repository.
-
----
-
-## API reference
-
-Full KDoc-generated API reference is published to GitHub Pages:
-
-**[https://androidbroadcast.github.io/Featured/](https://androidbroadcast.github.io/Featured/)**
-
-Documentation is regenerated on every merge to `main`.
+MIT — see [LICENSE](LICENSE).
