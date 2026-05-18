@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -51,6 +52,7 @@ public fun FeaturedSample(
     Column(
         modifier =
             modifier
+                .statusBarsPadding()
                 .padding(16.dp)
                 .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp),

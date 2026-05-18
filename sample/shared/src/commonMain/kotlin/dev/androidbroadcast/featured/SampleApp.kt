@@ -4,6 +4,22 @@ package dev.androidbroadcast.featured
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import dev.androidbroadcast.featured.registry.FlagRegistry
+
+/**
+ * Registers all [SampleFeatureFlags] with [FlagRegistry] so that [FeatureFlagsDebugScreen]
+ * can discover them via [FlagRegistry.all]. Call once on application start before opening
+ * the debug UI. Duplicate calls are safe — the registry ignores already-registered params.
+ */
+public fun registerSampleFlags() {
+    listOf(
+        SampleFeatureFlags.mainButtonRed,
+        SampleFeatureFlags.newFeatureSectionEnabled,
+        SampleFeatureFlags.newCheckout,
+        SampleFeatureFlags.promoBannerEnabled,
+        SampleFeatureFlags.checkoutVariant,
+    ).forEach(FlagRegistry::register)
+}
 
 /**
  * Root composable for the sample application.
