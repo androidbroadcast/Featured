@@ -66,7 +66,7 @@ Once the feature is fully rolled out and validated:
 4. Regenerate platform artefacts:
 
 ```bash
-./gradlew generateProguardRules   # keep Android R8 rules in sync
+./gradlew generateFeaturedProguardRules   # keep Android R8 rules in sync
 ./gradlew generateXcconfig        # keep iOS xcconfig in sync
 ```
 

@@ -28,7 +28,7 @@ featured {
 | `resolveFeatureFlags` | `build/featured/flags.txt` |
 | `generateConfigParam` | `build/generated/featured/commonMain/Generated{Local,Remote}Flags.kt` + `GeneratedFlagExtensions.kt` |
 | `generateFlagRegistrar` | `build/generated/featured/GeneratedFlagRegistrar.kt` |
-| `generateProguardRules` | `build/featured/proguard-featured.pro` |
+| `generateFeaturedProguardRules` | `build/featured/proguard-featured.pro` |
 | `generateIosConstVal` | iOS constant value files |
 | `generateXcconfig` | `build/featured/FeatureFlags.generated.xcconfig` |
 

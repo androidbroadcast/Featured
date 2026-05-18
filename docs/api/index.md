@@ -121,7 +121,7 @@ The plugin generates:
 | `resolveFeatureFlags` | Resolves DSL-declared flags; runs before all code-generation tasks |
 | `generateConfigParam` | Generates `GeneratedLocalFlags` and `GeneratedRemoteFlags` objects |
 | `generateFlagRegistrar` | Generates flag registrar for the debug UI |
-| `generateProguardRules` | Generates per-function R8 `-assumevalues` rules for local boolean flags |
+| `generateFeaturedProguardRules` | Generates per-function R8 `-assumevalues` rules for local boolean flags |
 | `generateIosConstVal` | Generates `expect`/`actual const val` for local flags (iOS) |
 | `generateXcconfig` | Generates xcconfig with `DISABLE_*` conditions for local boolean flags |
 | `scanAllLocalFlags` | Aggregator task — collects flags across all modules |
