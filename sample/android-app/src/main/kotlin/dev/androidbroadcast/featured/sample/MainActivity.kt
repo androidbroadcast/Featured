@@ -9,17 +9,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import dev.androidbroadcast.featured.CheckoutVariant
 import dev.androidbroadcast.featured.ConfigValues
 import dev.androidbroadcast.featured.SampleApp
+import dev.androidbroadcast.featured.datastore.DataStoreConfigValueProvider
+import dev.androidbroadcast.featured.datastore.registerConverter
 import dev.androidbroadcast.featured.debugui.FeatureFlagsDebugScreen
+import dev.androidbroadcast.featured.enumConverter
 import dev.androidbroadcast.featured.platform.defaultLocalProvider
+import dev.androidbroadcast.featured.registerSampleFlags
 
 class MainActivity : ComponentActivity() {
     // ConfigValues is held at Activity scope for this sample.
     // In production, move to Application or a DI singleton to avoid
     // recreating (and re-opening) the DataStore file on every rotation.
     private val configValues by lazy {
-        ConfigValues(localProvider = defaultLocalProvider(applicationContext))
+        // Populate FlagRegistry so FeatureFlagsDebugScreen can discover all flags via FlagRegistry.all().
+        registerSampleFlags()
+
+        val localProvider = defaultLocalProvider(applicationContext)
+        // DataStore only handles primitives natively; register a converter so that the
+        // enum-typed checkoutVariant flag can be persisted and observed without throwing.
+        (localProvider as? DataStoreConfigValueProvider)
+            ?.registerConverter(enumConverter<CheckoutVariant>())
+        ConfigValues(localProvider = localProvider)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
