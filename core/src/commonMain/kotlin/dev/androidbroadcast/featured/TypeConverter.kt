@@ -50,6 +50,22 @@ public interface TypeConverter<T : Any> {
  * converter.fromString("UNKNOWN")   // throws IllegalArgumentException
  * ```
  *
+ * ## Compatible providers
+ *
+ * Pass the returned converter to `registerConverter` on any of these providers before the first
+ * read or write of an enum flag:
+ *
+ * - `DataStoreConfigValueProvider.registerConverter(enumConverter<T>())`
+ * - `JavaPreferencesConfigValueProvider.registerConverter(enumConverter<T>())`
+ * - `SharedPreferencesProviderConfig.registerConverter(enumConverter<T>())`
+ *
+ * `FirebaseConfigValueProvider` handles enums automatically via reflection — no registration
+ * is required.
+ *
+ * **iOS caveat:** `NSUserDefaultsConfigValueProvider` does not support enums at this time —
+ * it has no converter API. Use a `String` flag as a workaround on iOS and convert the raw
+ * value to your enum manually at the call site.
+ *
  * @param T The enum class to convert.
  * @return A [TypeConverter] that round-trips [T] by enum constant name.
  */
