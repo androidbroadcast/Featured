@@ -84,8 +84,49 @@ public class FlagContainer {
     /**
      * Declares an enum-typed feature flag.
      *
-     * Enum flags are intentionally excluded from R8 `-assumevalues` DCE rules — the value
-     * cannot be assumed at build time (it is resolved at runtime from providers).
+     * The plugin generates a typed `ConfigParam<E>` backed by this declaration. Enum flags are
+     * intentionally excluded from R8 `-assumevalues` DCE rules — the value cannot be assumed at
+     * build time (it is resolved at runtime from providers).
+     *
+     * ## Runtime converter requirement (Android / JVM)
+     *
+     * Storage-backed local providers serialize values as strings and require an explicit
+     * [enumConverter] registration before the first read or write of this flag. Without it the
+     * provider throws [IllegalArgumentException] synchronously. Affected providers:
+     *
+     * - `DataStoreConfigValueProvider`
+     * - `JavaPreferencesConfigValueProvider`
+     * - `SharedPreferencesProviderConfig`
+     *
+     * Firebase Remote Config (`FirebaseConfigValueProvider`) handles enums automatically via
+     * reflection — no `registerConverter` call is needed there.
+     *
+     * **iOS caveat:** `NSUserDefaultsConfigValueProvider` does not support enums at this time —
+     * it has no converter API. Use a `String` flag as a workaround on iOS and convert the raw
+     * value to your enum manually at the call site.
+     *
+     * ## Example
+     *
+     * ```kotlin
+     * // Gradle DSL — declaration
+     * featured {
+     *     localFlags {
+     *         enum(
+     *             key = "checkout_variant",
+     *             typeFqn = "com.example.CheckoutVariant",
+     *             default = "LEGACY",
+     *         )
+     *     }
+     * }
+     * ```
+     *
+     * ```kotlin
+     * // Runtime — required wiring for non-Firebase local providers
+     * val provider = DataStoreConfigValueProvider(dataStore).apply {
+     *     registerConverter(enumConverter<CheckoutVariant>())
+     * }
+     * val configValues = ConfigValues(localProvider = provider)
+     * ```
      *
      * @param key The configuration key string (e.g. `"checkout_variant"`).
      * @param typeFqn The fully-qualified Kotlin class name of the enum (e.g. `"com.example.CheckoutVariant"`).
