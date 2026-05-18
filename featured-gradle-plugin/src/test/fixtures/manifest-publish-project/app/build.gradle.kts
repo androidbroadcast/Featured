@@ -1,0 +1,27 @@
+plugins {
+    id("com.android.library") version "9.1.0"
+    id("dev.androidbroadcast.featured")
+}
+
+android {
+    namespace = "com.example.testapp"
+    compileSdk = 36
+
+    defaultConfig {
+        minSdk = 24
+    }
+}
+
+featured {
+    localFlags {
+        boolean("dark_mode", default = false) {
+            category = "UI"
+        }
+        enum("checkout_variant", typeFqn = "com.example.CheckoutVariant", default = "LEGACY")
+    }
+    remoteFlags {
+        boolean("promo_banner", default = false) {
+            description = "Show promo banner"
+        }
+    }
+}

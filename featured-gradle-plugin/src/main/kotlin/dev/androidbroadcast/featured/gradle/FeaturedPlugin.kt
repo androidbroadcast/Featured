@@ -1,7 +1,14 @@
 package dev.androidbroadcast.featured.gradle
 
+import dev.androidbroadcast.featured.gradle.manifest.FEATURED_MANIFEST_CONFIGURATION_NAME
+import dev.androidbroadcast.featured.gradle.manifest.FEATURED_MANIFEST_USAGE
+import dev.androidbroadcast.featured.gradle.manifest.GENERATE_FEATURED_MANIFEST_TASK_NAME
+import dev.androidbroadcast.featured.gradle.manifest.GenerateFeaturedManifestTask
+import dev.androidbroadcast.featured.gradle.manifest.SCHEMA_VERSION
+import dev.androidbroadcast.featured.gradle.manifest.schemaMajorAttr
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.attributes.Usage
 import org.gradle.api.tasks.TaskProvider
 
 internal const val RESOLVE_FLAGS_TASK_NAME = "resolveFeatureFlags"
@@ -54,6 +61,8 @@ public class FeaturedPlugin : Plugin<Project> {
         val proguardTask = registerProguardTask(target, resolveTask)
         registerIosConstValTask(target, resolveTask)
         registerXcconfigTask(target, resolveTask)
+        val manifestTask = registerManifestTask(target, resolveTask)
+        registerFeaturedManifestConfiguration(target, manifestTask)
         wireToRootAggregator(target, resolveTask)
         listOf("com.android.application", "com.android.library").forEach { pluginId ->
             target.plugins.withId(pluginId) {
@@ -143,6 +152,78 @@ public class FeaturedPlugin : Plugin<Project> {
             task.outputFile.set(target.layout.buildDirectory.file("featured/FeatureFlags.generated.xcconfig"))
             task.dependsOn(resolveTask)
         }
+    }
+
+    private fun registerManifestTask(
+        target: Project,
+        resolveTask: TaskProvider<ResolveFlagsTask>,
+    ): TaskProvider<GenerateFeaturedManifestTask> =
+        target.tasks.register(
+            GENERATE_FEATURED_MANIFEST_TASK_NAME,
+            GenerateFeaturedManifestTask::class.java,
+        ) { task ->
+            task.group = "featured"
+            task.description = "Generates featured-manifest.json for '${target.path}'."
+            task.flagsFile.set(resolveTask.flatMap { it.outputFile })
+            // Snapshot target.path at configuration time — Project must not be captured by
+            // task state to remain Configuration Cache compliant.
+            task.modulePath.set(target.path)
+            task.outputFile.convention(
+                target.layout.buildDirectory.file("featured/featured-manifest.json"),
+            )
+            task.dependsOn(resolveTask)
+        }
+
+    private fun registerFeaturedManifestConfiguration(
+        target: Project,
+        manifestTask: TaskProvider<GenerateFeaturedManifestTask>,
+    ) {
+        // Register the schemaMajorAttr in the project's attribute schema so that Gradle's
+        // dependency resolution can match it precisely between producer and consumer.
+        target.dependencies.attributesSchema.attribute(schemaMajorAttr)
+
+        val manifestConfiguration =
+            target.configurations.consumable(
+                FEATURED_MANIFEST_CONFIGURATION_NAME,
+            ) { config ->
+                config.attributes {
+                    it.attribute(
+                        Usage.USAGE_ATTRIBUTE,
+                        target.objects.named(Usage::class.java, FEATURED_MANIFEST_USAGE),
+                    )
+                    // Use SCHEMA_VERSION constant — not a hardcoded literal — so that a future bump
+                    // automatically flows through to the attribute without a separate edit here.
+                    it.attribute(schemaMajorAttr, SCHEMA_VERSION)
+                }
+            }
+
+        // Wire the manifest file as an outgoing artifact. The provider chain already carries
+        // the task dependency; builtBy is explicit for IDE / --dry-run readability.
+        target.artifacts.add(
+            FEATURED_MANIFEST_CONFIGURATION_NAME,
+            manifestTask.flatMap { it.outputFile },
+        ) { artifact ->
+            artifact.builtBy(manifestTask)
+        }
+
+        // Maven-publish guard intentionally omitted (verified 2026-05-18 via KMP smoke test).
+        //
+        // The `java`, `java-library`, `kotlinMultiplatform`, and `com.android.library` software
+        // components do NOT auto-publish arbitrary consumable configurations. Each component
+        // exposes only the variants it explicitly added via `addVariantsFromConfiguration` —
+        // typically `apiElements` / `runtimeElements` for Java, target-specific
+        // `*ApiElements` / `*RuntimeElements` for KMP, build-type variants for AGP.
+        //
+        // The `featuredManifest` configuration is never registered with any of these components,
+        // so it does not appear in published Maven metadata. A guard via
+        // `withVariantsFromConfiguration(...) { skip() }` is not only unnecessary — it actively
+        // throws `Variant for configuration 'featuredManifest' does not exist in component`
+        // during publication because `withVariantsFromConfiguration` requires the variant to
+        // have been added first.
+        //
+        // The KMP smoke fixture (`kmp-publish-project`) and `FeaturedKmpPublicationTest` verify
+        // this invariant: a KMP module that applies both `dev.androidbroadcast.featured` and
+        // `maven-publish` produces module metadata with no `featured-manifest` Usage variant.
     }
 
     /**
