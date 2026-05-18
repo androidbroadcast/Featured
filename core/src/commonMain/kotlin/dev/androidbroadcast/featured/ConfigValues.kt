@@ -4,6 +4,7 @@ package dev.androidbroadcast.featured
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -169,8 +170,8 @@ public class ConfigValues(
      * @return A [Flow] of [ConfigValue] for the specified parameter.
      */
     public fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> {
-        val localFlow = localProvider?.observe(param)
-        val remoteFlow = fetchSignal.map { getValue(param) }
+        val localFlow = localProvider?.observe(param)?.catch { e -> onProviderError(e) }
+        val remoteFlow = fetchSignal.map { getValue(param) }.catch { e -> onProviderError(e) }
 
         return flow<ConfigValue<T>> {
             emit(getValue(param))
