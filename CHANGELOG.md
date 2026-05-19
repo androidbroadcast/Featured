@@ -11,16 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `featured-registry` module — the runtime `FlagRegistry` global singleton and its `FlagRegistryDelegate` expect/actual are removed. Use `GeneratedFeaturedRegistry.all` (produced by the `dev.androidbroadcast.featured.application` plugin) or build an explicit `List<ConfigParam<*>>` instead.
 - `featured-gradle-plugin` — `generateFlagRegistrar` task, `FlagRegistrarGenerator`, and `GenerateFlagRegistrarTask` are removed. Per-module `GeneratedFlagRegistrar.kt` files are no longer generated.
-- Sample API — `registerSampleFlags()` is removed (was specific to the sample app's legacy wiring). The sample now uses `SampleFeatureFlags.all` directly.
+- Sample API — `registerSampleFlags()` is removed (was specific to the sample app's legacy wiring). The sample now uses `GeneratedFeaturedRegistry.all` (produced by the aggregator plugin) instead.
 
 ### Changed
 
 - `FeatureFlagsDebugScreen` signature is now `(configValues: ConfigValues, registry: List<ConfigParam<*>>, modifier: Modifier = Modifier)` — accepts an explicit registry list instead of reading the (removed) `FlagRegistry` singleton. Pass `GeneratedFeaturedRegistry.all` for the recommended aggregator-plugin flow, or build the list inline for small projects.
+- `:sample:shared` is now a pure aggregator: it applies `dev.androidbroadcast.featured.application`, declares `featuredAggregation(project(":sample:feature-*"))`, and consumes `GeneratedFeaturedRegistry.all`. The hand-written `SampleFeatureFlags.kt` is removed.
+- Generator file names include a module-derived suffix (`GeneratedLocalFlagsSampleFeatureCheckout.kt`, etc.) — eliminates JVM class-name collisions when multiple modules share the same classpath. `@file:JvmName` is no longer emitted.
+- `ExtensionFunctionGenerator` now emits `suspend` extension functions — `ConfigValues.getValue` has always been suspend; the generated callers now match. `GeneratedLocalFlags*` / `GeneratedRemoteFlags*` objects are widened to `public` so observer bridges can reference them across module boundaries.
 
 ### Added
 
 - Featured library plugin now publishes a per-module feature-flag manifest as a consumable Gradle artifact (`featuredManifest` configuration, schema v1). Existing flag-generation pipeline is unchanged. Consumer-side aggregation arrives in a follow-up release.
 - New `dev.androidbroadcast.featured.application` Gradle plugin: aggregates `featured-manifest.json` artifacts from project dependencies declared via `featuredAggregation(project(...))` and generates `object GeneratedFeaturedRegistry { val all: List<ConfigParam<*>> }` in `build/generated/featured/commonMain/`. Apply alongside `dev.androidbroadcast.featured` in the application module; wire the output directory into your source set manually (e.g., `kotlin.sourceSets.commonMain.kotlin.srcDir(...)`). Modules declaring `enum` flags also require a regular `implementation(project(...))` dependency in the consumer so the enum class is on the compile classpath; primitive-only modules need only `featuredAggregation(...)`.
+- Three KMP sample feature modules — `:sample:feature-checkout`, `:sample:feature-promotions`, `:sample:feature-ui` — each declaring its own flags via the `featured { ... }` DSL. Serves as the canonical multi-module reference.
+- `EnumDropdown` component in `featured-debug-ui` for overriding `enum`-typed flags in `FeatureFlagsDebugScreen`; `ConfigParam<E>` now carries `enumConstants: List<E>?` populated by codegen so the debug UI can render the dropdown without reflection.
+- `featured-gradle-plugin` extracted to a `build-logic/` included build; `pluginManagement { includeBuild("build-logic") }` in the root `settings.gradle.kts` exposes it to all main-build subprojects without a version coordinate.
+
+### Fixed
+
+- iOS framework can now `export(project(":sample:feature-*"))` without the K/N `ObjCExportCodeGenerator` crashing — requires `api(project(...))` linkage in the aggregator module so K/N has access to type adapters for generic `ConfigParam<E>` specializations.
 
 ## [1.0.0-Beta1] - 2026-05-17
 
