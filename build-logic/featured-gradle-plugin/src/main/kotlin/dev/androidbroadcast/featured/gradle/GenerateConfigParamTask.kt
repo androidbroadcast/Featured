@@ -17,7 +17,9 @@ import org.gradle.api.tasks.TaskAction
  *
  * - `GeneratedLocalFlags.kt` — internal object with one `ConfigParam` per local flag.
  * - `GeneratedRemoteFlags.kt` — internal object with one `ConfigParam` per remote flag.
- * - `GeneratedFlagExtensions.kt` — public extension functions on `ConfigValues`, one per flag.
+ * - `GeneratedFlagExtensions<Suffix>.kt` — internal extension functions on `ConfigValues`,
+ *   one per flag. The suffix is derived from [modulePath] (e.g. `SampleFeatureCheckout`)
+ *   so that each module's file produces a unique JVM class name.
  *
  * All files are written to [outputDir] (`build/generated/featured/commonMain/`).
  * Add [outputDir] to the Kotlin compilation source set:
@@ -36,7 +38,7 @@ public abstract class GenerateConfigParamTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.NONE)
     public abstract val flagsFile: RegularFileProperty
 
-    /** The Gradle module path used to derive the `@file:JvmName` suffix. */
+    /** The Gradle module path (e.g. `":sample:feature-checkout"`) used to derive the file-name suffix. */
     @get:Input
     public abstract val modulePath: Property<String>
 
@@ -48,6 +50,10 @@ public abstract class GenerateConfigParamTask : DefaultTask() {
     public fun generate() {
         val entries = flagsFile.parseLocalFlagEntries()
         val dir = outputDir.get().asFile
+        // Clean before writing — the extension file name changed from the fixed
+        // "GeneratedFlagExtensions.kt" to a module-specific name, so stale files
+        // from previous runs must be removed to avoid duplicate-class compile errors.
+        dir.deleteRecursively()
         dir.mkdirs()
 
         val (localSource, remoteSource) = ConfigParamGenerator.generate(entries)
@@ -60,7 +66,7 @@ public abstract class GenerateConfigParamTask : DefaultTask() {
             dir.resolve("GeneratedRemoteFlags.kt").writeText(remoteSource)
         }
         if (extensionsSource.isNotEmpty()) {
-            dir.resolve("GeneratedFlagExtensions.kt").writeText(extensionsSource)
+            dir.resolve(ExtensionFunctionGenerator.fileName(modulePath.get())).writeText(extensionsSource)
         }
 
         val local = entries.count { it.isLocal }

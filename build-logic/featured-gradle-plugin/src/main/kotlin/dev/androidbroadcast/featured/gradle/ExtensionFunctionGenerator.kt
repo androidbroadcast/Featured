@@ -1,29 +1,41 @@
 package dev.androidbroadcast.featured.gradle
 
 /**
- * Generates `GeneratedFlagExtensions.kt` — public extension functions on `ConfigValues`
- * for each declared flag.
+ * Generates the `GeneratedFlagExtensions<Suffix>.kt` source file — internal extension
+ * functions on `ConfigValues` for each declared flag.
  *
  * **Local Boolean flags** get an `is…Enabled()` extension returning the raw `Boolean`:
  * ```kotlin
- * fun ConfigValues.isDarkModeEnabled(): Boolean = getValue(GeneratedLocalFlags.darkMode).value
+ * internal suspend fun ConfigValues.isDarkModeEnabled(): Boolean = getValue(GeneratedLocalFlags.darkMode).value
  * ```
  *
  * **Local non-Boolean flags** get a `get…()` extension returning the raw value type:
  * ```kotlin
- * fun ConfigValues.getMaxRetries(): Int = getValue(GeneratedLocalFlags.maxRetries).value
+ * internal suspend fun ConfigValues.getMaxRetries(): Int = getValue(GeneratedLocalFlags.maxRetries).value
  * ```
  *
  * **Remote flags** get a `get…()` extension returning `ConfigValue<T>` so callers can
  * inspect the value source (DEFAULT / REMOTE / etc.):
  * ```kotlin
- * fun ConfigValues.getPromoBannerEnabled(): ConfigValue<Boolean> =
+ * internal suspend fun ConfigValues.getPromoBannerEnabled(): ConfigValue<Boolean> =
  *     getValue(GeneratedRemoteFlags.promoBannerEnabled)
  * ```
  *
- * The file uses `@file:JvmName(...)` with a module-derived suffix to guarantee unique
- * JVM class names when multiple modules apply the plugin — required for accurate
- * per-function ProGuard `-assumevalues` rules.
+ * Extensions are `internal` because no external production consumer depends on them — modules
+ * that need `ConfigParam` values directly use `observe(GeneratedLocalFlags.x)` against the
+ * now-`public` generated objects. The `suspend` modifier is required because
+ * `ConfigValues.getValue` is a `suspend` function.
+ *
+ * Note: the ProGuard `-assumevalues` rules emitted by [ProguardRulesGenerator] target the
+ * non-suspend JVM signature and are therefore **no-ops** for the current generated shape.
+ * This is a known follow-up item — see tracked issue for the per-function DCE rework.
+ *
+ * **JVM class-name uniqueness:** `@file:JvmName` is intentionally absent — it is not
+ * supported on Kotlin/Native targets. Instead, the emitted file is named
+ * `GeneratedFlagExtensions<Suffix>.kt` where `<Suffix>` is derived from the Gradle module
+ * path (e.g. `SampleFeatureCheckout`). The Kotlin compiler derives the JVM class name from
+ * the file name, so `GeneratedFlagExtensionsSampleFeatureCheckoutKt` is unique per module
+ * without any JVM-specific annotation.
  */
 public object ExtensionFunctionGenerator {
     private const val PACKAGE = "dev.androidbroadcast.featured.generated"
@@ -31,7 +43,26 @@ public object ExtensionFunctionGenerator {
     private const val CONFIG_VALUE_IMPORT = "dev.androidbroadcast.featured.ConfigValue"
 
     /**
-     * Returns the `@file:JvmName` value for the given Gradle module path.
+     * Returns the emitted `.kt` file name for the given Gradle module path.
+     *
+     * The file-name suffix is derived by splitting the module path on all non-alphanumeric
+     * characters and PascalCasing each segment, ensuring a valid Kotlin identifier without
+     * any JVM-specific annotation. The Kotlin compiler derives the JVM class name from this
+     * file name (e.g. `GeneratedFlagExtensionsSampleFeatureCheckoutKt`).
+     *
+     * Examples:
+     * - `":app"` → `"GeneratedFlagExtensionsApp.kt"`
+     * - `":feature:checkout"` → `"GeneratedFlagExtensionsFeatureCheckout.kt"`
+     * - `":sample:feature-checkout"` → `"GeneratedFlagExtensionsSampleFeatureCheckout.kt"`
+     */
+    public fun fileName(modulePath: String): String = "GeneratedFlagExtensions${modulePath.modulePathToFileSuffix()}.kt"
+
+    /**
+     * Returns the legacy `@file:JvmName` value that was previously emitted into the source file.
+     *
+     * This function is retained for use by [ProguardRulesGenerator], which needs to reference
+     * the JVM class name in `-assumevalues` rules. Note that those rules are currently no-ops
+     * because the generated extensions are `suspend` (ProGuard rework is a follow-up item).
      *
      * Examples: `":app"` → `"FeaturedApp_FlagExtensionsKt"`,
      * `":feature:checkout"` → `"FeaturedFeatureCheckout_FlagExtensionsKt"`.
@@ -39,7 +70,7 @@ public object ExtensionFunctionGenerator {
     public fun jvmFileName(modulePath: String): String = "Featured${modulePath.modulePathToIdentifier()}_FlagExtensionsKt"
 
     /**
-     * Generates the full source text for `GeneratedFlagExtensions.kt`.
+     * Generates the full source text for the module-specific `GeneratedFlagExtensions<Suffix>.kt`.
      *
      * Returns an empty string if [entries] is empty.
      */
@@ -48,12 +79,10 @@ public object ExtensionFunctionGenerator {
         modulePath: String,
     ): String {
         if (entries.isEmpty()) return ""
-        val jvmName = jvmFileName(modulePath)
         val needsConfigValue = entries.any { !it.isLocal }
 
         return buildString {
             appendLine("// Auto-generated by Featured Gradle Plugin — do not edit manually.")
-            appendLine("@file:JvmName(\"$jvmName\")")
             appendLine()
             appendLine("package $PACKAGE")
             appendLine()
@@ -77,12 +106,12 @@ public object ExtensionFunctionGenerator {
         val objectRef = if (isLocal) LocalFlagEntry.GENERATED_LOCAL_OBJECT else LocalFlagEntry.GENERATED_REMOTE_OBJECT
         return if (isLocal) {
             val funcName = extensionFunctionName()
-            "public fun ConfigValues.$funcName(): $type = getValue($objectRef.$propertyName).value\n"
+            "internal suspend fun ConfigValues.$funcName(): $type = getValue($objectRef.$propertyName).value\n"
         } else {
             // Remote flags always use get… regardless of type — the return is ConfigValue<T>,
             // so callers can inspect the value source.
             val funcName = "get${propertyName.capitalized()}"
-            "public fun ConfigValues.$funcName(): ConfigValue<$type> = getValue($objectRef.$propertyName)\n"
+            "internal suspend fun ConfigValues.$funcName(): ConfigValue<$type> = getValue($objectRef.$propertyName)\n"
         }
     }
 }

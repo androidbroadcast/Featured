@@ -38,6 +38,9 @@ plugins {
 }
 
 include(":sample:shared")
+include(":sample:feature-checkout")
+include(":sample:feature-promotions")
+include(":sample:feature-ui")
 include(":sample:android-app")
 include(":sample:desktop")
 include(":core")

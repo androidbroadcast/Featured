@@ -46,10 +46,10 @@ class ConfigParamGeneratorTest {
     }
 
     @Test
-    fun `local object is internal`() {
+    fun `local object is public`() {
         val entries = listOf(localEntry("dark_mode", "false", "Boolean"))
         val (local, _) = ConfigParamGenerator.generate(entries)
-        assertContains(local, "internal object GeneratedLocalFlags")
+        assertContains(local, "public object GeneratedLocalFlags")
     }
 
     @Test
@@ -84,10 +84,10 @@ class ConfigParamGeneratorTest {
     }
 
     @Test
-    fun `remote object is internal`() {
+    fun `remote object is public`() {
         val entries = listOf(remoteEntry("promo", "false", "Boolean"))
         val (_, remote) = ConfigParamGenerator.generate(entries)
-        assertContains(remote, "internal object GeneratedRemoteFlags")
+        assertContains(remote, "public object GeneratedRemoteFlags")
     }
 
     // ── empty cases ───────────────────────────────────────────────────────────

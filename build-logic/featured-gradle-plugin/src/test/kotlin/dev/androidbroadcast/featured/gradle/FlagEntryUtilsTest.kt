@@ -62,4 +62,36 @@ class FlagEntryUtilsTest {
     fun `modulePathToIdentifier bare colon returns Root`() {
         assertEquals("Root", ":".modulePathToIdentifier())
     }
+
+    // ── modulePathToFileSuffix ────────────────────────────────────────────────
+
+    @Test
+    fun `modulePathToFileSuffix for root app module`() {
+        assertEquals("App", ":app".modulePathToFileSuffix())
+    }
+
+    @Test
+    fun `modulePathToFileSuffix for nested module`() {
+        assertEquals("FeatureCheckout", ":feature:checkout".modulePathToFileSuffix())
+    }
+
+    @Test
+    fun `modulePathToFileSuffix for hyphenated segment`() {
+        assertEquals("SampleFeatureCheckout", ":sample:feature-checkout".modulePathToFileSuffix())
+    }
+
+    @Test
+    fun `modulePathToFileSuffix for deeply nested module`() {
+        assertEquals("FeaturePaymentUi", ":feature:payment:ui".modulePathToFileSuffix())
+    }
+
+    @Test
+    fun `modulePathToFileSuffix empty string returns Root`() {
+        assertEquals("Root", "".modulePathToFileSuffix())
+    }
+
+    @Test
+    fun `modulePathToFileSuffix bare colon returns Root`() {
+        assertEquals("Root", ":".modulePathToFileSuffix())
+    }
 }

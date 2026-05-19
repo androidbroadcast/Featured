@@ -1,18 +1,20 @@
 package dev.androidbroadcast.featured.gradle
 
 /**
- * Generates `GeneratedLocalFlags.kt` and `GeneratedRemoteFlags.kt` — internal objects
+ * Generates `GeneratedLocalFlags.kt` and `GeneratedRemoteFlags.kt` — public objects
  * containing one typed `ConfigParam` property per declared flag.
  *
  * Generated example for a local Boolean flag `dark_mode`:
  * ```kotlin
- * internal object GeneratedLocalFlags {
- *     val darkMode = ConfigParam<Boolean>("dark_mode", false, category = "UI")
+ * public object GeneratedLocalFlags {
+ *     public val darkMode = ConfigParam<Boolean>("dark_mode", false, category = "UI")
  * }
  * ```
  *
- * These objects are `internal` — consumers access flags exclusively through the
- * generated extension functions in [ExtensionFunctionGenerator].
+ * These objects are `public` so that consumers in other modules (e.g. observe-bridge
+ * composites, feature-module bridges) can reference the `ConfigParam` instances directly
+ * via `observe(GeneratedLocalFlags.x)` without going through the generated extension
+ * functions in [ExtensionFunctionGenerator].
  */
 public object ConfigParamGenerator {
     private const val PACKAGE = "dev.androidbroadcast.featured.generated"
@@ -42,9 +44,9 @@ public object ConfigParamGenerator {
             appendLine()
             appendLine("import $CONFIG_PARAM_IMPORT")
             appendLine()
-            appendLine("internal object $objectName {")
+            appendLine("public object $objectName {")
             entries.forEach { entry ->
-                appendLine("    val ${entry.propertyName} = ${entry.toConfigParamExpression()}")
+                appendLine("    public val ${entry.propertyName} = ${entry.toConfigParamExpression()}")
             }
             append("}")
         }
