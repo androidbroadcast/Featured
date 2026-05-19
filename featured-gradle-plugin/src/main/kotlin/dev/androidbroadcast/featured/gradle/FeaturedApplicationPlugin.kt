@@ -44,6 +44,20 @@ import org.gradle.api.attributes.Usage
  * )
  * ```
  *
+ * **Enum flag classpath requirement.** A `featuredAggregation(project(":feature:foo"))` dependency
+ * resolves only the `featured-manifest` Gradle variant — it does NOT put the producer's enum types
+ * on the consumer's compile classpath. If `:feature:foo` declares an `enum` flag whose type lives
+ * in `:feature:foo`'s source set, the application module must add a regular runtime dependency on
+ * the same module so the enum class is visible at compile time:
+ * ```kotlin
+ * dependencies {
+ *     featuredAggregation(project(":feature:foo"))
+ *     implementation(project(":feature:foo"))    // required for enum flag types
+ * }
+ * ```
+ * For modules that declare only primitive flags (Boolean / Int / Long / Float / Double / String),
+ * the `featuredAggregation` line alone is sufficient.
+ *
  * Min Gradle version: 8.5+ (`configurations.dependencyScope()` / `.resolvable()` API).
  */
 @Suppress("UnstableApiUsage")

@@ -23,6 +23,19 @@ class FeaturedAggregationDescriptorIntegrityTest {
         enumTypeFqn = enumTypeFqn,
     )
 
+    private fun primitiveFlag(
+        key: String = "some_flag",
+        valueType: ValueType,
+        defaultValue: String,
+    ) = FlagDescriptor(
+        key = key,
+        propertyName = key,
+        kind = FlagKind.LOCAL,
+        valueType = valueType,
+        defaultValue = defaultValue,
+        enumTypeFqn = null,
+    )
+
     private fun singleManifest(flag: FlagDescriptor) =
         listOf(
             FeaturedManifest(
@@ -109,6 +122,96 @@ class FeaturedAggregationDescriptorIntegrityTest {
             }
         val msg = ex.message ?: ""
         assertContains(msg, "checkout_variant", message = "Message must name the flag key")
+        assertContains(msg, ":feature-a", message = "Message must name the module path")
+    }
+
+    // --- Primitive defaultValue validation tests ---
+
+    @Test
+    fun `BOOLEAN defaultValue 'true' does not throw`() {
+        validateFlagDescriptorIntegrity(singleManifest(primitiveFlag(valueType = ValueType.BOOLEAN, defaultValue = "true")))
+    }
+
+    @Test
+    fun `BOOLEAN defaultValue 'false' does not throw`() {
+        validateFlagDescriptorIntegrity(singleManifest(primitiveFlag(valueType = ValueType.BOOLEAN, defaultValue = "false")))
+    }
+
+    @Test
+    fun `BOOLEAN defaultValue with appended statement throws naming key and module`() {
+        // Simulates injection of an extra statement appended to the boolean literal.
+        val ex =
+            assertFailsWith<IllegalArgumentException> {
+                validateFlagDescriptorIntegrity(
+                    singleManifest(primitiveFlag(key = "some_flag", valueType = ValueType.BOOLEAN, defaultValue = "true; init { evil() }")),
+                )
+            }
+        val msg = ex.message ?: ""
+        assertContains(msg, "some_flag", message = "Message must name the flag key")
+        assertContains(msg, ":feature-a", message = "Message must name the module path")
+    }
+
+    @Test
+    fun `INT defaultValue with method-call suffix throws`() {
+        // The exact attack vector from the security review: 0.also { ... } is a valid Kotlin expression
+        // but must not be emitted verbatim as a ConfigParam defaultValue literal.
+        val ex =
+            assertFailsWith<IllegalArgumentException> {
+                validateFlagDescriptorIntegrity(
+                    singleManifest(primitiveFlag(key = "some_flag", valueType = ValueType.INT, defaultValue = "0.also { injectCode() }")),
+                )
+            }
+        val msg = ex.message ?: ""
+        assertContains(msg, "some_flag", message = "Message must name the flag key")
+        assertContains(msg, ":feature-a", message = "Message must name the module path")
+    }
+
+    @Test
+    fun `INT defaultValue '-42' does not throw`() {
+        // Negative integers are valid and must be allowed.
+        validateFlagDescriptorIntegrity(singleManifest(primitiveFlag(valueType = ValueType.INT, defaultValue = "-42")))
+    }
+
+    @Test
+    fun `LONG defaultValue max signed 64-bit value does not throw`() {
+        validateFlagDescriptorIntegrity(
+            singleManifest(primitiveFlag(valueType = ValueType.LONG, defaultValue = "9223372036854775807")),
+        )
+    }
+
+    @Test
+    fun `FLOAT defaultValue '3_14' does not throw`() {
+        validateFlagDescriptorIntegrity(singleManifest(primitiveFlag(valueType = ValueType.FLOAT, defaultValue = "3.14")))
+    }
+
+    @Test
+    fun `FLOAT defaultValue with non-numeric prefix throws`() {
+        val ex =
+            assertFailsWith<IllegalArgumentException> {
+                validateFlagDescriptorIntegrity(
+                    singleManifest(primitiveFlag(key = "some_flag", valueType = ValueType.FLOAT, defaultValue = "NaN; injectCode()")),
+                )
+            }
+        val msg = ex.message ?: ""
+        assertContains(msg, "some_flag", message = "Message must name the flag key")
+        assertContains(msg, ":feature-a", message = "Message must name the module path")
+    }
+
+    @Test
+    fun `DOUBLE defaultValue scientific notation does not throw`() {
+        validateFlagDescriptorIntegrity(singleManifest(primitiveFlag(valueType = ValueType.DOUBLE, defaultValue = "1.5e10")))
+    }
+
+    @Test
+    fun `DOUBLE defaultValue with brace injection throws`() {
+        val ex =
+            assertFailsWith<IllegalArgumentException> {
+                validateFlagDescriptorIntegrity(
+                    singleManifest(primitiveFlag(key = "some_flag", valueType = ValueType.DOUBLE, defaultValue = "1.5} init { evil() }")),
+                )
+            }
+        val msg = ex.message ?: ""
+        assertContains(msg, "some_flag", message = "Message must name the flag key")
         assertContains(msg, ":feature-a", message = "Message must name the module path")
     }
 }

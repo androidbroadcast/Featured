@@ -5,12 +5,11 @@ import dev.androidbroadcast.featured.gradle.manifest.FlagDescriptor
 import dev.androidbroadcast.featured.gradle.manifest.ValueType
 
 /**
- * Generates `GeneratedFeaturedRegistry.kt` source from aggregated [FeaturedManifest] list.
+ * Generates `GeneratedFeaturedRegistry.kt` source from the aggregated [FeaturedManifest] list.
  *
- * KMP-safe: imports only `dev.androidbroadcast.featured.ConfigParam` and enum FQNs
- * (one import per distinct enum). All type arguments and default values for ENUM flags use
- * the fully-qualified class name inline so the generated file compiles without requiring
- * the enum types on the plugin's own classpath.
+ * KMP-safe: imports only `dev.androidbroadcast.featured.ConfigParam`. Enum types are referenced
+ * inline by their fully-qualified name in both the `ConfigParam<...>` type argument and the
+ * `defaultValue = ...` expression — no separate enum imports are emitted.
  *
  * Output determinism: descriptors are sorted by `(modulePath, key)` over the flattened
  * list before generation, so the output is identical regardless of the order in which
