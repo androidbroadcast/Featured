@@ -18,6 +18,10 @@ gradlePlugin {
             id = "dev.androidbroadcast.featured"
             implementationClass = "dev.androidbroadcast.featured.gradle.FeaturedPlugin"
         }
+        create("featuredApplication") {
+            id = "dev.androidbroadcast.featured.application"
+            implementationClass = "dev.androidbroadcast.featured.gradle.FeaturedApplicationPlugin"
+        }
     }
 }
 
