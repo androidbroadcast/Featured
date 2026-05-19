@@ -249,4 +249,134 @@ class GeneratedFeaturedRegistryGeneratorTest {
             )
         assertFalse(source.contains("since ="), "since must never be emitted")
     }
+
+    // NIT 4 — escape paths for STRING default: backslash and dollar sign
+
+    @Test
+    fun `STRING default with backslash is escaped`() {
+        // Producer stores bare: path\to\file — generator must emit: "path\\to\\file"
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests =
+                    listOf(manifest(":app", flag(key = "path_flag", valueType = ValueType.STRING, defaultValue = """path\to\file"""))),
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        assertContains(source, """defaultValue = "path\\to\\file"""")
+    }
+
+    @Test
+    fun `STRING default with dollar sign is escaped to prevent template interpolation`() {
+        // Producer stores bare: price $9.99 — generator must emit: "price ${'$'}9.99"
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests =
+                    listOf(manifest(":app", flag(key = "price_flag", valueType = ValueType.STRING, defaultValue = "price \$9.99"))),
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        // The generated source must contain the Kotlin-safe form that prevents interpolation.
+        assertContains(source, "price \${'\$'}9.99")
+    }
+
+    @Test
+    fun `key containing double quote is escaped in generated source`() {
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests =
+                    listOf(manifest(":app", flag(key = """dark"mode""", valueType = ValueType.BOOLEAN, defaultValue = "false"))),
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        // Generated key must have the quote escaped: key = "dark\"mode"
+        assertContains(source, """key = "dark\"mode"""")
+    }
+
+    @Test
+    fun `description containing dollar sign is escaped`() {
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests =
+                    listOf(
+                        manifest(
+                            ":app",
+                            flag(
+                                key = "promo",
+                                valueType = ValueType.BOOLEAN,
+                                defaultValue = "true",
+                                description = "Price: \$9.99",
+                            ),
+                        ),
+                    ),
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        assertContains(source, "Price: \${'\$'}9.99")
+    }
+
+    // Fix 1 — newline / tab escape in STRING default and description
+
+    @Test
+    fun `STRING default with newline is escaped to backslash-n`() {
+        // Producer stores a value with a real newline character; generated source must not contain a raw newline.
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests = listOf(manifest(":app", flag(key = "multiline", valueType = ValueType.STRING, defaultValue = "line1\nline2"))),
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        assertContains(source, """defaultValue = "line1\nline2"""")
+        assertFalse(source.contains("line1\nline2"), "Raw newline must not appear in the generated source")
+    }
+
+    @Test
+    fun `description with newline is escaped to backslash-n`() {
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests =
+                    listOf(
+                        manifest(
+                            ":app",
+                            flag(
+                                key = "flag",
+                                valueType = ValueType.BOOLEAN,
+                                defaultValue = "false",
+                                description = "first line\nsecond line",
+                            ),
+                        ),
+                    ),
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        assertContains(source, """description = "first line\nsecond line"""")
+        assertFalse(source.contains("first line\nsecond line"), "Raw newline must not appear in description")
+    }
+
+    @Test
+    fun `STRING default with tab is escaped to backslash-t`() {
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests = listOf(manifest(":app", flag(key = "tabbed", valueType = ValueType.STRING, defaultValue = "col1\tcol2"))),
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        assertContains(source, """defaultValue = "col1\tcol2"""")
+        assertFalse(source.contains("col1\tcol2"), "Raw tab must not appear in the generated source")
+    }
+
+    // NIT 5 — category emit/omit
+
+    @Test
+    fun `optional category is emitted when non-null`() {
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests =
+                    listOf(
+                        manifest(
+                            ":app",
+                            flag(
+                                key = "dark_mode",
+                                valueType = ValueType.BOOLEAN,
+                                defaultValue = "false",
+                                category = "UI",
+                            ),
+                        ),
+                    ),
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        assertContains(source, "category = \"UI\"")
+    }
 }

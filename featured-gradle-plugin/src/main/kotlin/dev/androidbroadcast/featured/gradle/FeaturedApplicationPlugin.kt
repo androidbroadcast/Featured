@@ -47,7 +47,7 @@ import org.gradle.api.attributes.Usage
  * Min Gradle version: 8.5+ (`configurations.dependencyScope()` / `.resolvable()` API).
  */
 @Suppress("UnstableApiUsage")
-public class FeaturedApplicationPlugin : Plugin<Project> {
+internal class FeaturedApplicationPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         // Register the schemaMajorAttr in the project's attribute schema. This is idempotent —
         // if FeaturedPlugin is also applied it calls the same registration first.

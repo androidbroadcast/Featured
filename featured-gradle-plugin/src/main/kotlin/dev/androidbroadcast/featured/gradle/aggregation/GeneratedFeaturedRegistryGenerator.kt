@@ -30,8 +30,6 @@ internal object GeneratedFeaturedRegistryGenerator {
         manifests: List<FeaturedManifest>,
         packageName: String,
     ): String {
-        // Flatten to (modulePath, descriptor) pairs, then sort for deterministic output.
-        // Sorting here (not in the caller) guarantees stability regardless of manifest order.
         val sorted =
             manifests
                 .flatMap { manifest -> manifest.flags.map { flag -> manifest.modulePath to flag } }
@@ -48,15 +46,20 @@ internal object GeneratedFeaturedRegistryGenerator {
                 appendLine("    public val all: List<ConfigParam<*>> = emptyList()")
             } else {
                 appendLine("    public val all: List<ConfigParam<*>> = listOf(")
-                sorted.forEach { (_, descriptor) ->
+                sorted.forEach { (modulePath, descriptor) ->
+                    if (descriptor.valueType == ValueType.ENUM) {
+                        requireNotNull(descriptor.enumTypeFqn) {
+                            "enumTypeFqn must be non-null for ENUM flag '${descriptor.key}' in module '$modulePath'"
+                        }
+                    }
                     val typeArg = descriptor.valueType.toKotlinTypeName(descriptor.enumTypeFqn)
                     val defaultLiteral = descriptor.toDefaultLiteral()
                     val args =
                         buildList {
-                            add("key = \"${descriptor.key}\"")
+                            add("key = \"${escapeKotlinString(descriptor.key)}\"")
                             add("defaultValue = $defaultLiteral")
-                            if (descriptor.description != null) add("description = \"${descriptor.description}\"")
-                            if (descriptor.category != null) add("category = \"${descriptor.category}\"")
+                            if (descriptor.description != null) add("description = \"${escapeKotlinString(descriptor.description)}\"")
+                            if (descriptor.category != null) add("category = \"${escapeKotlinString(descriptor.category)}\"")
                         }
                     // Kotlin accepts trailing commas in listOf() — always emit one for uniform diffs.
                     appendLine("        ConfigParam<$typeArg>(${args.joinToString(", ")}),")
@@ -107,10 +110,32 @@ private fun ValueType.toKotlinTypeName(enumTypeFqn: String?): String =
     }
 
 /**
+ * Escapes a bare string value so it is safe to embed inside a Kotlin double-quoted string literal.
+ *
+ * Escape order matters: `\` must be processed first to avoid double-escaping characters
+ * introduced by subsequent replacements.
+ *
+ * - `\`  → `\\`        (backslash)
+ * - `"`  → `\"`        (double-quote)
+ * - `$`  → `${'$'}`    (prevents Kotlin string-template interpolation in the generated source)
+ * - `\n` → `\\n`       (newline)
+ * - `\r` → `\\r`       (carriage return)
+ * - `\t` → `\\t`       (tab)
+ */
+private fun escapeKotlinString(value: String): String =
+    value
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+        .replace("$", "\${'\$'}")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\t", "\\t")
+
+/**
  * Produces the Kotlin literal for `defaultValue = ...` in the generated `ConfigParam` call.
  *
  * STRING: producer stores bare value (surrounding quotes already stripped); re-wrap and
- * escape embedded backslashes and double-quotes.
+ * escape via [escapeKotlinString].
  * LONG: append `L` suffix.
  * FLOAT: append `f` suffix.
  * ENUM: rebuild as `enumTypeFqn.CONSTANT_NAME`.
@@ -119,14 +144,7 @@ private fun ValueType.toKotlinTypeName(enumTypeFqn: String?): String =
 private fun FlagDescriptor.toDefaultLiteral(): String =
     when (valueType) {
         ValueType.STRING -> {
-            // Escape in order: `\` first (avoids double-escaping), then `"`, then `$`
-            // (prevents Kotlin string template interpolation in the generated source).
-            val escaped =
-                defaultValue
-                    .replace("\\", "\\\\")
-                    .replace("\"", "\\\"")
-                    .replace("$", "\${'\$'}")
-            "\"$escaped\""
+            "\"${escapeKotlinString(defaultValue)}\""
         }
 
         ValueType.LONG -> {

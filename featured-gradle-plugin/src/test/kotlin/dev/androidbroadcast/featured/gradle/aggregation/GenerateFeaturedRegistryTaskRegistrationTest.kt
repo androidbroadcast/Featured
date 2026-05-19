@@ -72,4 +72,19 @@ class GenerateFeaturedRegistryTaskRegistrationTest {
             "Expected outputFile to end with 'build/generated/featured/commonMain/${FEATURED_REGISTRY_OBJECT}.kt', got: $outputPath",
         )
     }
+
+    @Test
+    fun `accessing featuredAggregationClasspath configuration does not eagerly realize generateFeaturedRegistry task`() {
+        val project = ProjectBuilder.builder().build()
+        project.plugins.apply("dev.androidbroadcast.featured.application")
+
+        // Accessing the configuration by name must not trigger task realization.
+        project.configurations.getByName(FEATURED_AGGREGATION_CLASSPATH_CONFIGURATION_NAME)
+
+        // The task must still be present in the task graph (registered lazily).
+        assertTrue(
+            project.tasks.names.contains(GENERATE_FEATURED_REGISTRY_TASK_NAME),
+            "Expected '$GENERATE_FEATURED_REGISTRY_TASK_NAME' to be in task names (lazy)",
+        )
+    }
 }

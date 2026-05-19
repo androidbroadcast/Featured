@@ -78,7 +78,60 @@ class FeaturedAggregationDuplicateKeyTest {
             )
         val ex = assertFailsWith<IllegalStateException> { validateUniqueKeys(manifests) }
         assertContains(ex.message ?: "", "checkout_mode", message = "Message must contain the duplicate key")
-        // Both paths are the same module; message still names the module path twice
+        // Same-module collision: both LOCAL and REMOTE markers must appear so the origin is distinguishable.
+        assertContains(ex.message ?: "", "LOCAL", message = "Message must name LOCAL kind")
+        assertContains(ex.message ?: "", "REMOTE", message = "Message must name REMOTE kind")
         assertContains(ex.message ?: "", ":feature-checkout", message = "Message must name module path")
+    }
+
+    @Test
+    fun `three modules colliding on same key all appear in error message`() {
+        val manifests =
+            listOf(
+                FeaturedManifest(
+                    schemaVersion = SCHEMA_VERSION,
+                    modulePath = ":feature-a",
+                    flags = listOf(booleanFlag("shared_flag")),
+                ),
+                FeaturedManifest(
+                    schemaVersion = SCHEMA_VERSION,
+                    modulePath = ":feature-b",
+                    flags = listOf(booleanFlag("shared_flag")),
+                ),
+                FeaturedManifest(
+                    schemaVersion = SCHEMA_VERSION,
+                    modulePath = ":feature-c",
+                    flags = listOf(booleanFlag("shared_flag")),
+                ),
+            )
+        val ex = assertFailsWith<IllegalStateException> { validateUniqueKeys(manifests) }
+        val msg = ex.message ?: ""
+        assertContains(msg, "shared_flag", message = "Message must contain the duplicate key")
+        assertContains(msg, ":feature-a", message = "Message must name :feature-a")
+        assertContains(msg, ":feature-b", message = "Message must name :feature-b")
+        assertContains(msg, ":feature-c", message = "Message must name :feature-c")
+    }
+
+    @Test
+    fun `same module LOCAL and REMOTE collision shows both LOCAL and REMOTE not just module path twice`() {
+        // Regression guard: before the fix the message read "':feature-checkout' and ':feature-checkout'"
+        // with no kind information — indistinguishable from a cross-module collision with identical names.
+        val manifests =
+            listOf(
+                FeaturedManifest(
+                    schemaVersion = SCHEMA_VERSION,
+                    modulePath = ":feature-checkout",
+                    flags =
+                        listOf(
+                            booleanFlag(key = "show_avatar", kind = FlagKind.LOCAL),
+                            booleanFlag(key = "show_avatar", kind = FlagKind.REMOTE),
+                        ),
+                ),
+            )
+        val ex = assertFailsWith<IllegalStateException> { validateUniqueKeys(manifests) }
+        val msg = ex.message ?: ""
+        assertContains(msg, "show_avatar", message = "Message must contain the duplicate key")
+        assertContains(msg, "LOCAL", message = "Message must include LOCAL kind marker")
+        assertContains(msg, "REMOTE", message = "Message must include REMOTE kind marker")
     }
 }
