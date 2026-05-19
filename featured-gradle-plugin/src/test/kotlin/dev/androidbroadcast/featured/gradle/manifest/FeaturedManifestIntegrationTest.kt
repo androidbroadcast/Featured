@@ -33,7 +33,10 @@ class FeaturedManifestIntegrationTest {
 
         projectDir = tempFolder.newFolder("manifest-publish-project")
         copyManifestFixture("manifest-publish-project", projectDir)
-        projectDir.resolve("local.properties").writeText("sdk.dir=${sdkDir!!.absolutePath}\n")
+        // invariantSeparatorsPath replaces backslashes with forward slashes — Java's `.properties`
+        // parser treats backslashes as escape characters, so a raw Windows SDK path would corrupt
+        // local.properties.
+        projectDir.resolve("local.properties").writeText("sdk.dir=${sdkDir!!.invariantSeparatorsPath}\n")
     }
 
     @Test
