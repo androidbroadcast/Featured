@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.skie)
+    id("dev.androidbroadcast.featured.application")
 }
 
 kotlin {
@@ -34,6 +35,9 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "FeaturedSampleApp"
             isStatic = true
+            export(project(":sample:feature-checkout"))
+            export(project(":sample:feature-promotions"))
+            export(project(":sample:feature-ui"))
         }
     }
 
@@ -54,6 +58,22 @@ kotlin {
             // the public signatures of SampleApp / SampleViewModel — must be api to compile
             // downstream consumers like :sample:desktop. Pre-existing leak from #182.
             api(project(":core"))
+
+            // CheckoutVariant appears in StateFlow<CheckoutVariant> in SampleViewModel public API;
+            // observe-bridge extensions are called from :sample:android-app / :sample:desktop.
+            api(project(":sample:feature-checkout"))
+            api(project(":sample:feature-promotions"))
+            api(project(":sample:feature-ui"))
         }
     }
+
+    sourceSets.commonMain.get().kotlin.srcDir(
+        tasks.named("generateFeaturedRegistry").map { it.outputs.files.singleFile.parentFile },
+    )
+}
+
+dependencies {
+    featuredAggregation(project(":sample:feature-checkout"))
+    featuredAggregation(project(":sample:feature-promotions"))
+    featuredAggregation(project(":sample:feature-ui"))
 }
