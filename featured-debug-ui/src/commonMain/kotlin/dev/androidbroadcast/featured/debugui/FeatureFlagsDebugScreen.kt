@@ -78,15 +78,14 @@ public fun FeatureFlagsDebugScreen(
     }
 
     LaunchedEffect(configValues, registry) {
-        val params = registry
-        groupedItems = groupFlagsByCategory(buildDebugItems(configValues, params))
+        groupedItems = groupFlagsByCategory(buildDebugItems(configValues, registry))
 
         // Reactive: observe all params and refresh on any change.
         // On each emission all params are re-read — acceptable for a debug-only screen.
-        val flows = params.map { param -> configValues.observe(param) }
+        val flows = registry.map { param -> configValues.observe(param) }
         if (flows.isNotEmpty()) {
             flows.merge().collect {
-                groupedItems = groupFlagsByCategory(buildDebugItems(configValues, params))
+                groupedItems = groupFlagsByCategory(buildDebugItems(configValues, registry))
             }
         }
     }
