@@ -38,21 +38,6 @@ public data class LocalFlagEntry(
      */
     public val isEnum: Boolean get() = '.' in type
 
-    /**
-     * Returns the Kotlin reference used in the generated `FlagRegistry.register(...)` call.
-     *
-     * - Local flags: `"GeneratedLocalFlags.propertyName"`
-     * - Remote flags: `"GeneratedRemoteFlags.propertyName"`
-     * - Blank when [propertyName] is empty (legacy data without property information).
-     */
-    public val kotlinReference: String
-        get() =
-            when {
-                propertyName.isBlank() -> ""
-                isLocal -> "$GENERATED_LOCAL_OBJECT.$propertyName"
-                else -> "$GENERATED_REMOTE_OBJECT.$propertyName"
-            }
-
     public companion object {
         public const val FLAG_TYPE_LOCAL: String = "local"
         public const val FLAG_TYPE_REMOTE: String = "remote"

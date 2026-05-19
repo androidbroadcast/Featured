@@ -38,12 +38,11 @@ import androidx.compose.ui.unit.dp
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
 import dev.androidbroadcast.featured.ConfigValues
-import dev.androidbroadcast.featured.registry.FlagRegistry
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 
 /**
- * A ready-to-use debug screen that lists all feature flags registered in [FlagRegistry]
+ * A ready-to-use debug screen that lists all feature flags in the provided [registry]
  * and allows toggling boolean flags or viewing current values for other types.
  *
  * Flags are grouped by [ConfigParam.category]. Each flag shows its current value, source
@@ -55,7 +54,11 @@ import kotlinx.coroutines.launch
  *
  * Intended for debug/internal builds only.
  *
+ * Pass `GeneratedFeaturedRegistry.all` (from the `dev.androidbroadcast.featured.application`
+ * plugin) or build the list explicitly.
+ *
  * @param configValues The [ConfigValues] instance used to read and override flag values.
+ * @param registry The list of [ConfigParam] instances to display.
  * @param modifier Optional [Modifier] for the root composable.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +66,7 @@ import kotlinx.coroutines.launch
 @Suppress("ktlint:standard:function-naming")
 public fun FeatureFlagsDebugScreen(
     configValues: ConfigValues,
+    registry: List<ConfigParam<*>>,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -70,8 +74,8 @@ public fun FeatureFlagsDebugScreen(
         mutableStateOf<Map<String?, List<DebugFlagItem<*>>>>(emptyMap())
     }
 
-    LaunchedEffect(configValues) {
-        val params = FlagRegistry.all()
+    LaunchedEffect(configValues, registry) {
+        val params = registry
         groupedItems = groupFlagsByCategory(buildDebugItems(configValues, params))
 
         // Reactive: observe all params and refresh on any change.
