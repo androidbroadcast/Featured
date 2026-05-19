@@ -68,7 +68,10 @@ public object ConfigParamGenerator {
      * Returns a pair of `(localSource, remoteSource)`. Either may be an empty string
      * if there are no flags of that type.
      */
-    public fun generate(entries: List<LocalFlagEntry>, modulePath: String): Pair<String, String> {
+    public fun generate(
+        entries: List<LocalFlagEntry>,
+        modulePath: String,
+    ): Pair<String, String> {
         val (local, remote) = entries.partition { it.isLocal }
         return generateObject(local, localObjectName(modulePath)) to
             generateObject(remote, remoteObjectName(modulePath))
@@ -101,6 +104,7 @@ public object ConfigParamGenerator {
                 add("defaultValue = ${formatDefault()}")
                 if (description != null) add("description = \"$description\"")
                 if (category != null) add("category = \"$category\"")
+                if (isEnum) add("enumConstants = kotlin.enumValues<$type>().toList()")
             }
         return "ConfigParam<$typeArg>(${namedArgs.joinToString(", ")})"
     }

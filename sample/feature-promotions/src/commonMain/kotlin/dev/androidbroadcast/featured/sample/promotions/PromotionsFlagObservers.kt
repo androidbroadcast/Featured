@@ -5,7 +5,10 @@ import dev.androidbroadcast.featured.generated.GeneratedRemoteFlagsSampleFeature
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-public fun ConfigValues.promoBannerEnabledFlow(): Flow<Boolean> = observe(GeneratedRemoteFlagsSampleFeaturePromotions.promoBannerEnabled).map { it.value }
+public fun ConfigValues.promoBannerEnabledFlow(): Flow<Boolean> =
+    observe(GeneratedRemoteFlagsSampleFeaturePromotions.promoBannerEnabled).map {
+        it.value
+    }
 
 public suspend fun ConfigValues.setPromoBannerEnabled(value: Boolean) {
     override(GeneratedRemoteFlagsSampleFeaturePromotions.promoBannerEnabled, value)

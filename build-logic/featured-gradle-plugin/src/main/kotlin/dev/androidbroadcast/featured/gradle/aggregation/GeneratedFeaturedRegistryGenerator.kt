@@ -59,6 +59,9 @@ internal object GeneratedFeaturedRegistryGenerator {
                             add("defaultValue = $defaultLiteral")
                             if (descriptor.description != null) add("description = \"${escapeKotlinString(descriptor.description)}\"")
                             if (descriptor.category != null) add("category = \"${escapeKotlinString(descriptor.category)}\"")
+                            if (descriptor.valueType == ValueType.ENUM) {
+                                add("enumConstants = kotlin.enumValues<${descriptor.enumTypeFqn}>().toList()")
+                            }
                         }
                     // Kotlin accepts trailing commas in listOf() — always emit one for uniform diffs.
                     appendLine("        ConfigParam<$typeArg>(${args.joinToString(", ")}),")

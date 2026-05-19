@@ -146,6 +146,17 @@ class GeneratedFeaturedRegistryGeneratorTest {
             )
         assertContains(source, "ConfigParam<com.example.CheckoutVariant>")
         assertContains(source, "defaultValue = com.example.CheckoutVariant.LEGACY")
+        assertContains(source, "enumConstants = kotlin.enumValues<com.example.CheckoutVariant>().toList()")
+    }
+
+    @Test
+    fun `BOOLEAN flag does not emit enumConstants`() {
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests = listOf(manifest(":app", flag(key = "dark_mode", valueType = ValueType.BOOLEAN, defaultValue = "false"))),
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        assertFalse(source.contains("enumConstants"), "enumConstants must not appear for non-enum types")
     }
 
     @Test
