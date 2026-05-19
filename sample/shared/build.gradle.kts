@@ -54,7 +54,6 @@ kotlin {
             // the public signatures of SampleApp / SampleViewModel — must be api to compile
             // downstream consumers like :sample:desktop. Pre-existing leak from #182.
             api(project(":core"))
-            implementation(project(":featured-registry"))
         }
     }
 }

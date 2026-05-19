@@ -44,7 +44,6 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.core)
-            implementation(projects.featuredRegistry)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)

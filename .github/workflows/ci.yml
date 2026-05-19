@@ -28,7 +28,6 @@ jobs:
           :providers:sharedpreferences:koverVerify
           :providers:firebase:koverVerify
           :featured-compose:koverVerify
-          :featured-registry:koverVerify
           :featured-testing:koverVerify
       - uses: actions/upload-artifact@v7
         if: always()

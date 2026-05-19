@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- `featured-registry` module — the runtime `FlagRegistry` global singleton and its `FlagRegistryDelegate` expect/actual are removed. Use `GeneratedFeaturedRegistry.all` (produced by the `dev.androidbroadcast.featured.application` plugin) or build an explicit `List<ConfigParam<*>>` instead.
+- `featured-gradle-plugin` — `generateFlagRegistrar` task, `FlagRegistrarGenerator`, and `GenerateFlagRegistrarTask` are removed. Per-module `GeneratedFlagRegistrar.kt` files are no longer generated.
+- Sample API — `registerSampleFlags()` is removed (was specific to the sample app's legacy wiring). The sample now uses `SampleFeatureFlags.all` directly.
+
+### Changed
+
+- `FeatureFlagsDebugScreen` signature is now `(configValues: ConfigValues, registry: List<ConfigParam<*>>, modifier: Modifier = Modifier)` — accepts an explicit registry list instead of reading the (removed) `FlagRegistry` singleton. Pass `GeneratedFeaturedRegistry.all` for the recommended aggregator-plugin flow, or build the list inline for small projects.
+
 ### Added
 
 - Featured library plugin now publishes a per-module feature-flag manifest as a consumable Gradle artifact (`featuredManifest` configuration, schema v1). Existing flag-generation pipeline is unchanged. Consumer-side aggregation arrives in a follow-up release.

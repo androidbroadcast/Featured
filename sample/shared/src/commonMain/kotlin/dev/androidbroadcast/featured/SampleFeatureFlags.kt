@@ -41,6 +41,7 @@ public enum class CheckoutVariant {
  *
  * The sample module is part of the library's own build and cannot apply the plugin
  * to itself, so all flags are declared manually here for demonstration purposes.
+ * [SampleFeatureFlags.all] is the single source of truth for the Debug UI registry.
  */
 public object SampleFeatureFlags {
     public val mainButtonRed: ConfigParam<Boolean> =
@@ -80,5 +81,14 @@ public object SampleFeatureFlags {
             defaultValue = CheckoutVariant.LEGACY,
             description = "Controls which checkout flow variant is shown to the user",
             category = "checkout",
+        )
+
+    public val all: List<ConfigParam<*>> =
+        listOf(
+            mainButtonRed,
+            newFeatureSectionEnabled,
+            newCheckout,
+            promoBannerEnabled,
+            checkoutVariant,
         )
 }

@@ -42,7 +42,6 @@ include(":sample:android-app")
 include(":sample:desktop")
 include(":core")
 include(":featured-compose")
-include(":featured-registry")
 include(":featured-debug-ui")
 include(":featured-testing")
 

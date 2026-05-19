@@ -13,7 +13,6 @@ import org.gradle.api.tasks.TaskProvider
 
 internal const val RESOLVE_FLAGS_TASK_NAME = "resolveFeatureFlags"
 internal const val SCAN_ALL_TASK_NAME = "scanAllLocalFlags"
-internal const val GENERATE_FLAG_REGISTRAR_TASK_NAME = "generateFlagRegistrar"
 internal const val GENERATE_PROGUARD_TASK_NAME = "generateFeaturedProguardRules"
 internal const val GENERATE_IOS_CONST_VAL_TASK_NAME = "generateIosConstVal"
 internal const val GENERATE_XCCONFIG_TASK_NAME = "generateXcconfig"
@@ -24,8 +23,7 @@ internal const val GENERATE_CONFIG_PARAM_TASK_NAME = "generateConfigParam"
  * 1. Exposes the `featured { }` DSL extension for declaring local and remote feature flags.
  * 2. Generates typed `ConfigParam` objects and ergonomic `ConfigValues` extension functions.
  * 3. Generates per-function R8 `-assumevalues` rules for local flags (dead-code elimination).
- * 4. Generates a `GeneratedFlagRegistrar` that registers all flags with `FlagRegistry`.
- * 5. Generates iOS constant-value files and xcconfig for Swift dead-code elimination.
+ * 4. Generates iOS constant-value files and xcconfig for Swift dead-code elimination.
  *
  * Usage in `build.gradle.kts`:
  * ```kotlin
@@ -57,7 +55,6 @@ public class FeaturedPlugin : Plugin<Project> {
         }
 
         registerConfigParamTask(target, resolveTask)
-        registerFlagRegistrarTask(target, resolveTask)
         val proguardTask = registerProguardTask(target, resolveTask)
         registerIosConstValTask(target, resolveTask)
         registerXcconfigTask(target, resolveTask)
@@ -90,22 +87,6 @@ public class FeaturedPlugin : Plugin<Project> {
             task.flagsFile.set(resolveTask.flatMap { it.outputFile })
             task.modulePath.set(target.path)
             task.outputDir.set(target.layout.buildDirectory.dir("generated/featured/commonMain"))
-            task.dependsOn(resolveTask)
-        }
-    }
-
-    private fun registerFlagRegistrarTask(
-        target: Project,
-        resolveTask: TaskProvider<ResolveFlagsTask>,
-    ) {
-        target.tasks.register(GENERATE_FLAG_REGISTRAR_TASK_NAME, GenerateFlagRegistrarTask::class.java) { task ->
-            task.group = "featured"
-            task.description = "Generates GeneratedFlagRegistrar.kt for '${target.path}'."
-            task.scanResultFile.set(resolveTask.flatMap { it.outputFile })
-            task.packageName.set("dev.androidbroadcast.featured.generated")
-            task.outputFile.set(
-                target.layout.buildDirectory.file("generated/featured/GeneratedFlagRegistrar.kt"),
-            )
             task.dependsOn(resolveTask)
         }
     }

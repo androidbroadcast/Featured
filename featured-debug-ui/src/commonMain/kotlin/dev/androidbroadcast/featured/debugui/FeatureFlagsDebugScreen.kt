@@ -38,12 +38,11 @@ import androidx.compose.ui.unit.dp
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
 import dev.androidbroadcast.featured.ConfigValues
-import dev.androidbroadcast.featured.registry.FlagRegistry
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 
 /**
- * A ready-to-use debug screen that lists all feature flags registered in [FlagRegistry]
+ * A ready-to-use debug screen that lists all feature flags in the provided [registry]
  * and allows toggling boolean flags or viewing current values for other types.
  *
  * Flags are grouped by [ConfigParam.category]. Each flag shows its current value, source
@@ -55,7 +54,17 @@ import kotlinx.coroutines.launch
  *
  * Intended for debug/internal builds only.
  *
+ * Pass `GeneratedFeaturedRegistry.all` (from the `dev.androidbroadcast.featured.application`
+ * plugin) or build the list explicitly.
+ *
  * @param configValues The [ConfigValues] instance used to read and override flag values.
+ * @param registry The list of [ConfigParam] instances to display. Must be a stable
+ *   reference (a top-level `val`, an `object` property, or a `remember`-ed list).
+ *   The screen keys its internal `LaunchedEffect` on this list via `equals` (structural).
+ *   A freshly-allocated list on every recomposition may restart the effect; prefer a
+ *   stable top-level `val` or `object` property for predictable behavior.
+ *   Each [ConfigParam.key] must be unique within the list; duplicates cause a
+ *   runtime crash in `LazyColumn` key collision.
  * @param modifier Optional [Modifier] for the root composable.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +72,7 @@ import kotlinx.coroutines.launch
 @Suppress("ktlint:standard:function-naming")
 public fun FeatureFlagsDebugScreen(
     configValues: ConfigValues,
+    registry: List<ConfigParam<*>>,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -70,16 +80,15 @@ public fun FeatureFlagsDebugScreen(
         mutableStateOf<Map<String?, List<DebugFlagItem<*>>>>(emptyMap())
     }
 
-    LaunchedEffect(configValues) {
-        val params = FlagRegistry.all()
-        groupedItems = groupFlagsByCategory(buildDebugItems(configValues, params))
+    LaunchedEffect(configValues, registry) {
+        groupedItems = groupFlagsByCategory(buildDebugItems(configValues, registry))
 
         // Reactive: observe all params and refresh on any change.
         // On each emission all params are re-read — acceptable for a debug-only screen.
-        val flows = params.map { param -> configValues.observe(param) }
+        val flows = registry.map { param -> configValues.observe(param) }
         if (flows.isNotEmpty()) {
             flows.merge().collect {
-                groupedItems = groupFlagsByCategory(buildDebugItems(configValues, params))
+                groupedItems = groupFlagsByCategory(buildDebugItems(configValues, registry))
             }
         }
     }
@@ -97,7 +106,7 @@ public fun FeatureFlagsDebugScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "No feature flags registered.",
+                    text = "No feature flags to display.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
