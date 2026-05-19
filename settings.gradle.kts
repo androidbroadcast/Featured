@@ -2,6 +2,7 @@ rootProject.name = "Featured"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
+    includeBuild("build-logic")
 
     @Suppress("UnstableApiUsage")
     repositories {
@@ -36,7 +37,6 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-include(":featured-gradle-plugin")
 include(":sample:shared")
 include(":sample:android-app")
 include(":sample:desktop")
