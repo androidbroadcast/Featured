@@ -9,15 +9,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import dev.androidbroadcast.featured.CheckoutVariant
 import dev.androidbroadcast.featured.ConfigValues
 import dev.androidbroadcast.featured.SampleApp
-import dev.androidbroadcast.featured.SampleFeatureFlags
 import dev.androidbroadcast.featured.datastore.DataStoreConfigValueProvider
 import dev.androidbroadcast.featured.datastore.registerConverter
 import dev.androidbroadcast.featured.debugui.FeatureFlagsDebugScreen
 import dev.androidbroadcast.featured.enumConverter
+import dev.androidbroadcast.featured.generated.GeneratedFeaturedRegistry
 import dev.androidbroadcast.featured.platform.defaultLocalProvider
+import dev.androidbroadcast.featured.sample.checkout.CheckoutVariant
 
 class MainActivity : ComponentActivity() {
     // ConfigValues is held at Activity scope for this sample.
@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
 
             if (showDebug) {
                 BackHandler { showDebug = false }
-                FeatureFlagsDebugScreen(configValues = configValues, registry = SampleFeatureFlags.all)
+                FeatureFlagsDebugScreen(configValues = configValues, registry = GeneratedFeaturedRegistry.all)
             } else {
                 SampleApp(
                     configValues = configValues,

@@ -58,7 +58,7 @@ class ExtensionFunctionGeneratorTest {
     fun `local boolean extension returns raw value`() {
         val entries = listOf(localEntry("dark_mode", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
-        assertContains(source, "getValue(GeneratedLocalFlags.darkMode).value")
+        assertContains(source, "getValue(GeneratedLocalFlagsFeatureCheckout.darkMode).value")
     }
 
     @Test
@@ -75,7 +75,7 @@ class ExtensionFunctionGeneratorTest {
         val entries = listOf(localEntry("max_retries", "Int"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
         assertContains(source, "suspend fun ConfigValues.getMaxRetries(): Int")
-        assertContains(source, "getValue(GeneratedLocalFlags.maxRetries).value")
+        assertContains(source, "getValue(GeneratedLocalFlagsFeatureCheckout.maxRetries).value")
     }
 
     @Test
@@ -92,7 +92,7 @@ class ExtensionFunctionGeneratorTest {
         val entries = listOf(localEntry("checkout_variant", "com.example.CheckoutVariant"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
         assertContains(source, "suspend fun ConfigValues.getCheckoutVariant(): com.example.CheckoutVariant")
-        assertContains(source, "getValue(GeneratedLocalFlags.checkoutVariant).value")
+        assertContains(source, "getValue(GeneratedLocalFlagsFeatureCheckout.checkoutVariant).value")
     }
 
     @Test
@@ -109,7 +109,7 @@ class ExtensionFunctionGeneratorTest {
         val entries = listOf(remoteEntry("promo_banner", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
         assertContains(source, "suspend fun ConfigValues.getPromoBanner(): ConfigValue<Boolean>")
-        assertContains(source, "getValue(GeneratedRemoteFlags.promoBanner)")
+        assertContains(source, "getValue(GeneratedRemoteFlagsFeatureCheckout.promoBanner)")
     }
 
     @Test
@@ -117,7 +117,7 @@ class ExtensionFunctionGeneratorTest {
         val entries = listOf(remoteEntry("promo_banner", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
         assertFalse(
-            source.contains("GeneratedRemoteFlags.promoBanner).value"),
+            source.contains("GeneratedRemoteFlagsFeatureCheckout.promoBanner).value"),
             "Remote extensions must return full ConfigValue, not unwrapped value",
         )
     }

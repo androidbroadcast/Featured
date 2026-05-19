@@ -15,8 +15,8 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Gradle task that reads the [ResolveFlagsTask] output and generates three Kotlin source files:
  *
- * - `GeneratedLocalFlags.kt` — internal object with one `ConfigParam` per local flag.
- * - `GeneratedRemoteFlags.kt` — internal object with one `ConfigParam` per remote flag.
+ * - `GeneratedLocalFlags<Suffix>.kt` — public object with one `ConfigParam` per local flag.
+ * - `GeneratedRemoteFlags<Suffix>.kt` — public object with one `ConfigParam` per remote flag.
  * - `GeneratedFlagExtensions<Suffix>.kt` — internal extension functions on `ConfigValues`,
  *   one per flag. The suffix is derived from [modulePath] (e.g. `SampleFeatureCheckout`)
  *   so that each module's file produces a unique JVM class name.
@@ -56,14 +56,15 @@ public abstract class GenerateConfigParamTask : DefaultTask() {
         dir.deleteRecursively()
         dir.mkdirs()
 
-        val (localSource, remoteSource) = ConfigParamGenerator.generate(entries)
-        val extensionsSource = ExtensionFunctionGenerator.generate(entries, modulePath.get())
+        val path = modulePath.get()
+        val (localSource, remoteSource) = ConfigParamGenerator.generate(entries, path)
+        val extensionsSource = ExtensionFunctionGenerator.generate(entries, path)
 
         if (localSource.isNotEmpty()) {
-            dir.resolve("GeneratedLocalFlags.kt").writeText(localSource)
+            dir.resolve(ConfigParamGenerator.localFileName(path)).writeText(localSource)
         }
         if (remoteSource.isNotEmpty()) {
-            dir.resolve("GeneratedRemoteFlags.kt").writeText(remoteSource)
+            dir.resolve(ConfigParamGenerator.remoteFileName(path)).writeText(remoteSource)
         }
         if (extensionsSource.isNotEmpty()) {
             dir.resolve(ExtensionFunctionGenerator.fileName(modulePath.get())).writeText(extensionsSource)

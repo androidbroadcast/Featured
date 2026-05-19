@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.androidbroadcast.featured.sample.checkout.CheckoutVariant
 
 /**
  * Main sample screen demonstrating `@LocalFlag` and `@RemoteFlag` usage end-to-end.

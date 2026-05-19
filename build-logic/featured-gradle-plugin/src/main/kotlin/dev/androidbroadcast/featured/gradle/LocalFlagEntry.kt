@@ -41,7 +41,5 @@ public data class LocalFlagEntry(
     public companion object {
         public const val FLAG_TYPE_LOCAL: String = "local"
         public const val FLAG_TYPE_REMOTE: String = "remote"
-        internal const val GENERATED_LOCAL_OBJECT = "GeneratedLocalFlags"
-        internal const val GENERATED_REMOTE_OBJECT = "GeneratedRemoteFlags"
     }
 }
