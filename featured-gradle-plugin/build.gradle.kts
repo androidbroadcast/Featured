@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlinJvm)
+    alias(libs.plugins.kotlinSerialization)
     `java-gradle-plugin`
     alias(libs.plugins.mavenPublish)
 }
@@ -70,6 +71,7 @@ tasks.pluginUnderTestMetadata {
 
 dependencies {
     compileOnly("com.android.tools.build:gradle:9.1.0")
+    implementation(libs.kotlinx.serialization.json)
     // Inject AGP into the TestKit subprocess via pluginUnderTestMetadata so that the Featured
     // plugin can access AndroidComponentsExtension when wireProguardToVariants() is called.
     testPluginClasspath("com.android.tools.build:gradle:9.1.0")
