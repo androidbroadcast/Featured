@@ -58,7 +58,10 @@ import kotlinx.coroutines.launch
  * plugin) or build the list explicitly.
  *
  * @param configValues The [ConfigValues] instance used to read and override flag values.
- * @param registry The list of [ConfigParam] instances to display.
+ * @param registry The list of [ConfigParam] instances to display. Must be a stable
+ *   reference (a top-level `val`, an `object` property, or a `remember`-ed list).
+ *   The screen keys its internal `LaunchedEffect` on this list by identity; passing a
+ *   freshly-allocated list on every recomposition restarts the effect each frame.
  * @param modifier Optional [Modifier] for the root composable.
  */
 @OptIn(ExperimentalMaterial3Api::class)
