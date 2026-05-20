@@ -60,7 +60,7 @@ internal object GeneratedFeaturedRegistryGenerator {
                             if (descriptor.description != null) add("description = \"${escapeKotlinString(descriptor.description)}\"")
                             if (descriptor.category != null) add("category = \"${escapeKotlinString(descriptor.category)}\"")
                             if (descriptor.valueType == ValueType.ENUM) {
-                                add("enumConstants = kotlin.enumValues<${descriptor.enumTypeFqn}>().toList()")
+                                add("enumConstants = kotlin.enums.enumEntries<${descriptor.enumTypeFqn}>()")
                             }
                         }
                     // Kotlin accepts trailing commas in listOf() — always emit one for uniform diffs.

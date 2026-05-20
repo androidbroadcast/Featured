@@ -146,7 +146,7 @@ class GeneratedFeaturedRegistryGeneratorTest {
             )
         assertContains(source, "ConfigParam<com.example.CheckoutVariant>")
         assertContains(source, "defaultValue = com.example.CheckoutVariant.LEGACY")
-        assertContains(source, "enumConstants = kotlin.enumValues<com.example.CheckoutVariant>().toList()")
+        assertContains(source, "enumConstants = kotlin.enums.enumEntries<com.example.CheckoutVariant>()")
     }
 
     @Test

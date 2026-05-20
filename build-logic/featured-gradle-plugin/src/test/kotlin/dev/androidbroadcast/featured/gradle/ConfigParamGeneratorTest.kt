@@ -183,10 +183,10 @@ class ConfigParamGeneratorTest {
     }
 
     @Test
-    fun `enum flag emits enumConstants with kotlin enumValues call`() {
+    fun `enum flag emits enumConstants with kotlin enumEntries call`() {
         val entries = listOf(localEntry("checkout_variant", "LEGACY", "com.example.CheckoutVariant"))
         val (local, _) = ConfigParamGenerator.generate(entries, modulePath)
-        assertContains(local, "enumConstants = kotlin.enumValues<com.example.CheckoutVariant>().toList()")
+        assertContains(local, "enumConstants = kotlin.enums.enumEntries<com.example.CheckoutVariant>()")
     }
 
     @Test

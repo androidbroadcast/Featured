@@ -104,7 +104,7 @@ public object ConfigParamGenerator {
                 add("defaultValue = ${formatDefault()}")
                 if (description != null) add("description = \"$description\"")
                 if (category != null) add("category = \"$category\"")
-                if (isEnum) add("enumConstants = kotlin.enumValues<$type>().toList()")
+                if (isEnum) add("enumConstants = kotlin.enums.enumEntries<$type>()")
             }
         return "ConfigParam<$typeArg>(${namedArgs.joinToString(", ")})"
     }
