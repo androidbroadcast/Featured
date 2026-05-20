@@ -31,3 +31,9 @@ under the hood.
 ## Aggregation
 
 `:sample:shared` declares `featuredAggregation(project(":sample:feature-*"))` for all three modules and wires the `generateFeaturedRegistry` task output into `commonMain`. The resulting `GeneratedFeaturedRegistry.all` is passed to `FeatureFlagsDebugScreen`.
+
+## Multi-module wiring
+
+The sample constructs one `ConfigValues` per `:sample:feature-*` module plus one debug aggregator (`debugConfigValues`). All four instances share the same `LocalConfigValueProvider` so overrides toggled in the debug screen propagate to every per-module instance via the shared DataStore's reactive `observe`. Each feature module's flag declarations are encapsulated behind its `internal` `GeneratedLocalFlagsX` object and exposed only via public observe-bridge extensions (`*FlagObservers.kt`) and a per-feature `ViewModel` that takes only its own `ConfigValues`.
+
+This is the canonical demonstration of the recommended pattern for real apps: a 20-module app wires 20 production `ConfigValues` + 1 debug aggregator over a single DataStore.
