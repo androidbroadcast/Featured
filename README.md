@@ -58,7 +58,7 @@ all sharing the same `LocalConfigValueProvider`:
 
 ```kotlin
 // Construct one ConfigValues per feature module + one debug aggregator, all over a shared provider
-val sharedLocal: LocalConfigValueProvider = DataStoreConfigValueProvider(context, …)
+val sharedLocal: LocalConfigValueProvider = defaultLocalProvider(applicationContext)
 
 val checkoutConfig = ConfigValues(localProvider = sharedLocal)
 val promotionsConfig = ConfigValues(localProvider = sharedLocal)

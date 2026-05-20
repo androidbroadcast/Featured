@@ -54,9 +54,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            // :core types (ConfigValues, InMemoryConfigValueProvider) appear in
-            // the public signatures of SampleApp — must be api to compile
-            // downstream consumers like :sample:desktop. Pre-existing leak from #182.
+            // :core is used directly in :sample:shared's iosMain (MainViewController.kt)
+            // for ConfigValues + InMemoryConfigValueProvider construction, and per-feature
+            // VM constructors take ConfigValues. Kept as api so platform shells reuse the
+            // transitive chain without re-declaring :core themselves.
             api(project(":core"))
 
             // Per-feature ViewModel types (CheckoutFlagsViewModel, PromotionsFlagsViewModel,

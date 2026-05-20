@@ -21,8 +21,8 @@ public fun MainViewController(): UIViewController {
     // No debug aggregator on iOS — the iOS shell does not wire a debug-UI entry.
     // The Android shell builds a fourth `ConfigValues` for the debug screen.
 
-    // VMs are constructed once per UIViewController — ConfigValues lifetimes are tied to the
-    // view controller, which is the iOS equivalent of the Application scope in this sample.
+    // VMs are constructed once per UIViewController — ConfigValues lifetimes are tied
+    // to this root view controller's lifetime.
     val checkoutViewModel = CheckoutFlagsViewModel(checkoutConfigValues)
     val promotionsViewModel = PromotionsFlagsViewModel(promotionsConfigValues)
     val uiViewModel = UiFlagsViewModel(uiConfigValues)
