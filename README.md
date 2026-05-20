@@ -51,6 +51,35 @@ val configValues = ConfigValues(
 val isEnabled: Boolean = configValues.isNewCheckoutEnabled()
 ```
 
+## Multi-module pattern
+
+In a multi-module app, construct one `ConfigValues` per feature module plus one debug aggregator,
+all sharing the same `LocalConfigValueProvider`:
+
+```kotlin
+// Construct one ConfigValues per feature module + one debug aggregator, all over a shared provider
+val sharedLocal: LocalConfigValueProvider = defaultLocalProvider(applicationContext)
+
+val checkoutConfig = ConfigValues(localProvider = sharedLocal)
+val promotionsConfig = ConfigValues(localProvider = sharedLocal)
+val uiConfig = ConfigValues(localProvider = sharedLocal)
+
+// Debug-only aggregator that the FeatureFlagsDebugScreen drives
+val debugConfig = ConfigValues(localProvider = sharedLocal)
+
+FeatureFlagsDebugScreen(
+    configValues = debugConfig,
+    registry = GeneratedFeaturedRegistry.all,
+)
+```
+
+Each feature module owns its own `ConfigValues` and observes only its own flags (via public
+observe-bridge extensions). The generated `GeneratedLocalFlagsX` / `GeneratedRemoteFlagsX` objects
+are `internal` to their module — cross-module flag listing flows exclusively through
+`GeneratedFeaturedRegistry.all`, which is built from the per-module manifests by the aggregator
+plugin. The single source of truth for stored overrides is the shared `LocalConfigValueProvider`,
+so writes from any instance propagate to every other one through its reactive `observe` flow.
+
 ## Documentation
 
 Full documentation lives in the [Wiki](https://github.com/AndroidBroadcast/Featured/wiki):

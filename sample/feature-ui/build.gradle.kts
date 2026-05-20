@@ -34,6 +34,8 @@ kotlin {
         commonMain.dependencies {
             api(project(":core"))
             api(libs.kotlinx.coroutines.core)
+            // UiFlagsViewModel and MainButtonColor are in this module's public API surface.
+            api(libs.androidx.lifecycle.viewmodel)
         }
     }
 

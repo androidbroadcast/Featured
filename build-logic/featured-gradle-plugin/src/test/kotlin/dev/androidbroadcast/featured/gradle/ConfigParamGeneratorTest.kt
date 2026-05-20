@@ -48,10 +48,17 @@ class ConfigParamGeneratorTest {
     }
 
     @Test
-    fun `local object is public`() {
+    fun `local object is internal`() {
         val entries = listOf(localEntry("dark_mode", "false", "Boolean"))
         val (local, _) = ConfigParamGenerator.generate(entries, modulePath)
-        assertContains(local, "public object GeneratedLocalFlagsApp")
+        assertContains(local, "internal object GeneratedLocalFlagsApp")
+    }
+
+    @Test
+    fun `local properties do not have explicit public modifier`() {
+        val entries = listOf(localEntry("dark_mode", "false", "Boolean"))
+        val (local, _) = ConfigParamGenerator.generate(entries, modulePath)
+        assertTrue(!local.contains("public val "), "Property declarations must not carry explicit 'public' modifier")
     }
 
     @Test
@@ -86,10 +93,17 @@ class ConfigParamGeneratorTest {
     }
 
     @Test
-    fun `remote object is public`() {
+    fun `remote object is internal`() {
         val entries = listOf(remoteEntry("promo", "false", "Boolean"))
         val (_, remote) = ConfigParamGenerator.generate(entries, modulePath)
-        assertContains(remote, "public object GeneratedRemoteFlagsApp")
+        assertContains(remote, "internal object GeneratedRemoteFlagsApp")
+    }
+
+    @Test
+    fun `remote properties do not have explicit public modifier`() {
+        val entries = listOf(remoteEntry("promo", "false", "Boolean"))
+        val (_, remote) = ConfigParamGenerator.generate(entries, modulePath)
+        assertTrue(!remote.contains("public val "), "Property declarations must not carry explicit 'public' modifier")
     }
 
     // ── empty cases ───────────────────────────────────────────────────────────

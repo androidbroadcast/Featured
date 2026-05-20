@@ -65,6 +65,16 @@ import kotlin.concurrent.atomics.update
  * }
  * ```
  *
+ * ### Multi-module wiring
+ *
+ * When wiring a multi-module application, construct one [ConfigValues] per feature module so each
+ * module sees only the flags it declares. All [ConfigValues] instances should share the same
+ * [LocalConfigValueProvider] (and [RemoteConfigValueProvider], if any) — the provider is the
+ * single source of truth for stored overrides, and its reactive [observe] flow propagates writes
+ * from any [ConfigValues] instance to every other one that shares the provider. A debug screen
+ * that exposes every flag across modules is just one extra [ConfigValues] built from the same
+ * shared providers and driven by `GeneratedFeaturedRegistry.all`.
+ *
  * @param localProvider Optional provider for locally persisted overrides.
  * @param remoteProvider Optional provider for remote configuration values.
  * @param onProviderError Optional callback invoked whenever a provider throws during

@@ -23,7 +23,7 @@ package dev.androidbroadcast.featured.gradle
  *
  * Extensions are `internal` because no external production consumer depends on them — modules
  * that need `ConfigParam` values directly use `observe(GeneratedLocalFlags.x)` against the
- * now-`public` generated objects.
+ * `internal` generated objects within the same Gradle module.
  *
  * **JVM class-name uniqueness:** `@file:JvmName` is intentionally absent — it is not
  * supported on Kotlin/Native targets. Instead, the emitted file is named

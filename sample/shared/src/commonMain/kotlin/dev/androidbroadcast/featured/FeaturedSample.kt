@@ -26,29 +26,39 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.androidbroadcast.featured.sample.checkout.CheckoutFlagsViewModel
 import dev.androidbroadcast.featured.sample.checkout.CheckoutVariant
+import dev.androidbroadcast.featured.sample.promotions.PromotionsFlagsViewModel
+import dev.androidbroadcast.featured.sample.ui.MainButtonColor
+import dev.androidbroadcast.featured.sample.ui.UiFlagsViewModel
 
 /**
  * Main sample screen demonstrating `@LocalFlag` and `@RemoteFlag` usage end-to-end.
  *
- * @param configValues The shared [ConfigValues] instance.
+ * Each per-feature ViewModel is constructed by the platform shell (Activity, desktop main,
+ * iOS UIViewController) and passed in explicitly — demonstrating the per-module ConfigValues
+ * pattern where each module owns its own ConfigValues instance.
+ *
+ * @param uiViewModel ViewModel for UI-related flags from :sample:feature-ui.
+ * @param promotionsViewModel ViewModel for promotions flags from :sample:feature-promotions.
+ * @param checkoutViewModel ViewModel for checkout flags from :sample:feature-checkout.
  * @param onOpenDebugUi Callback to navigate to [FeatureFlagsDebugScreen].
  *   Non-null in debug builds only — the button is absent in release.
  * @param modifier Optional [Modifier].
  */
 @Composable
-public fun FeaturedSample(
-    configValues: ConfigValues,
+internal fun FeaturedSample(
+    uiViewModel: UiFlagsViewModel,
+    promotionsViewModel: PromotionsFlagsViewModel,
+    checkoutViewModel: CheckoutFlagsViewModel,
     onOpenDebugUi: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    val viewModel: SampleViewModel = viewModel { SampleViewModel(configValues) }
-    val activate by viewModel.flagActive.collectAsStateWithLifecycle()
-    val buttonColor by viewModel.mainButtonColor.collectAsStateWithLifecycle()
-    val newFeatureSectionEnabled by viewModel.newFeatureSectionEnabled.collectAsStateWithLifecycle()
-    val promoBannerEnabled by viewModel.promoBannerEnabled.collectAsStateWithLifecycle()
-    val checkoutVariant by viewModel.checkoutVariant.collectAsStateWithLifecycle()
+    val buttonColor by uiViewModel.mainButtonColor.collectAsStateWithLifecycle()
+    val activate = buttonColor == MainButtonColor.Red
+    val newFeatureSectionEnabled by uiViewModel.newFeatureSectionEnabled.collectAsStateWithLifecycle()
+    val promoBannerEnabled by promotionsViewModel.promoBannerEnabled.collectAsStateWithLifecycle()
+    val checkoutVariant by checkoutViewModel.checkoutVariant.collectAsStateWithLifecycle()
 
     Column(
         modifier =
@@ -83,12 +93,16 @@ public fun FeaturedSample(
         ) {
             Checkbox(
                 checked = activate,
-                onCheckedChange = viewModel::setMainButtonColorFlag,
+                onCheckedChange = { isChecked ->
+                    uiViewModel.setMainButtonColor(if (isChecked) MainButtonColor.Red else MainButtonColor.Blue)
+                },
             )
             Text("Enable red button")
         }
         MainButton(
-            onClick = { viewModel.setMainButtonColorFlag(!activate) },
+            onClick = {
+                uiViewModel.setMainButtonColor(if (activate) MainButtonColor.Blue else MainButtonColor.Red)
+            },
             buttonColor = buttonColor,
         )
 
@@ -132,9 +146,9 @@ public fun FeaturedSample(
 }
 
 @Composable
-public fun MainButton(
+private fun MainButton(
     onClick: () -> Unit,
-    buttonColor: SampleViewModel.MainButtonColor,
+    buttonColor: MainButtonColor,
     modifier: Modifier = Modifier,
 ) {
     Button(
@@ -143,8 +157,8 @@ public fun MainButton(
             ButtonDefaults.buttonColors(
                 containerColor =
                     when (buttonColor) {
-                        SampleViewModel.MainButtonColor.Red -> Color.Red
-                        SampleViewModel.MainButtonColor.Blue -> Color.Blue
+                        MainButtonColor.Red -> Color.Red
+                        MainButtonColor.Blue -> Color.Blue
                     },
             ),
         modifier = modifier.fillMaxWidth(),
