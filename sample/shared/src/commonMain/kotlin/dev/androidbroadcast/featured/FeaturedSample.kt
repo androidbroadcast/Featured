@@ -47,7 +47,7 @@ import dev.androidbroadcast.featured.sample.ui.UiFlagsViewModel
  * @param modifier Optional [Modifier].
  */
 @Composable
-public fun FeaturedSample(
+internal fun FeaturedSample(
     uiViewModel: UiFlagsViewModel,
     promotionsViewModel: PromotionsFlagsViewModel,
     checkoutViewModel: CheckoutFlagsViewModel,
@@ -142,7 +142,7 @@ public fun FeaturedSample(
 }
 
 @Composable
-public fun MainButton(
+private fun MainButton(
     onClick: () -> Unit,
     buttonColor: MainButtonColor,
     modifier: Modifier = Modifier,

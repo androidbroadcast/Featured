@@ -1,4 +1,4 @@
-@file:Suppress("RedundantVisibilityModifier", "ktlint:standard:function-naming")
+@file:Suppress("ktlint:standard:function-naming")
 
 package dev.androidbroadcast.featured
 
@@ -18,12 +18,8 @@ public fun MainViewController(): UIViewController {
     val checkoutConfigValues = ConfigValues(localProvider = sharedLocalProvider)
     val promotionsConfigValues = ConfigValues(localProvider = sharedLocalProvider)
     val uiConfigValues = ConfigValues(localProvider = sharedLocalProvider)
-
-    // Debug aggregator ConfigValues — same shared provider so overrides propagate.
-    // iOS sample currently has no debug-UI entry; the instance is wired
-    // to keep the four-ConfigValues pattern consistent across all platforms.
-    @Suppress("UnusedVariable")
-    val debugConfigValues = ConfigValues(localProvider = sharedLocalProvider)
+    // No debug aggregator on iOS — the iOS shell does not wire a debug-UI entry.
+    // The Android shell builds a fourth `ConfigValues` for the debug screen.
 
     // VMs are constructed once per UIViewController — ConfigValues lifetimes are tied to the
     // view controller, which is the iOS equivalent of the Application scope in this sample.
