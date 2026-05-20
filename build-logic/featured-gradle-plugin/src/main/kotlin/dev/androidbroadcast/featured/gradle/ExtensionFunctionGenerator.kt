@@ -53,17 +53,6 @@ public object ExtensionFunctionGenerator {
     public fun fileName(modulePath: String): String = "GeneratedFlagExtensions${modulePath.modulePathToFileSuffix()}.kt"
 
     /**
-     * Returns the legacy `@file:JvmName` value that was previously emitted into the source file.
-     *
-     * This function is retained for use by [ProguardRulesGenerator], which needs to reference
-     * the JVM class name in `-assumevalues` rules.
-     *
-     * Examples: `":app"` → `"FeaturedApp_FlagExtensionsKt"`,
-     * `":feature:checkout"` → `"FeaturedFeatureCheckout_FlagExtensionsKt"`.
-     */
-    public fun jvmFileName(modulePath: String): String = "Featured${modulePath.modulePathToIdentifier()}_FlagExtensionsKt"
-
-    /**
      * Generates the full source text for the module-specific `GeneratedFlagExtensions<Suffix>.kt`.
      *
      * Returns an empty string if [entries] is empty.

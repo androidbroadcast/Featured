@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class ProguardRulesGeneratorTest {
     private val modulePath = ":feature:ui"
     private val expectedClass =
-        "dev.androidbroadcast.featured.generated.${ExtensionFunctionGenerator.jvmFileName(modulePath)}"
+        "dev.androidbroadcast.featured.generated.${ExtensionFunctionGenerator.fileName(modulePath).removeSuffix(".kt")}Kt"
 
     // ── empty / no-op cases ──────────────────────────────────────────────────
 
