@@ -19,6 +19,12 @@ public fun MainViewController(): UIViewController {
     val promotionsConfigValues = ConfigValues(localProvider = sharedLocalProvider)
     val uiConfigValues = ConfigValues(localProvider = sharedLocalProvider)
 
+    // Debug aggregator ConfigValues — same shared provider so overrides propagate.
+    // iOS sample currently has no debug-UI entry; the instance is wired
+    // to keep the four-ConfigValues pattern consistent across all platforms.
+    @Suppress("UnusedVariable")
+    val debugConfigValues = ConfigValues(localProvider = sharedLocalProvider)
+
     // VMs are constructed once per UIViewController — ConfigValues lifetimes are tied to the
     // view controller, which is the iOS equivalent of the Application scope in this sample.
     val checkoutViewModel = CheckoutFlagsViewModel(checkoutConfigValues)

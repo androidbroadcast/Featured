@@ -23,7 +23,8 @@ public class UiFlagsViewModel(
             .map { isRed ->
                 if (isRed) MainButtonColor.Red else MainButtonColor.Blue
             }.stateIn(
-                initialValue = MainButtonColor.Default,
+                // matches mapping of flagActive's initial value (true → Red)
+                initialValue = MainButtonColor.Red,
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
             )

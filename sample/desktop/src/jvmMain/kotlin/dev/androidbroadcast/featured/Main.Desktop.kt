@@ -18,6 +18,12 @@ fun main() {
     val promotionsConfigValues = ConfigValues(localProvider = sharedLocalProvider)
     val uiConfigValues = ConfigValues(localProvider = sharedLocalProvider)
 
+    // Debug aggregator ConfigValues — same shared provider so overrides propagate.
+    // Desktop sample currently has no debug-UI entry; the instance is wired
+    // to keep the four-ConfigValues pattern consistent across all platforms.
+    @Suppress("UnusedVariable")
+    val debugConfigValues = ConfigValues(localProvider = sharedLocalProvider)
+
     // VMs are constructed once here — the desktop application has a single-window lifetime
     // with no configuration changes, so there is no need for a ViewModelStore.
     val checkoutViewModel = CheckoutFlagsViewModel(checkoutConfigValues)
