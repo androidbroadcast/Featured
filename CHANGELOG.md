@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `:sample:shared` is now a pure aggregator: it applies `dev.androidbroadcast.featured.application`, declares `featuredAggregation(project(":sample:feature-*"))`, and consumes `GeneratedFeaturedRegistry.all`. The hand-written `SampleFeatureFlags.kt` is removed.
 - Generator file names include a module-derived suffix (`GeneratedLocalFlagsSampleFeatureCheckout.kt`, etc.) — eliminates JVM class-name collisions when multiple modules share the same classpath. `@file:JvmName` is no longer emitted.
 - `ExtensionFunctionGenerator` emits non-suspend `is*Enabled()` / `get*()` extension functions — they delegate to `getValueCached` and can be called from any context without a coroutine. Callers that previously wrapped them in `runBlocking { … }` or a coroutine scope can drop the wrapper. `GeneratedLocalFlags*` / `GeneratedRemoteFlags*` objects are widened to `public` so observer bridges can reference them across module boundaries.
-- `ConfigValues` implements `AutoCloseable`; call `close()` when tearing down to cancel the internal re-resolve scope. Long-running apps where `ConfigValues` lives for the process lifetime can ignore this.
+- `ConfigValues.resetOverride` re-resolves the effective value synchronously through the full provider priority chain; [getValueCached] reflects the updated value immediately after the call returns.
 
 ### Added
 

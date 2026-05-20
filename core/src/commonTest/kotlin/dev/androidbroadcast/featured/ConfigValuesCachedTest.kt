@@ -139,24 +139,24 @@ class ConfigValuesCachedTest {
         }
 
     // ---------------------------------------------------------------------------
-    // Thread-safety: concurrent reads and writes
+    // Snapshot consistency: concurrent coroutine writes (single-threaded dispatcher)
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `getValueCached is thread-safe under concurrent reads and writes`() =
+    fun `getValueCached does not corrupt snapshot under interleaved coroutine writes`() =
         runTest {
             val configValues = ConfigValues(localProvider = InMemoryConfigValueProvider())
 
-            // Launch 100 concurrent override writes with alternating values
+            // Launch 100 interleaved override writes with alternating values.
+            // runTest runs on a single-threaded dispatcher, so this exercises interleaving
+            // of coroutine suspension points rather than true OS-thread parallelism.
             repeat(100) { i ->
                 launch {
                     configValues.override(param, i % 2 == 0)
                 }
             }
 
-            // Perform 100 concurrent reads while writes are in flight — must not throw.
-            // No value assertion here: a Boolean is always true or false; the invariant under
-            // test is absence of exceptions and absence of data races on the AtomicReference.
+            // Reads during interleaved writes must not throw and must return a valid Boolean.
             repeat(100) {
                 configValues.getValueCached(param)
             }

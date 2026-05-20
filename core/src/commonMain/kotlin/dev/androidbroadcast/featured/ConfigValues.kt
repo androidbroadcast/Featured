@@ -3,10 +3,6 @@
 
 package dev.androidbroadcast.featured
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
@@ -14,7 +10,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.launch
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.update
 
@@ -48,13 +43,6 @@ import kotlin.concurrent.atomics.update
  * going through [ConfigValues.override] bypass the snapshot and will not be visible to
  * [getValueCached] until the next [getValue] or [observe] emission for that parameter.
  *
- * ### Lifecycle
- *
- * [ConfigValues] owns an internal [CoroutineScope] used for the background re-resolution
- * dispatched by [resetOverride]. Call [close] when the instance is no longer needed to cancel
- * that scope. In short-lived test code the scope is cleaned up automatically by the test
- * framework, so [close] may be omitted there.
- *
  * ```kotlin
  * val configValues = ConfigValues(
  *     localProvider  = InMemoryConfigValueProvider(),
@@ -87,7 +75,7 @@ public class ConfigValues(
     private val localProvider: LocalConfigValueProvider? = null,
     private val remoteProvider: RemoteConfigValueProvider? = null,
     private val onProviderError: (Throwable) -> Unit = {},
-) : AutoCloseable {
+) {
     init {
         require(localProvider != null || remoteProvider != null) {
             "At least one provider (local or remote) must be provided."
@@ -109,13 +97,6 @@ public class ConfigValues(
      * are always consistent snapshots. Thread-safe on all KMP targets.
      */
     private val snapshot = AtomicReference<Map<String, ConfigValue<*>>>(emptyMap())
-
-    /**
-     * Internal scope for background re-resolution dispatched by [resetOverride].
-     * Uses [SupervisorJob] so that a failure in one re-resolution does not cancel others.
-     * Cancelled by [close].
-     */
-    private val backgroundScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     /** Writes [configValue] into the snapshot under [param]'s key (copy-on-write). */
     private fun <T : Any> writeSnapshot(
@@ -222,24 +203,21 @@ public class ConfigValues(
      * Clears the local override for the given parameter, so subsequent reads fall back
      * to remote or default values.
      *
-     * After the local override is cleared, a background coroutine re-resolves the effective
-     * value through the full provider priority chain and updates the sync snapshot. Until that
-     * coroutine completes, [getValueCached] may still return the previous override value.
-     *
-     * The background coroutine runs on [Dispatchers.Default] and is owned by an internal
-     * [CoroutineScope]; call [close] to cancel it when this [ConfigValues] instance is
-     * no longer needed.
+     * After the local override is cleared, the effective value is re-resolved synchronously
+     * through the full provider priority chain and written through to the sync snapshot.
+     * [getValueCached] reflects the new value as soon as this function returns.
      *
      * @param param The configuration parameter whose local override should be cleared.
      */
     public suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
         localProvider?.resetOverride(param)
         // Re-resolve via the full priority chain and write through so the snapshot converges
-        // to remote/default rather than staying at the stale LOCAL value (Option B from design).
-        backgroundScope.launch {
-            val resolved = getValue(param)
-            writeSnapshot(param, resolved)
-        }
+        // to remote/default rather than staying at the stale LOCAL value.
+        // Explicit writeSnapshot is required because getValue intentionally does not write
+        // DEFAULT into the snapshot (see getValue implementation). Without this write, a
+        // previously overridden slot would remain stale even when both providers return null.
+        val resolved = getValue(param)
+        writeSnapshot(param, resolved)
     }
 
     /**
@@ -298,10 +276,10 @@ public class ConfigValues(
      * - the value changes via the local provider, **or**
      * - [fetch] completes and the remote provider returns a new value.
      *
-     * Note: local provider emissions that bypass [ConfigValues.override] (i.e. direct calls to
-     * the provider's own `set` method) do not write through to the sync snapshot via this flow.
-     * They are still emitted reactively but the snapshot is only updated via the [getValue]
-     * call in `remoteFlow`. This is a Phase-1 limitation.
+     * Note: local-provider direct emissions (i.e. direct calls to the provider's own `set`
+     * method, bypassing [ConfigValues.override]) reach observers reactively but do **not** write
+     * through to the snapshot. Use [ConfigValues.override] instead of the provider's `set` if
+     * [getValueCached] must reflect the write.
      *
      * @param param The configuration parameter to observe.
      * @return A [Flow] of [ConfigValue] for the specified parameter.
@@ -315,17 +293,6 @@ public class ConfigValues(
             val merged = if (localFlow != null) merge(localFlow, remoteFlow) else remoteFlow
             merged.collect { emit(it) }
         }.distinctUntilChanged()
-    }
-
-    /**
-     * Cancels the internal [CoroutineScope] used for background re-resolution in [resetOverride].
-     *
-     * Safe to omit in short-lived test code — the test framework cleans up coroutines.
-     * Should be called explicitly in production code when this [ConfigValues] instance is
-     * no longer needed (e.g. in `onDestroy` or a scope-bound lifecycle hook).
-     */
-    override fun close() {
-        backgroundScope.cancel()
     }
 
     /** Companion object used as a receiver for extension factories (e.g. ConfigValues.fake). */
