@@ -54,13 +54,14 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            // :core types (ConfigValues, ConfigParam, InMemoryConfigValueProvider) appear in
-            // the public signatures of SampleApp / SampleViewModel — must be api to compile
+            // :core types (ConfigValues, InMemoryConfigValueProvider) appear in
+            // the public signatures of SampleApp — must be api to compile
             // downstream consumers like :sample:desktop. Pre-existing leak from #182.
             api(project(":core"))
 
-            // CheckoutVariant appears in StateFlow<CheckoutVariant> in SampleViewModel public API;
-            // observe-bridge extensions are called from :sample:android-app / :sample:desktop.
+            // Per-feature ViewModel types (CheckoutFlagsViewModel, PromotionsFlagsViewModel,
+            // UiFlagsViewModel) appear in SampleApp's public signature — api so that platform
+            // shells (:sample:android-app, :sample:desktop, iosMain) can reference them.
             api(project(":sample:feature-checkout"))
             api(project(":sample:feature-promotions"))
             api(project(":sample:feature-ui"))
