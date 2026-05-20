@@ -51,21 +51,22 @@ class ExtensionFunctionGeneratorTest {
     fun `generates is…Enabled extension for local boolean flag`() {
         val entries = listOf(localEntry("dark_mode", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
-        assertContains(source, "suspend fun ConfigValues.isDarkModeEnabled(): Boolean")
+        assertContains(source, "fun ConfigValues.isDarkModeEnabled(): Boolean")
     }
 
     @Test
-    fun `local boolean extension returns raw value`() {
+    fun `local boolean extension returns raw value via getValueCached`() {
         val entries = listOf(localEntry("dark_mode", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
-        assertContains(source, "getValue(GeneratedLocalFlagsFeatureCheckout.darkMode).value")
+        assertContains(source, "getValueCached(GeneratedLocalFlagsFeatureCheckout.darkMode).value")
     }
 
     @Test
-    fun `local boolean extension is internal suspend`() {
+    fun `local boolean extension is internal non-suspend`() {
         val entries = listOf(localEntry("dark_mode", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
-        assertContains(source, "internal suspend fun ConfigValues.isDarkModeEnabled()")
+        assertContains(source, "internal fun ConfigValues.isDarkModeEnabled()")
+        assertFalse(source.contains("suspend fun ConfigValues.isDarkModeEnabled()"), "Must not emit suspend modifier")
     }
 
     // ── local non-boolean flag ────────────────────────────────────────────────
@@ -74,15 +75,15 @@ class ExtensionFunctionGeneratorTest {
     fun `generates get… extension for local int flag`() {
         val entries = listOf(localEntry("max_retries", "Int"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
-        assertContains(source, "suspend fun ConfigValues.getMaxRetries(): Int")
-        assertContains(source, "getValue(GeneratedLocalFlagsFeatureCheckout.maxRetries).value")
+        assertContains(source, "fun ConfigValues.getMaxRetries(): Int")
+        assertContains(source, "getValueCached(GeneratedLocalFlagsFeatureCheckout.maxRetries).value")
     }
 
     @Test
     fun `generates get… extension for local string flag`() {
         val entries = listOf(localEntry("api_url", "String"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
-        assertContains(source, "suspend fun ConfigValues.getApiUrl(): String")
+        assertContains(source, "fun ConfigValues.getApiUrl(): String")
     }
 
     // ── local enum flag ───────────────────────────────────────────────────────
@@ -91,8 +92,8 @@ class ExtensionFunctionGeneratorTest {
     fun `generates get… extension for local enum flag`() {
         val entries = listOf(localEntry("checkout_variant", "com.example.CheckoutVariant"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
-        assertContains(source, "suspend fun ConfigValues.getCheckoutVariant(): com.example.CheckoutVariant")
-        assertContains(source, "getValue(GeneratedLocalFlagsFeatureCheckout.checkoutVariant).value")
+        assertContains(source, "fun ConfigValues.getCheckoutVariant(): com.example.CheckoutVariant")
+        assertContains(source, "getValueCached(GeneratedLocalFlagsFeatureCheckout.checkoutVariant).value")
     }
 
     @Test
@@ -108,8 +109,9 @@ class ExtensionFunctionGeneratorTest {
     fun `generates get… extension returning ConfigValue for remote flag`() {
         val entries = listOf(remoteEntry("promo_banner", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
-        assertContains(source, "suspend fun ConfigValues.getPromoBanner(): ConfigValue<Boolean>")
-        assertContains(source, "getValue(GeneratedRemoteFlagsFeatureCheckout.promoBanner)")
+        assertContains(source, "fun ConfigValues.getPromoBanner(): ConfigValue<Boolean>")
+        assertContains(source, "getValueCached(GeneratedRemoteFlagsFeatureCheckout.promoBanner)")
+        assertFalse(source.contains("suspend "), "Must not emit suspend modifier anywhere")
     }
 
     @Test

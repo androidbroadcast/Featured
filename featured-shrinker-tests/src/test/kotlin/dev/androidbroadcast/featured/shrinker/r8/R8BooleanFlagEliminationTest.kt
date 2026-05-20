@@ -26,7 +26,7 @@ import kotlin.test.Test
  * class ConfigValues { boolean enabled; ConfigValues(boolean) }
  *
  * // Mirrors ExtensionFunctionGenerator output for module ":test"
- * class FeaturedTest_FlagExtensionsKt {
+ * class GeneratedFlagExtensionsTestKt {
  *     static boolean isDarkModeEnabled(ConfigValues cv) { return cv.enabled; }
  * }
  *
@@ -41,7 +41,7 @@ import kotlin.test.Test
  * class BifurcatedCaller {
  *     static void execute(boolean enabled) {
  *         ConfigValues cv = new ConfigValues(enabled);
- *         if (FeaturedTest_FlagExtensionsKt.isDarkModeEnabled(cv)) {
+ *         if (GeneratedFlagExtensionsTestKt.isDarkModeEnabled(cv)) {
  *             new IfBranchCode().doWork();
  *         } else {
  *             new ElseBranchCode().doWork();
