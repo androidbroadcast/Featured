@@ -1,13 +1,13 @@
 package dev.androidbroadcast.featured.gradle
 
 /**
- * Generates `GeneratedLocalFlags<Suffix>.kt` and `GeneratedRemoteFlags<Suffix>.kt` — public
+ * Generates `GeneratedLocalFlags<Suffix>.kt` and `GeneratedRemoteFlags<Suffix>.kt` — internal
  * objects containing one typed `ConfigParam` property per declared flag.
  *
  * Generated example for a local Boolean flag `dark_mode` in module `:sample:feature-checkout`:
  * ```kotlin
- * public object GeneratedLocalFlagsSampleFeatureCheckout {
- *     public val darkMode = ConfigParam<Boolean>("dark_mode", false, category = "UI")
+ * internal object GeneratedLocalFlagsSampleFeatureCheckout {
+ *     val darkMode = ConfigParam<Boolean>("dark_mode", false, category = "UI")
  * }
  * ```
  *
@@ -15,10 +15,10 @@ package dev.androidbroadcast.featured.gradle
  * so that each module's generated class has a unique JVM name, avoiding duplicate-class errors
  * when multiple modules are assembled into the same DEX or JAR.
  *
- * These objects are `public` so that consumers in other modules (e.g. observe-bridge
- * composites, feature-module bridges) can reference the `ConfigParam` instances directly
- * via `observe(GeneratedLocalFlagsSampleFeatureCheckout.x)` without going through the
- * generated extension functions in [ExtensionFunctionGenerator].
+ * These objects are `internal` to their declaring Gradle module — a module's flag declarations
+ * are an implementation detail that other modules must not reference directly. Cross-module
+ * flag introspection goes exclusively through [GeneratedFeaturedRegistry.all], which constructs
+ * `ConfigParam` instances inline from manifest data without referencing these objects.
  */
 public object ConfigParamGenerator {
     private const val PACKAGE = "dev.androidbroadcast.featured.generated"
@@ -88,9 +88,9 @@ public object ConfigParamGenerator {
             appendLine()
             appendLine("import $CONFIG_PARAM_IMPORT")
             appendLine()
-            appendLine("public object $objectName {")
+            appendLine("internal object $objectName {")
             entries.forEach { entry ->
-                appendLine("    public val ${entry.propertyName} = ${entry.toConfigParamExpression()}")
+                appendLine("    val ${entry.propertyName} = ${entry.toConfigParamExpression()}")
             }
             append("}")
         }
