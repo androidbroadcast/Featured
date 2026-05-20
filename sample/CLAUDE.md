@@ -7,7 +7,7 @@ The sample is intentionally a multi-module demonstration of the Featured plugin 
 - `:sample:feature-checkout` — owns `CheckoutVariant` enum + 2 local flags (`new_checkout` Boolean, `checkout_variant` enum).
 - `:sample:feature-promotions` — 1 remote flag (`promo_banner_enabled` Boolean).
 - `:sample:feature-ui` — 2 local UI flags (`main_button_red` Boolean, `new_feature_section_enabled` Boolean).
-- `:sample:shared` — pure aggregator (`dev.androidbroadcast.featured.application`). Contains Compose UI (`FeaturedSample`, `SampleApp`) and `SampleViewModel`. No flag declarations of its own.
+- `:sample:shared` — pure aggregator (`dev.androidbroadcast.featured.application`). Contains Compose UI (`FeaturedSample`, `SampleApp`); per-feature ViewModels (`CheckoutFlagsViewModel`, `PromotionsFlagsViewModel`, `UiFlagsViewModel`) live in their respective `:sample:feature-*` modules. No flag declarations of its own.
 - `:sample:android-app` — Activity shell; wires `DataStoreConfigValueProvider` + `FeatureFlagsDebugScreen`.
 - `:sample:desktop` — JVM shell; uses `InMemoryConfigValueProvider`.
 - `iosApp/` — Xcode project consuming `FeaturedSampleApp.framework` (static, produced by `:sample:shared`).
@@ -26,7 +26,7 @@ under the hood.
 
 1. Edit the feature module's `build.gradle.kts` — add a declaration inside `featured { localFlags { ... } }` or `featured { remoteFlags { ... } }`.
 2. Add a public observer / setter in `*FlagObservers.kt`.
-3. If the UI needs it, expose a `StateFlow` + setter in `SampleViewModel`.
+3. If the UI needs it, expose a `StateFlow` + setter in the feature's `*FlagsViewModel` (e.g. `CheckoutFlagsViewModel`).
 
 ## Aggregation
 
