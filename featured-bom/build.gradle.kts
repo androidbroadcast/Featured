@@ -20,7 +20,6 @@ dependencies {
         api(project(":featured-compose"))
         api(project(":featured-debug-ui"))
         api(project(":featured-testing"))
-        api(project(":featured-gradle-plugin"))
         api(project(":featured-lint-rules"))
 
         api(project(":featured-platform"))

@@ -14,6 +14,14 @@ plugins {
     alias(libs.plugins.dokka)
 }
 
+tasks.register("publishToMavenCentral") {
+    dependsOn(gradle.includedBuild("build-logic").task(":featured-gradle-plugin:publishToMavenCentral"))
+}
+
+tasks.register("publishToMavenLocal") {
+    dependsOn(gradle.includedBuild("build-logic").task(":featured-gradle-plugin:publishToMavenLocal"))
+}
+
 spotless {
     val ktlintVersion = libs.versions.ktlint.get()
     kotlin {

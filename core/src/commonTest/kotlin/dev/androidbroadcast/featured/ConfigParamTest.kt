@@ -59,6 +59,7 @@ class ConfigParamTest {
         assertNull(param.description)
         assertNull(param.category)
         assertNull(param.since)
+        assertNull(param.enumConstants)
     }
 
     @Test
@@ -98,5 +99,59 @@ class ConfigParamTest {
         assertTrue(result.contains("category='cat'"))
         assertTrue(result.contains("since='1.0'"))
         assertTrue(result.contains("description='desc'"))
+    }
+
+    @Test
+    fun testEnumConstantsDefaultsToNull() {
+        val param = ConfigParam(key = "flag", defaultValue = true)
+
+        assertNull(param.enumConstants)
+    }
+
+    @Test
+    fun testEqualsReturnsFalseWhenEnumConstantsDiffer() {
+        val paramWithConstants =
+            ConfigParam(
+                key = "flag",
+                defaultValue = false,
+                enumConstants = listOf(true, false),
+            )
+        val paramWithoutConstants =
+            ConfigParam(
+                key = "flag",
+                defaultValue = false,
+            )
+
+        assertNotEquals(paramWithConstants, paramWithoutConstants)
+    }
+
+    @Test
+    fun testEqualsReturnsTrueWhenEnumConstantsAreIdentical() {
+        val param1 =
+            ConfigParam(
+                key = "flag",
+                defaultValue = false,
+                enumConstants = listOf(true, false),
+            )
+        val param2 =
+            ConfigParam(
+                key = "flag",
+                defaultValue = false,
+                enumConstants = listOf(true, false),
+            )
+
+        assertEquals(param1, param2)
+    }
+
+    @Test
+    fun testToStringIncludesEnumConstantsWhenPresent() {
+        val param =
+            ConfigParam(
+                key = "flag",
+                defaultValue = false,
+                enumConstants = listOf(true, false),
+            )
+
+        assertTrue(param.toString().contains("enumConstants="))
     }
 }
