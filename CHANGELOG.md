@@ -18,9 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `FeatureFlagsDebugScreen` signature is now `(configValues: ConfigValues, registry: List<ConfigParam<*>>, modifier: Modifier = Modifier)` — accepts an explicit registry list instead of reading the (removed) `FlagRegistry` singleton. Pass `GeneratedFeaturedRegistry.all` for the recommended aggregator-plugin flow, or build the list inline for small projects.
 - `:sample:shared` is now a pure aggregator: it applies `dev.androidbroadcast.featured.application`, declares `featuredAggregation(project(":sample:feature-*"))`, and consumes `GeneratedFeaturedRegistry.all`. The hand-written `SampleFeatureFlags.kt` is removed.
 - Generator file names include a module-derived suffix (`GeneratedLocalFlagsSampleFeatureCheckout.kt`, etc.) — eliminates JVM class-name collisions when multiple modules share the same classpath. `@file:JvmName` is no longer emitted.
-- `ExtensionFunctionGenerator` now emits `suspend` extension functions — `ConfigValues.getValue` has always been suspend; the generated callers now match. `GeneratedLocalFlags*` / `GeneratedRemoteFlags*` objects are widened to `public` so observer bridges can reference them across module boundaries.
+- `ExtensionFunctionGenerator` emits non-suspend `is*Enabled()` / `get*()` extension functions — they delegate to `getValueCached` and can be called from any context without a coroutine. Callers that previously wrapped them in `runBlocking { … }` or a coroutine scope can drop the wrapper. `GeneratedLocalFlags*` / `GeneratedRemoteFlags*` objects are widened to `public` so observer bridges can reference them across module boundaries.
+- `ConfigValues` implements `AutoCloseable`; call `close()` when tearing down to cancel the internal re-resolve scope. Long-running apps where `ConfigValues` lives for the process lifetime can ignore this.
 
 ### Added
+
+- `ConfigValues.getValueCached(param: ConfigParam<T>): ConfigValue<T>` — non-suspend synchronous reader. Returns the last-written `ConfigValue<T>` from the in-memory cache; the cache is warmed on the first `getValue` / `override` / `fetch` call, and returns `Source.DEFAULT` until then.
+- `ConfigValues.isEnabled(param: ConfigParam<Boolean>): Boolean` — non-suspend extension (replaces the former `suspend` variant). Delegates to `getValueCached`; safe to call from Composable functions, `init` blocks, and non-coroutine contexts.
 
 - Featured library plugin now publishes a per-module feature-flag manifest as a consumable Gradle artifact (`featuredManifest` configuration, schema v1). Existing flag-generation pipeline is unchanged. Consumer-side aggregation arrives in a follow-up release.
 - New `dev.androidbroadcast.featured.application` Gradle plugin: aggregates `featured-manifest.json` artifacts from project dependencies declared via `featuredAggregation(project(...))` and generates `object GeneratedFeaturedRegistry { val all: List<ConfigParam<*>> }` in `build/generated/featured/commonMain/`. Apply alongside `dev.androidbroadcast.featured` in the application module; wire the output directory into your source set manually (e.g., `kotlin.sourceSets.commonMain.kotlin.srcDir(...)`). Modules declaring `enum` flags also require a regular `implementation(project(...))` dependency in the consumer so the enum class is on the compile classpath; primitive-only modules need only `featuredAggregation(...)`.
@@ -30,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Restored R8 per-function DCE: ProGuard `-assumevalues` rules now target the actual Kotlin-compiled class name (`GeneratedFlagExtensionsXKt`). The rules were silently no-op since `@file:JvmName` was removed in an earlier PR; unused boolean flags are once again eliminated at shrinking time.
 - iOS framework can now `export(project(":sample:feature-*"))` without the K/N `ObjCExportCodeGenerator` crashing — requires `api(project(...))` linkage in the aggregator module so K/N has access to type adapters for generic `ConfigParam<E>` specializations.
 
 ## [1.0.0-Beta1] - 2026-05-17

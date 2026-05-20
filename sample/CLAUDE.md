@@ -18,6 +18,10 @@ Each `:sample:feature-*` module ships `*FlagObservers.kt` with public `ConfigVal
 (e.g. `mainButtonRedFlow()`, `setMainButtonRed()`). UI consumers should call these instead of
 referencing `GeneratedLocalFlags*` / `GeneratedRemoteFlags*` directly.
 
+For non-reactive reads (logging, eager-conditional code paths) use `configValues.getValueCached(param)`
+directly — the codegen-emitted `is*Enabled()` / `get*()` extensions are non-suspend and call this
+under the hood.
+
 ## Adding a flag
 
 1. Edit the feature module's `build.gradle.kts` — add a declaration inside `featured { localFlags { ... } }` or `featured { remoteFlags { ... } }`.
