@@ -54,8 +54,8 @@ internal fun FeaturedSample(
     onOpenDebugUi: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    val activate by uiViewModel.flagActive.collectAsStateWithLifecycle()
     val buttonColor by uiViewModel.mainButtonColor.collectAsStateWithLifecycle()
+    val activate = buttonColor == MainButtonColor.Red
     val newFeatureSectionEnabled by uiViewModel.newFeatureSectionEnabled.collectAsStateWithLifecycle()
     val promoBannerEnabled by promotionsViewModel.promoBannerEnabled.collectAsStateWithLifecycle()
     val checkoutVariant by checkoutViewModel.checkoutVariant.collectAsStateWithLifecycle()
@@ -93,12 +93,16 @@ internal fun FeaturedSample(
         ) {
             Checkbox(
                 checked = activate,
-                onCheckedChange = uiViewModel::setMainButtonColorFlag,
+                onCheckedChange = { isChecked ->
+                    uiViewModel.setMainButtonColor(if (isChecked) MainButtonColor.Red else MainButtonColor.Blue)
+                },
             )
             Text("Enable red button")
         }
         MainButton(
-            onClick = { uiViewModel.setMainButtonColorFlag(!activate) },
+            onClick = {
+                uiViewModel.setMainButtonColor(if (activate) MainButtonColor.Blue else MainButtonColor.Red)
+            },
             buttonColor = buttonColor,
         )
 

@@ -12,18 +12,13 @@ import kotlinx.coroutines.launch
 public class UiFlagsViewModel(
     private val configValues: ConfigValues,
 ) : ViewModel() {
-    public val flagActive: StateFlow<Boolean> =
+    public val mainButtonColor: StateFlow<MainButtonColor> =
         configValues
             .mainButtonRedFlow()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), true)
-    // matches default declared in :sample:feature-ui build.gradle.kts
-
-    public val mainButtonColor: StateFlow<MainButtonColor> =
-        flagActive
-            .map { isRed ->
-                if (isRed) MainButtonColor.Red else MainButtonColor.Blue
-            }.stateIn(
-                // matches mapping of flagActive's initial value (true → Red)
+            .map { isRed -> if (isRed) MainButtonColor.Red else MainButtonColor.Blue }
+            .stateIn(
+                // matches the default declared in :sample:feature-ui build.gradle.kts
+                // (main_button_red = true → Red)
                 initialValue = MainButtonColor.Red,
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
@@ -32,11 +27,11 @@ public class UiFlagsViewModel(
     public val newFeatureSectionEnabled: StateFlow<Boolean> =
         configValues
             .newFeatureSectionEnabledFlow()
+            // matches default declared in :sample:feature-ui build.gradle.kts
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), true)
-    // matches default declared in :sample:feature-ui build.gradle.kts
 
-    public fun setMainButtonColorFlag(value: Boolean) {
-        viewModelScope.launch { configValues.setMainButtonRed(value) }
+    public fun setMainButtonColor(color: MainButtonColor) {
+        viewModelScope.launch { configValues.setMainButtonRed(color == MainButtonColor.Red) }
     }
 
     public fun setNewFeatureSectionEnabled(value: Boolean) {

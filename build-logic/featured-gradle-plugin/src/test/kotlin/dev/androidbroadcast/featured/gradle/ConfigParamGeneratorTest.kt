@@ -99,6 +99,13 @@ class ConfigParamGeneratorTest {
         assertContains(remote, "internal object GeneratedRemoteFlagsApp")
     }
 
+    @Test
+    fun `remote properties do not have explicit public modifier`() {
+        val entries = listOf(remoteEntry("promo", "false", "Boolean"))
+        val (_, remote) = ConfigParamGenerator.generate(entries, modulePath)
+        assertTrue(!remote.contains("public val "), "Property declarations must not carry explicit 'public' modifier")
+    }
+
     // ── empty cases ───────────────────────────────────────────────────────────
 
     @Test
