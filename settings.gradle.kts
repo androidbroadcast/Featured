@@ -2,7 +2,7 @@ rootProject.name = "Featured"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
-    includeBuild("build-logic")
+    includeBuild("featured-gradle-plugin")
 
     @Suppress("UnstableApiUsage")
     repositories {

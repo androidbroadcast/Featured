@@ -15,11 +15,11 @@ plugins {
 }
 
 tasks.register("publishToMavenCentral") {
-    dependsOn(gradle.includedBuild("build-logic").task(":featured-gradle-plugin:publishToMavenCentral"))
+    dependsOn(gradle.includedBuild("featured-gradle-plugin").task(":publishToMavenCentral"))
 }
 
 tasks.register("publishToMavenLocal") {
-    dependsOn(gradle.includedBuild("build-logic").task(":featured-gradle-plugin:publishToMavenLocal"))
+    dependsOn(gradle.includedBuild("featured-gradle-plugin").task(":publishToMavenLocal"))
 }
 
 spotless {

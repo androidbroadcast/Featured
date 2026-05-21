@@ -57,5 +57,4 @@ gradle.beforeProject {
     (parentProps.getProperty("VERSION_NAME") ?: "unspecified").let { version = it }
 }
 
-rootProject.name = "build-logic"
-include(":featured-gradle-plugin")
+rootProject.name = "featured-gradle-plugin"
