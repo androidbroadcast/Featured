@@ -42,6 +42,10 @@ present or absent, proving that the rule caused (or did not cause) elimination.
 The third test is a control: it proves that elimination is caused by the rule, not by R8's
 own constant-folding.
 
+The fourth test — `dead-branch class survives when a user -keep rule pins it despite the
+assumevalues rule` — covers the consumer pitfall described in
+[Keep rules vs. flag-guarded code](#keep-rules-vs-flag-guarded-code) below.
+
 ### Int flags (`R8IntFlagEliminationTest`)
 
 | Test | Rule | Expected |
@@ -51,6 +55,45 @@ own constant-folding.
 
 With `-assumevalues return 0`, R8 constant-folds `0 > 0` to `false` and eliminates the
 guarded block entirely.
+
+## Keep rules vs. flag-guarded code
+
+Dead-code elimination for a disabled flag happens in two distinct R8 phases:
+
+1. **Constant folding + branch elimination** (an *optimization*). The `-assumevalues` rule
+   pins the flag accessor to a constant, so R8 folds `if (false) { … }` and removes the dead
+   branch — including the call into the flag-guarded class — from the *caller's* method body.
+2. **Tree-shaking** (a *shrink*). Once nothing references the flag-guarded class anymore, it
+   becomes unreachable and R8 drops it from the output.
+
+Phase 2 is reachability-based, and `-keep` is an **unconditional root** of the reachability
+graph. So if a consumer adds a `-keep` that covers a flag-guarded class:
+
+- Phase 1 **still runs** — the branch is still folded away, the guarded code never executes,
+  and runtime behaviour is unchanged. No crash, no correctness regression.
+- Phase 2 **does not run** for that class — R8 treats it as always-reachable and keeps it in
+  the APK even though nothing references it.
+
+**The net effect is a silent loss of the size benefit:** dead code ships in the APK with no
+visible symptom. This is verified by the `dead-branch class survives when a user -keep rule
+pins it…` test in `R8BooleanFlagEliminationTest`.
+
+A deliberate `-keep` on a specific flag class is rare. The realistic causes are **broad
+rules that accidentally cover flag-guarded code**:
+
+- catch-all wildcards such as `-keep class com.myapp.** { *; }`;
+- `@Keep` annotations applied at a package or base-class level;
+- reflection / serialization keep rules (Gson, Moshi, etc.) and DI keep rules;
+- `consumer-rules.pro` shipped by third-party libraries.
+
+**Recommendation:** keep these rules as narrow as possible and avoid blanket `-keep` over
+packages that contain flag-guarded features. Two related rules are *not* a problem and should
+not be "fixed":
+
+- `-keep` on the **flag accessor method** — `-assumevalues` still constant-folds the value, so
+  branch elimination is unaffected; `-keep` only prevents removing/renaming the method itself.
+- `-dontoptimize` is a different lever entirely: it disables phase 1 and stops all folding. It
+  is not a keep rule, but it has the same end result of suppressing elimination.
 
 ## Running the tests
 
