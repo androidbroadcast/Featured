@@ -87,13 +87,18 @@ rules that accidentally cover flag-guarded code**:
 - `consumer-rules.pro` shipped by third-party libraries.
 
 **Recommendation:** keep these rules as narrow as possible and avoid blanket `-keep` over
-packages that contain flag-guarded features. Two related rules are *not* a problem and should
-not be "fixed":
+packages that contain flag-guarded features.
+
+One related rule is *not* a problem and should not be "fixed":
 
 - `-keep` on the **flag accessor method** — `-assumevalues` still constant-folds the value, so
   branch elimination is unaffected; `-keep` only prevents removing/renaming the method itself.
-- `-dontoptimize` is a different lever entirely: it disables phase 1 and stops all folding. It
-  is not a keep rule, but it has the same end result of suppressing elimination.
+
+A separate hazard, **not** a keep rule, also defeats elimination and should be avoided:
+
+- `-dontoptimize` disables phase 1 entirely and stops all constant folding, so disabled
+  branches are never removed in the first place. Do not enable it in a build that relies on
+  build-time flag DCE.
 
 ## Running the tests
 
