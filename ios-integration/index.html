@@ -6,14 +6,14 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Type-safe, reactive feature-flag and configuration management for Kotlin Multiplatform">
+        <meta name="description" content="Type-safe, reactive feature-flag and configuration management for Android (Kotlin Multiplatform)">
       
       
       
         <link rel="canonical" href="https://androidbroadcast.github.io/Featured/ios-integration/">
       
       
-        <link rel="prev" href="../guides/r8-verification/">
+        <link rel="prev" href="../guides/ios/">
       
       
         <link rel="next" href="../api/">
@@ -24,7 +24,7 @@
     
     
       
-        <title>iOS Dead-Code Elimination - Featured</title>
+        <title>Swift Dead-Code Elimination - Featured</title>
       
     
     
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              iOS Dead-Code Elimination
+              Swift Dead-Code Elimination
             
           </span>
         </div>
@@ -251,16 +251,34 @@
         
   
   
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guides/android/" class="md-tabs__link">
+          
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
     
   
   
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../guides/android/" class="md-tabs__link">
+        <a href="../guides/ios/" class="md-tabs__link">
           
   
-  Guides
+  iOS Preview
 
         </a>
       </li>
@@ -391,30 +409,25 @@
       
   
   
-    
   
   
-  
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -425,7 +438,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             Guides
@@ -444,27 +457,6 @@
   
   <span class="md-ellipsis">
     Android
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../guides/ios/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    iOS
   </span>
   
 
@@ -562,6 +554,100 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../known-limitations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Known Limitations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    iOS Preview
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            iOS Preview
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/ios/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    iOS Integration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -578,7 +664,7 @@
           
   
   <span class="md-ellipsis">
-    iOS Dead-Code Elimination
+    Swift Dead-Code Elimination
   </span>
   
 
@@ -589,7 +675,7 @@
         
   
   <span class="md-ellipsis">
-    iOS Dead-Code Elimination
+    Swift Dead-Code Elimination
   </span>
   
 
@@ -951,6 +1037,11 @@
 
 
 <h1 id="ios-integration-guide-swift-dead-code-elimination-with-if">iOS Integration Guide: Swift Dead Code Elimination with #if<a class="headerlink" href="#ios-integration-guide-swift-dead-code-elimination-with-if" title="Permanent link">&para;</a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Preview</p>
+<p>iOS support is functional but API stability is not yet guaranteed.
+Stable iOS support is planned for a future minor release.</p>
+</div>
 <p>This guide explains how to use the <code>featured-gradle-plugin</code> xcconfig output to eliminate
 disabled feature-flag code paths from your iOS Release binaries at compile time.</p>
 <h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>

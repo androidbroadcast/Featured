@@ -31,21 +31,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://androidbroadcast.github.io/Featured/cc-verification/agp-propagation-check-2026-05-16/</loc>
-         <lastmod>2026-05-30</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://androidbroadcast.github.io/Featured/cc-verification/fixture-report-2026-05-17/</loc>
-         <lastmod>2026-05-30</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://androidbroadcast.github.io/Featured/cc-verification/sample-report-2026-05-17/</loc>
-         <lastmod>2026-05-30</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://androidbroadcast.github.io/Featured/guides/android/</loc>
          <lastmod>2026-05-30</lastmod>
          <changefreq>daily</changefreq>
@@ -72,11 +57,6 @@
     </url>
     <url>
          <loc>https://androidbroadcast.github.io/Featured/guides/r8-verification/</loc>
-         <lastmod>2026-05-30</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://androidbroadcast.github.io/Featured/specs/2026-05-16-gradle-plugin-cc-support/</loc>
          <lastmod>2026-05-30</lastmod>
          <changefreq>daily</changefreq>
     </url>
