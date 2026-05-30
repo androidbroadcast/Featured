@@ -1,5 +1,8 @@
 # Android Integration Guide
 
+!!! success "Stable in 1.0"
+    The Android API is stable and covered by semantic versioning from version 1.0.0 onward.
+
 This guide walks you through integrating Featured into an Android project from scratch — from adding Gradle dependencies to using flags in a ViewModel with Compose and Firebase Remote Config.
 
 ## 1. Add Gradle dependencies

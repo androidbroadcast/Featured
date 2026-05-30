@@ -31,6 +31,7 @@ jobs:
       - uses: github/codeql-action/init@v4
         with:
           languages: java-kotlin
+          build-mode: manual
 
       - name: Build for CodeQL
         # autobuild looks for 'testClasses' which doesn't exist in KMP; build manually instead.

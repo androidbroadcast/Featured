@@ -1,5 +1,9 @@
 # iOS Integration Guide
 
+!!! warning "Preview"
+    iOS support is functional but API stability is not yet guaranteed.
+    Stable iOS support is planned for a future minor release.
+
 Featured exposes its Kotlin API to Swift via [SKIE](https://skie.touchlab.co/), which bridges coroutines, sealed classes, and default arguments automatically.
 
 ## 1. Swift Package Manager setup
