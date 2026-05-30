@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ExtensionFunctionGenerator` emits non-suspend `is*Enabled()` / `get*()` extension functions — they delegate to `getValueCached` and can be called from any context without a coroutine. Callers that previously wrapped them in `runBlocking { … }` or a coroutine scope can drop the wrapper.
 - `ConfigValues.resetOverride` re-resolves the effective value synchronously through the full provider priority chain; [getValueCached] reflects the updated value immediately after the call returns.
 - Generated `GeneratedLocalFlagsX` / `GeneratedRemoteFlagsX` objects are now `internal` to their declaring Gradle module — each feature module's flag declarations are an implementation detail and no longer leak across module boundaries. Cross-module flag introspection (e.g. the debug screen) flows exclusively through `GeneratedFeaturedRegistry.all`, which the aggregator plugin builds from per-module manifests. The sample app demonstrates the per-module wiring pattern: one `ConfigValues` per feature module plus a dedicated debug aggregator, all sharing the same `LocalConfigValueProvider`.
+- The plugin's ProGuard-rules generation task is renamed from `generateProguardRules` to `generateFeaturedProguardRules` to avoid name collisions with other plugins. (#190)
+- User documentation moved from the in-repo MkDocs site to the [GitHub Wiki](https://github.com/AndroidBroadcast/Featured/wiki); the `docs/` site and `mkdocs.yml` are removed from the repository. (#193)
 
 ### Added
 
@@ -35,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `ConfigValues.observe()` now wraps provider `Flow` collection in `catch` — exceptions thrown by a local or remote provider are routed to `onProviderError` instead of propagating and breaking the observation flow. (#196)
 - Restored R8 per-function DCE: ProGuard `-assumevalues` rules now target the actual Kotlin-compiled class name (`GeneratedFlagExtensionsXKt`). The rules were silently no-op since `@file:JvmName` was removed in an earlier PR; unused boolean flags are once again eliminated at shrinking time.
 - iOS framework can now `export(project(":sample:feature-*"))` without the K/N `ObjCExportCodeGenerator` crashing — requires `api(project(...))` linkage in the aggregator module so K/N has access to type adapters for generic `ConfigParam<E>` specializations.
 
