@@ -106,7 +106,7 @@ For non-reactive reads (logging, eager-conditional paths) use `configValues.getV
 - **Explicit API mode** is on for every KMP module — all public declarations need explicit visibility. Generated flag objects are deliberately `internal`.
 - **Version catalog** (`gradle/libs.versions.toml`) is the single source of truth for dependency versions.
 - **Spotless / ktlint** runs over `**/*.kt` and `**/*.kts` excluding `build/`. CI fails on `spotlessCheck`.
-- **Binary Compatibility Validator** enforces public-API stability — a public-surface change without `apiDump` update fails CI. Featured has **no migration window** for breaking changes; breaking changes go in directly, the version number reflects it.
+- **Public-API stability is reviewed manually in PRs** — there is no automated Binary Compatibility Validator gate (BCV was removed in #150). Reviewers check public-surface changes by hand. Featured has **no migration window** for breaking changes; breaking changes go in directly, the version number reflects it.
 - **Branching:** `develop` is the integration branch; PRs go to `develop`, not `main`. `main` is updated only on releases. One logical change per PR — do not bundle.
 - **Comment language:** English (per `.github/copilot-instructions.md`).
 - **iOS:** SKIE is applied in `:core`; the XCFramework is named `FeaturedCore`. SKIE config is `skie.toml` at repo root.

@@ -14,6 +14,16 @@ Featured is a type-safe, reactive feature-flag and configuration management libr
 - **Multiple providers** — DataStore, SharedPreferences, NSUserDefaults, JavaPreferences, Firebase Remote Config, ConfigCat, or a custom one.
 - **Debug UI** — a ready-made Compose screen for overriding flags at runtime.
 
+## Platform stability
+
+| Platform | Status |
+|---|---|
+| Android | **Stable** |
+| iOS (SKIE / DCE) | **Preview** |
+| JVM | **Preview** |
+
+*Preview* means the platform is functional but its public API may change in minor releases without a major version bump. *Stable* platforms follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 ## Quick example
 
 ```kotlin
