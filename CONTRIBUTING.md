@@ -63,8 +63,7 @@ Featured follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`
 - Changing a function signature in a way that requires call-site updates
 - Changing the behavior of an existing API in a way that requires migration
 
-Binary Compatibility Validator (BCV) enforces this automatically — a CI check will fail if
-a public API surface changes without an explicit `apiDump` update.
+Public API changes are reviewed manually during code review — there is no automated Binary Compatibility Validator gate. Reviewers verify that any public-surface change is intentional and that the version bump reflects it.
 
 ## Deprecation Policy
 

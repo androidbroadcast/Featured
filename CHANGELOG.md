@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-05-30
 
 ### Removed
 
@@ -31,12 +31,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New `dev.androidbroadcast.featured.application` Gradle plugin: aggregates `featured-manifest.json` artifacts from project dependencies declared via `featuredAggregation(project(...))` and generates `object GeneratedFeaturedRegistry { val all: List<ConfigParam<*>> }` in `build/generated/featured/commonMain/`. Apply alongside `dev.androidbroadcast.featured` in the application module; wire the output directory into your source set manually (e.g., `kotlin.sourceSets.commonMain.kotlin.srcDir(...)`). Modules declaring `enum` flags also require a regular `implementation(project(...))` dependency in the consumer so the enum class is on the compile classpath; primitive-only modules need only `featuredAggregation(...)`.
 - Three KMP sample feature modules — `:sample:feature-checkout`, `:sample:feature-promotions`, `:sample:feature-ui` — each declaring its own flags via the `featured { ... }` DSL. Serves as the canonical multi-module reference.
 - `EnumDropdown` component in `featured-debug-ui` for overriding `enum`-typed flags in `FeatureFlagsDebugScreen`; `ConfigParam<E>` now carries `enumConstants: List<E>?` populated by codegen so the debug UI can render the dropdown without reflection.
-- `featured-gradle-plugin` extracted to a `build-logic/` included build; `pluginManagement { includeBuild("build-logic") }` in the root `settings.gradle.kts` exposes it to all main-build subprojects without a version coordinate.
+- `featured-gradle-plugin` lives at the repo root as an included build; `pluginManagement { includeBuild("featured-gradle-plugin") }` in the root `settings.gradle.kts` exposes it to all main-build subprojects without a version coordinate.
 
 ### Fixed
 
 - Restored R8 per-function DCE: ProGuard `-assumevalues` rules now target the actual Kotlin-compiled class name (`GeneratedFlagExtensionsXKt`). The rules were silently no-op since `@file:JvmName` was removed in an earlier PR; unused boolean flags are once again eliminated at shrinking time.
 - iOS framework can now `export(project(":sample:feature-*"))` without the K/N `ObjCExportCodeGenerator` crashing — requires `api(project(...))` linkage in the aggregator module so K/N has access to type adapters for generic `ConfigParam<E>` specializations.
+
+### Platform stability
+
+- **Android — Stable.** Public API and behavior are covered by SemVer.
+- **iOS (SKIE / Swift DCE) — Preview.** Functional, but the Swift-facing API and the SPM packaging may change in minor releases without a major bump.
+- **JVM — Preview.** Functional, but the API may change in minor releases without a major bump.
 
 ## [1.0.0-Beta1] - 2026-05-17
 
@@ -115,5 +121,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - License mismatch: use MIT in all POM declarations (#174)
 - Stale artifact IDs in quick-start docs (#179)
 
-[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.0.0-Beta1...HEAD
+[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/androidbroadcast/Featured/compare/v1.0.0-Beta1...v1.0.0
 [1.0.0-Beta1]: https://github.com/androidbroadcast/Featured/releases/tag/v1.0.0-Beta1
