@@ -1,5 +1,9 @@
 # iOS Integration Guide: Swift Dead Code Elimination with #if
 
+!!! warning "Preview"
+    iOS support is functional but API stability is not yet guaranteed.
+    Stable iOS support is planned for a future minor release.
+
 This guide explains how to use the `featured-gradle-plugin` xcconfig output to eliminate
 disabled feature-flag code paths from your iOS Release binaries at compile time.
 

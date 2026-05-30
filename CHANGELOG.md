@@ -5,7 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-05-30
+
+First stable release of Featured.
+
+Android is the primary stable target in this release — the public API for all
+`dev.androidbroadcast.featured:*` artifacts published to Maven Central is covered
+by semantic versioning guarantees from this version onward.
+
+iOS (via KMP / SKIE) and JVM targets are included and functional, but API stability
+guarantees for those platforms will be formalised in a future minor release.
+
+See [[1.0.0-Beta1]](#100-beta1---2026-05-17) for the full list of features added in the initial release.
 
 ## [1.0.0-Beta1] - 2026-05-17
 
@@ -84,5 +95,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - License mismatch: use MIT in all POM declarations (#174)
 - Stale artifact IDs in quick-start docs (#179)
 
-[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.0.0-Beta1...HEAD
+[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/androidbroadcast/Featured/compare/v1.0.0-Beta1...v1.0.0
 [1.0.0-Beta1]: https://github.com/androidbroadcast/Featured/releases/tag/v1.0.0-Beta1

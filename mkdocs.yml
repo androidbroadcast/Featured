@@ -1,5 +1,5 @@
 site_name: Featured
-site_description: Type-safe, reactive feature-flag and configuration management for Kotlin Multiplatform
+site_description: Type-safe, reactive feature-flag and configuration management for Android (Kotlin Multiplatform)
 site_url: https://androidbroadcast.github.io/Featured/
 repo_name: AndroidBroadcast/Featured
 repo_url: https://github.com/AndroidBroadcast/Featured
@@ -32,7 +32,8 @@ theme:
     - content.tabs.link
 
 exclude_docs: |
-  superpowers/
+  cc-verification/
+  specs/
 
 plugins:
   - search
@@ -56,11 +57,13 @@ nav:
   - Getting Started: getting-started.md
   - Guides:
       - Android: guides/android.md
-      - iOS: guides/ios.md
       - JVM: guides/jvm.md
       - Providers: guides/providers.md
       - Best Practices: guides/best-practices.md
       - R8 DCE Verification: guides/r8-verification.md
-      - iOS Dead-Code Elimination: ios-integration.md
+      - Known Limitations: known-limitations.md
+  - iOS Preview:
+      - iOS Integration: guides/ios.md
+      - Swift Dead-Code Elimination: ios-integration.md
   - API Reference: api/index.md
   - Changelog: changelog.md
