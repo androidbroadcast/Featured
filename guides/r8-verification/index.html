@@ -638,6 +638,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keep-rules-vs-flag-guarded-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keep rules vs. flag-guarded code
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#running-the-tests" class="md-nav__link">
     <span class="md-ellipsis">
       Running the tests
@@ -899,6 +908,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keep-rules-vs-flag-guarded-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keep rules vs. flag-guarded code
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#running-the-tests" class="md-nav__link">
     <span class="md-ellipsis">
       Running the tests
@@ -993,6 +1011,9 @@ present or absent, proving that the rule caused (or did not cause) elimination.<
 </table>
 <p>The third test is a control: it proves that elimination is caused by the rule, not by R8's
 own constant-folding.</p>
+<p>The fourth test — <code>dead-branch class survives when a user -keep rule pins it despite the
+assumevalues rule</code> — covers the consumer pitfall described in
+<a href="#keep-rules-vs-flag-guarded-code">Keep rules vs. flag-guarded code</a> below.</p>
 <h3 id="int-flags-r8intflageliminationtest">Int flags (<code>R8IntFlagEliminationTest</code>)<a class="headerlink" href="#int-flags-r8intflageliminationtest" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -1017,6 +1038,47 @@ own constant-folding.</p>
 </table>
 <p>With <code>-assumevalues return 0</code>, R8 constant-folds <code>0 &gt; 0</code> to <code>false</code> and eliminates the
 guarded block entirely.</p>
+<h2 id="keep-rules-vs-flag-guarded-code">Keep rules vs. flag-guarded code<a class="headerlink" href="#keep-rules-vs-flag-guarded-code" title="Permanent link">&para;</a></h2>
+<p>Dead-code elimination for a disabled flag happens in two distinct R8 phases:</p>
+<ol>
+<li><strong>Constant folding + branch elimination</strong> (an <em>optimization</em>). The <code>-assumevalues</code> rule
+   pins the flag accessor to a constant, so R8 folds <code>if (false) { … }</code> and removes the dead
+   branch — including the call into the flag-guarded class — from the <em>caller's</em> method body.</li>
+<li><strong>Tree-shaking</strong> (a <em>shrink</em>). Once nothing references the flag-guarded class anymore, it
+   becomes unreachable and R8 drops it from the output.</li>
+</ol>
+<p>Phase 2 is reachability-based, and <code>-keep</code> is an <strong>unconditional root</strong> of the reachability
+graph. So if a consumer adds a <code>-keep</code> that covers a flag-guarded class:</p>
+<ul>
+<li>Phase 1 <strong>still runs</strong> — the branch is still folded away, the guarded code never executes,
+  and runtime behaviour is unchanged. No crash, no correctness regression.</li>
+<li>Phase 2 <strong>does not run</strong> for that class — R8 treats it as always-reachable and keeps it in
+  the APK even though nothing references it.</li>
+</ul>
+<p><strong>The net effect is a silent loss of the size benefit:</strong> dead code ships in the APK with no
+visible symptom. This is verified by the <code>dead-branch class survives when a user -keep rule
+pins it…</code> test in <code>R8BooleanFlagEliminationTest</code>.</p>
+<p>A deliberate <code>-keep</code> on a specific flag class is rare. The realistic causes are <strong>broad
+rules that accidentally cover flag-guarded code</strong>:</p>
+<ul>
+<li>catch-all wildcards such as <code>-keep class com.myapp.** { *; }</code>;</li>
+<li><code>@Keep</code> annotations applied at a package or base-class level;</li>
+<li>reflection / serialization keep rules (Gson, Moshi, etc.) and DI keep rules;</li>
+<li><code>consumer-rules.pro</code> shipped by third-party libraries.</li>
+</ul>
+<p><strong>Recommendation:</strong> keep these rules as narrow as possible and avoid blanket <code>-keep</code> over
+packages that contain flag-guarded features.</p>
+<p>One related rule is <em>not</em> a problem and should not be "fixed":</p>
+<ul>
+<li><code>-keep</code> on the <strong>flag accessor method</strong> — <code>-assumevalues</code> still constant-folds the value, so
+  branch elimination is unaffected; <code>-keep</code> only prevents removing/renaming the method itself.</li>
+</ul>
+<p>A separate hazard, <strong>not</strong> a keep rule, also defeats elimination and should be avoided:</p>
+<ul>
+<li><code>-dontoptimize</code> disables phase 1 entirely and stops all constant folding, so disabled
+  branches are never removed in the first place. Do not enable it in a build that relies on
+  build-time flag DCE.</li>
+</ul>
 <h2 id="running-the-tests">Running the tests<a class="headerlink" href="#running-the-tests" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>./gradlew<span class="w"> </span>:featured-shrinker-tests:test
 </code></pre></div>
