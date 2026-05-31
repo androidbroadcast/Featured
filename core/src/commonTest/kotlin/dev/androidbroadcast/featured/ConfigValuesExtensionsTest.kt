@@ -70,7 +70,9 @@ class ConfigValuesExtensionsTest {
         runTest {
             val provider = InMemoryConfigValueProvider()
             val configValues = ConfigValues(localProvider = provider)
-            provider.set(darkModeParam, true)
+            // Use configValues.override so the snapshot is warmed; isEnabled is now non-suspend
+            // and reads from the snapshot only.
+            configValues.override(darkModeParam, true)
 
             assertEquals(true, configValues.isEnabled(darkModeParam))
         }

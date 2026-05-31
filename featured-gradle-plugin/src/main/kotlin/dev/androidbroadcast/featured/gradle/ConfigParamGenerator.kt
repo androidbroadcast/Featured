@@ -1,34 +1,80 @@
 package dev.androidbroadcast.featured.gradle
 
 /**
- * Generates `GeneratedLocalFlags.kt` and `GeneratedRemoteFlags.kt` — internal objects
- * containing one typed `ConfigParam` property per declared flag.
+ * Generates `GeneratedLocalFlags<Suffix>.kt` and `GeneratedRemoteFlags<Suffix>.kt` — internal
+ * objects containing one typed `ConfigParam` property per declared flag.
  *
- * Generated example for a local Boolean flag `dark_mode`:
+ * Generated example for a local Boolean flag `dark_mode` in module `:sample:feature-checkout`:
  * ```kotlin
- * internal object GeneratedLocalFlags {
+ * internal object GeneratedLocalFlagsSampleFeatureCheckout {
  *     val darkMode = ConfigParam<Boolean>("dark_mode", false, category = "UI")
  * }
  * ```
  *
- * These objects are `internal` — consumers access flags exclusively through the
- * generated extension functions in [ExtensionFunctionGenerator].
+ * The object name and file name include a module-derived suffix (e.g. `SampleFeatureCheckout`)
+ * so that each module's generated class has a unique JVM name, avoiding duplicate-class errors
+ * when multiple modules are assembled into the same DEX or JAR.
+ *
+ * These objects are `internal` to their declaring Gradle module — a module's flag declarations
+ * are an implementation detail that other modules must not reference directly. Cross-module
+ * flag introspection goes exclusively through [GeneratedFeaturedRegistry.all], which constructs
+ * `ConfigParam` instances inline from manifest data without referencing these objects.
  */
 public object ConfigParamGenerator {
     private const val PACKAGE = "dev.androidbroadcast.featured.generated"
     private const val CONFIG_PARAM_IMPORT = "dev.androidbroadcast.featured.ConfigParam"
+    private const val LOCAL_OBJECT_PREFIX = "GeneratedLocalFlags"
+    private const val REMOTE_OBJECT_PREFIX = "GeneratedRemoteFlags"
 
     /**
-     * Generates the Kotlin source for `GeneratedLocalFlags.kt` and
-     * `GeneratedRemoteFlags.kt` as a pair.
+     * Returns the generated object name for local flags in the given module.
+     *
+     * Examples:
+     * - `":app"` → `"GeneratedLocalFlagsApp"`
+     * - `":sample:feature-checkout"` → `"GeneratedLocalFlagsSampleFeatureCheckout"`
+     */
+    public fun localObjectName(modulePath: String): String = "$LOCAL_OBJECT_PREFIX${modulePath.modulePathToFileSuffix()}"
+
+    /**
+     * Returns the generated object name for remote flags in the given module.
+     *
+     * Examples:
+     * - `":app"` → `"GeneratedRemoteFlagsApp"`
+     * - `":sample:feature-promotions"` → `"GeneratedRemoteFlagsSampleFeaturePromotions"`
+     */
+    public fun remoteObjectName(modulePath: String): String = "$REMOTE_OBJECT_PREFIX${modulePath.modulePathToFileSuffix()}"
+
+    /**
+     * Returns the emitted `.kt` file name for the local-flags object of the given module.
+     *
+     * The object name is derived from the module path, making the JVM class name unique per module.
+     */
+    public fun localFileName(modulePath: String): String = "${localObjectName(modulePath)}.kt"
+
+    /**
+     * Returns the emitted `.kt` file name for the remote-flags object of the given module.
+     *
+     * The object name is derived from the module path, making the JVM class name unique per module.
+     */
+    public fun remoteFileName(modulePath: String): String = "${remoteObjectName(modulePath)}.kt"
+
+    /**
+     * Generates the Kotlin source for the module-specific local-flags and remote-flags objects
+     * as a pair.
+     *
+     * The object names and file names include a module-derived suffix (see [localObjectName] /
+     * [remoteObjectName]) so that each module's classes are unique at the JVM level.
      *
      * Returns a pair of `(localSource, remoteSource)`. Either may be an empty string
      * if there are no flags of that type.
      */
-    public fun generate(entries: List<LocalFlagEntry>): Pair<String, String> {
+    public fun generate(
+        entries: List<LocalFlagEntry>,
+        modulePath: String,
+    ): Pair<String, String> {
         val (local, remote) = entries.partition { it.isLocal }
-        return generateObject(local, LocalFlagEntry.GENERATED_LOCAL_OBJECT) to
-            generateObject(remote, LocalFlagEntry.GENERATED_REMOTE_OBJECT)
+        return generateObject(local, localObjectName(modulePath)) to
+            generateObject(remote, remoteObjectName(modulePath))
     }
 
     private fun generateObject(
@@ -58,6 +104,7 @@ public object ConfigParamGenerator {
                 add("defaultValue = ${formatDefault()}")
                 if (description != null) add("description = \"$description\"")
                 if (category != null) add("category = \"$category\"")
+                if (isEnum) add("enumConstants = kotlin.enums.enumEntries<$type>()")
             }
         return "ConfigParam<$typeArg>(${namedArgs.joinToString(", ")})"
     }

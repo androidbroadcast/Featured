@@ -29,7 +29,7 @@ import FeaturedSampleApp
 //
 // When the flag is defaultValue = false the compiler strips the guarded code
 // from the Release binary entirely, with zero runtime overhead.
-// See docs/ios-integration.md for the full integration guide.
+// See https://github.com/AndroidBroadcast/Featured/wiki/iOS-DCE-xcconfig for the full integration guide.
 
 /// A type-safe wrapper around a KMP CoreConfigParam.
 ///

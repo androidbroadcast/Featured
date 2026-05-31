@@ -18,8 +18,8 @@ import org.gradle.api.tasks.TaskAction
  *
  * where `propertyName` is the camelCase conversion of `key` (e.g. `dark_mode` → `darkMode`).
  *
- * Downstream tasks ([GenerateFlagRegistrarTask], [GenerateProguardRulesTask],
- * [GenerateConfigParamTask], etc.) declare [outputFile] as their `@InputFile` to
+ * Downstream tasks ([GenerateProguardRulesTask], [GenerateConfigParamTask], etc.)
+ * declare [outputFile] as their `@InputFile` to
  * establish a proper task dependency and enable configuration-cache compatibility.
  */
 @CacheableTask

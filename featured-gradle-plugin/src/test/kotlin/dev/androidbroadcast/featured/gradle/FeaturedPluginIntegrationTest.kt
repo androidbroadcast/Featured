@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
  * End-to-end integration test that verifies the Featured Gradle plugin:
  * 1. Generates a ProGuard file at `build/featured/proguard-featured.pro` with correct
  *    `-assumevalues` rules for declared local flags.
- * 2. Auto-wires that file into the AGP release variant so the `generateProguardRules`
+ * 2. Auto-wires that file into the AGP release variant so the `generateFeaturedProguardRules`
  *    task participates in `assembleRelease`.
  *
  * The test uses a minimal Android application fixture copied from
@@ -49,17 +49,17 @@ class FeaturedPluginIntegrationTest {
     // ── Tests ─────────────────────────────────────────────────────────────────
 
     @Test
-    fun `generateProguardRules task produces correct assumevalues rule for boolean local flag`() {
+    fun `generateFeaturedProguardRules task produces correct assumevalues rule for boolean local flag`() {
         val result =
             gradleRunner(projectDir)
-                .withArguments("generateProguardRules", "--stacktrace")
+                .withArguments("generateFeaturedProguardRules", "--stacktrace")
                 .build()
 
-        val outcome = result.task(":generateProguardRules")?.outcome
+        val outcome = result.task(":generateFeaturedProguardRules")?.outcome
         assertEquals(
             TaskOutcome.SUCCESS,
             outcome,
-            "Expected :generateProguardRules to succeed, got $outcome\n${result.output}",
+            "Expected :generateFeaturedProguardRules to succeed, got $outcome\n${result.output}",
         )
 
         val proFile = projectDir.resolve("build/featured/proguard-featured.pro")
@@ -138,13 +138,13 @@ class FeaturedPluginIntegrationTest {
                 .withArguments(args)
                 .build()
 
-        // generateProguardRules must have run as part of the release build.
-        val proguardOutcome = result.task(":generateProguardRules")?.outcome
+        // generateFeaturedProguardRules must have run as part of the release build.
+        val proguardOutcome = result.task(":generateFeaturedProguardRules")?.outcome
         assertTrue(
             proguardOutcome == TaskOutcome.SUCCESS ||
                 proguardOutcome == TaskOutcome.UP_TO_DATE ||
                 proguardOutcome == TaskOutcome.FROM_CACHE,
-            "Expected :generateProguardRules to participate in assembleRelease (cc=$cc), got $proguardOutcome\n${result.output}",
+            "Expected :generateFeaturedProguardRules to participate in assembleRelease (cc=$cc), got $proguardOutcome\n${result.output}",
         )
 
         // On the second CC-enabled run, the cache is reused AND all task outputs are unchanged,
@@ -189,13 +189,14 @@ class FeaturedPluginIntegrationTest {
      *
      * Expected output (from [ProguardRulesGenerator]):
      * ```proguard
-     * -assumevalues class dev.androidbroadcast.featured.generated.FeaturedRoot_FlagExtensionsKt {
+     * -assumevalues class dev.androidbroadcast.featured.generated.GeneratedFlagExtensionsRootKt {
      *     boolean isDarkModeEnabled(dev.androidbroadcast.featured.ConfigValues) return false;
      * }
      * ```
      *
-     * The root module path `:` produces the identifier `Root` via [String.modulePathToIdentifier],
-     * so the JVM class name is `FeaturedRoot_FlagExtensionsKt`.
+     * The root module path `:` produces the file suffix `Root` via [String.modulePathToFileSuffix],
+     * so the Kotlin file is `GeneratedFlagExtensionsRoot.kt` and the JVM class name
+     * (Kotlin's file-to-class convention) is `GeneratedFlagExtensionsRootKt`.
      *
      * Enum flags (`checkout_variant`) must not appear in `-assumevalues` rules — their values
      * are resolved at runtime from providers and cannot be assumed at build time (issue #162).
@@ -281,9 +282,10 @@ class FeaturedPluginIntegrationTest {
 
     private companion object {
         // The fixture is a single-project (root) build.
-        // modulePathToIdentifier(":") → "Root" → jvmFileName → "FeaturedRoot_FlagExtensionsKt"
+        // modulePathToFileSuffix(":") → "Root" → fileName → "GeneratedFlagExtensionsRoot.kt"
+        // → JVM class: "GeneratedFlagExtensionsRootKt"
         const val EXTENSIONS_FQN =
-            "dev.androidbroadcast.featured.generated.FeaturedRoot_FlagExtensionsKt"
+            "dev.androidbroadcast.featured.generated.GeneratedFlagExtensionsRootKt"
         const val CONFIG_VALUES_FQN = "dev.androidbroadcast.featured.ConfigValues"
         const val IS_DARK_MODE_ENABLED = "isDarkModeEnabled"
     }

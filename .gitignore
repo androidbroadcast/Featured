@@ -23,3 +23,9 @@ captures
 /docs/superpowers/
 /docs/adr/
 /.claude/worktrees/
+/.claude/agent-memory/
+/.claude/scheduled_tasks.lock
+/.wiki/
+/.build/
+secring.gpg
+*.gpg

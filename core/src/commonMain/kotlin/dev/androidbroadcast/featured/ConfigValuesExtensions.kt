@@ -58,8 +58,14 @@ public fun <T : Any> ConfigValues.asStateFlow(
 /**
  * Returns `true` if the Boolean configuration parameter [param] is currently enabled.
  *
- * This is a convenience wrapper around [ConfigValues.getValue] for [Boolean] parameters,
- * eliminating the need to unwrap the [ConfigValue] envelope at every call site.
+ * This is a **synchronous**, non-suspend read from the in-memory snapshot. It returns
+ * [ConfigParam.defaultValue] before the snapshot is warmed by [ConfigValues.getValue],
+ * [ConfigValues.fetch], or [ConfigValues.override] — matching Firebase Remote Config's
+ * "activate-then-read" contract.
+ *
+ * This replaces the previous `suspend` variant (breaking change). Callers that used
+ * `runBlocking { isEnabled(p) }` or collected inside a coroutine scope can now call it
+ * directly from any context.
  *
  * ```kotlin
  * if (configValues.isEnabled(MyFeatureParam)) {
@@ -68,9 +74,10 @@ public fun <T : Any> ConfigValues.asStateFlow(
  * ```
  *
  * @param param The Boolean configuration parameter to read.
- * @return The current value of [param], or [ConfigParam.defaultValue] when no provider returns one.
+ * @return The cached value of [param], or [ConfigParam.defaultValue] when the snapshot has
+ *   not been populated for this parameter yet.
  */
-public suspend fun ConfigValues.isEnabled(param: ConfigParam<Boolean>): Boolean = getValue(param).value
+public fun ConfigValues.isEnabled(param: ConfigParam<Boolean>): Boolean = getValueCached(param).value
 
 /**
  * Returns a [Flow] that emits the current enabled-state for [param] and updates on every change.

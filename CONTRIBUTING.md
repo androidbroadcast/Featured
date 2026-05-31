@@ -63,16 +63,14 @@ Featured follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`
 - Changing a function signature in a way that requires call-site updates
 - Changing the behavior of an existing API in a way that requires migration
 
-Binary Compatibility Validator (BCV) enforces this automatically — a CI check will fail if
-a public API surface changes without an explicit `apiDump` update.
+Public API changes are reviewed manually during code review — there is no automated Binary Compatibility Validator gate. Reviewers verify that any public-surface change is intentional and that the version bump reflects it.
 
-## Deprecation Policy
+## API Stability and Breaking Changes
 
-1. An API is marked `@Deprecated` with a `ReplaceWith` suggestion and a `DeprecationLevel.WARNING`.
-2. The deprecated API is kept for **at least one minor release** before being promoted to `ERROR` level.
-3. APIs at `ERROR` level are removed in the **next major release**.
+Featured has **no deprecation or migration window**. Breaking changes are made directly; the version number reflects the impact per the Versioning table above.
 
-Example timeline: deprecated in `1.2.0` → error in `1.3.0` → removed in `2.0.0`.
+- **Android (Stable):** a breaking public-API change (removed/renamed symbol, changed signature) requires a `MAJOR` version bump.
+- **iOS (Preview) and JVM (Preview):** public API may change in `MINOR` releases without a major bump; no migration window is provided.
 
 ## Releasing a New Version
 

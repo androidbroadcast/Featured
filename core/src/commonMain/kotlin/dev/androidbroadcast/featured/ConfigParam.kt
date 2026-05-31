@@ -58,6 +58,11 @@ public class ConfigParam<T : Any>
          * Useful for tracking parameter lifecycle.
          */
         public val since: String? = null,
+        /**
+         * All declared constants of the enum type, or `null` for non-enum params.
+         * Populated by the code generator via `enumValues<T>().toList()`; not set for hand-written params.
+         */
+        public val enumConstants: List<T>? = null,
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -70,7 +75,8 @@ public class ConfigParam<T : Any>
                 valueType == other.valueType &&
                 description == other.description &&
                 category == other.category &&
-                since == other.since
+                since == other.since &&
+                enumConstants == other.enumConstants
         }
 
         override fun hashCode(): Int = key.hashCode()
@@ -85,6 +91,7 @@ public class ConfigParam<T : Any>
                 appendIfPresent(key = "description", description)
                 appendIfPresent(key = "category", category)
                 appendIfPresent(key = "since", since)
+                appendIfPresent(key = "enumConstants", enumConstants)
 
                 append(')')
             }
@@ -131,6 +138,7 @@ public inline fun <reified T : Any> ConfigParam(
     description: String? = null,
     category: String? = null,
     since: String? = null,
+    enumConstants: List<T>? = null,
 ): ConfigParam<T> =
     ConfigParam(
         key = key,
@@ -139,4 +147,5 @@ public inline fun <reified T : Any> ConfigParam(
         description = description,
         category = category,
         since = since,
+        enumConstants = enumConstants,
     )

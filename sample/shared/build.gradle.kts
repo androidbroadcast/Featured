@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.skie)
+    id("dev.androidbroadcast.featured.application")
 }
 
 kotlin {
@@ -34,6 +35,9 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "FeaturedSampleApp"
             isStatic = true
+            export(project(":sample:feature-checkout"))
+            export(project(":sample:feature-promotions"))
+            export(project(":sample:feature-ui"))
         }
     }
 
@@ -50,11 +54,28 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            // :core types (ConfigValues, ConfigParam, InMemoryConfigValueProvider) appear in
-            // the public signatures of SampleApp / SampleViewModel — must be api to compile
-            // downstream consumers like :sample:desktop. Pre-existing leak from #182.
+            // :core is used directly in :sample:shared's iosMain (MainViewController.kt)
+            // for ConfigValues + InMemoryConfigValueProvider construction, and per-feature
+            // VM constructors take ConfigValues. Kept as api so platform shells reuse the
+            // transitive chain without re-declaring :core themselves.
             api(project(":core"))
-            implementation(project(":featured-registry"))
+
+            // Per-feature ViewModel types (CheckoutFlagsViewModel, PromotionsFlagsViewModel,
+            // UiFlagsViewModel) appear in SampleApp's public signature — api so that platform
+            // shells (:sample:android-app, :sample:desktop, iosMain) can reference them.
+            api(project(":sample:feature-checkout"))
+            api(project(":sample:feature-promotions"))
+            api(project(":sample:feature-ui"))
         }
     }
+
+    sourceSets.commonMain.get().kotlin.srcDir(
+        tasks.named("generateFeaturedRegistry").map { it.outputs.files.singleFile.parentFile },
+    )
+}
+
+dependencies {
+    featuredAggregation(project(":sample:feature-checkout"))
+    featuredAggregation(project(":sample:feature-promotions"))
+    featuredAggregation(project(":sample:feature-ui"))
 }

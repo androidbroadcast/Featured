@@ -19,7 +19,7 @@ struct ContentView: View {
             // #if entry point pattern demo: DISABLE_NEW_CHECKOUT is set in
             // FeatureFlags.generated.xcconfig when @LocalFlag new_checkout has
             // defaultValue = false. The compiler removes this block in Release.
-            // See FeatureFlags.swift and docs/ios-integration.md for setup.
+            // See FeatureFlags.swift and https://github.com/AndroidBroadcast/Featured/wiki/iOS-DCE-xcconfig for setup.
             #if !DISABLE_NEW_CHECKOUT
             NewCheckoutBanner()
             #endif

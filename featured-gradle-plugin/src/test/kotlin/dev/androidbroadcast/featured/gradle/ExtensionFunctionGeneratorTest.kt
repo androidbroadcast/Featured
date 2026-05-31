@@ -8,26 +8,33 @@ import kotlin.test.assertTrue
 class ExtensionFunctionGeneratorTest {
     private val modulePath = ":feature:checkout"
 
-    // ── JVM file name ─────────────────────────────────────────────────────────
+    // ── generated file name ───────────────────────────────────────────────────
 
     @Test
-    fun `jvmFileName for app module`() {
-        val name = ExtensionFunctionGenerator.jvmFileName(":app")
+    fun `fileName for app module`() {
+        val name = ExtensionFunctionGenerator.fileName(":app")
         assertContains(name, "App")
-        assertContains(name, "FlagExtensionsKt")
+        assertTrue(name.endsWith(".kt"), "File name must end with .kt")
     }
 
     @Test
-    fun `jvmFileName for nested module`() {
-        val name = ExtensionFunctionGenerator.jvmFileName(":feature:checkout")
+    fun `fileName for nested module`() {
+        val name = ExtensionFunctionGenerator.fileName(":feature:checkout")
         assertContains(name, "FeatureCheckout")
     }
 
     @Test
-    fun `jvmFileName for different modules are distinct`() {
-        val a = ExtensionFunctionGenerator.jvmFileName(":feature:checkout")
-        val b = ExtensionFunctionGenerator.jvmFileName(":feature:ui")
-        assertFalse(a == b, "Different modules must produce distinct JVM names")
+    fun `fileName for hyphenated module segment`() {
+        val name = ExtensionFunctionGenerator.fileName(":sample:feature-checkout")
+        assertContains(name, "SampleFeatureCheckout")
+        assertFalse(name.contains("-"), "File name must not contain hyphens")
+    }
+
+    @Test
+    fun `fileName for different modules are distinct`() {
+        val a = ExtensionFunctionGenerator.fileName(":feature:checkout")
+        val b = ExtensionFunctionGenerator.fileName(":feature:ui")
+        assertFalse(a == b, "Different modules must produce distinct file names")
     }
 
     // ── empty input ───────────────────────────────────────────────────────────
@@ -48,17 +55,18 @@ class ExtensionFunctionGeneratorTest {
     }
 
     @Test
-    fun `local boolean extension returns raw value`() {
+    fun `local boolean extension returns raw value via getValueCached`() {
         val entries = listOf(localEntry("dark_mode", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
-        assertContains(source, "getValue(GeneratedLocalFlags.darkMode).value")
+        assertContains(source, "getValueCached(GeneratedLocalFlagsFeatureCheckout.darkMode).value")
     }
 
     @Test
-    fun `local boolean extension is public`() {
+    fun `local boolean extension is internal non-suspend`() {
         val entries = listOf(localEntry("dark_mode", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
-        assertContains(source, "public fun ConfigValues.isDarkModeEnabled()")
+        assertContains(source, "internal fun ConfigValues.isDarkModeEnabled()")
+        assertFalse(source.contains("suspend fun ConfigValues.isDarkModeEnabled()"), "Must not emit suspend modifier")
     }
 
     // ── local non-boolean flag ────────────────────────────────────────────────
@@ -68,7 +76,7 @@ class ExtensionFunctionGeneratorTest {
         val entries = listOf(localEntry("max_retries", "Int"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
         assertContains(source, "fun ConfigValues.getMaxRetries(): Int")
-        assertContains(source, "getValue(GeneratedLocalFlags.maxRetries).value")
+        assertContains(source, "getValueCached(GeneratedLocalFlagsFeatureCheckout.maxRetries).value")
     }
 
     @Test
@@ -85,7 +93,7 @@ class ExtensionFunctionGeneratorTest {
         val entries = listOf(localEntry("checkout_variant", "com.example.CheckoutVariant"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
         assertContains(source, "fun ConfigValues.getCheckoutVariant(): com.example.CheckoutVariant")
-        assertContains(source, "getValue(GeneratedLocalFlags.checkoutVariant).value")
+        assertContains(source, "getValueCached(GeneratedLocalFlagsFeatureCheckout.checkoutVariant).value")
     }
 
     @Test
@@ -102,7 +110,8 @@ class ExtensionFunctionGeneratorTest {
         val entries = listOf(remoteEntry("promo_banner", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
         assertContains(source, "fun ConfigValues.getPromoBanner(): ConfigValue<Boolean>")
-        assertContains(source, "getValue(GeneratedRemoteFlags.promoBanner)")
+        assertContains(source, "getValueCached(GeneratedRemoteFlagsFeatureCheckout.promoBanner)")
+        assertFalse(source.contains("suspend "), "Must not emit suspend modifier anywhere")
     }
 
     @Test
@@ -110,7 +119,7 @@ class ExtensionFunctionGeneratorTest {
         val entries = listOf(remoteEntry("promo_banner", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
         assertFalse(
-            source.contains("GeneratedRemoteFlags.promoBanner).value"),
+            source.contains("GeneratedRemoteFlagsFeatureCheckout.promoBanner).value"),
             "Remote extensions must return full ConfigValue, not unwrapped value",
         )
     }
@@ -118,10 +127,12 @@ class ExtensionFunctionGeneratorTest {
     // ── file structure ────────────────────────────────────────────────────────
 
     @Test
-    fun `generated file has JvmName annotation`() {
+    fun `generated file does not contain JvmName annotation`() {
+        // @file:JvmName is not supported on Kotlin/Native; class-name uniqueness is
+        // achieved via the module-derived file name instead.
         val entries = listOf(localEntry("flag", "Boolean"))
         val source = ExtensionFunctionGenerator.generate(entries, modulePath)
-        assertContains(source, "@file:JvmName(\"${ExtensionFunctionGenerator.jvmFileName(modulePath)}\")")
+        assertFalse(source.contains("@file:JvmName"), "Generated file must not contain @file:JvmName")
     }
 
     @Test

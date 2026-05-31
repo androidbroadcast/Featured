@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 
 class GenerateProguardRulesTaskRegistrationTest {
     @Test
-    fun `plugin registers generateProguardRules task`() {
+    fun `plugin registers generateFeaturedProguardRules task`() {
         val project = ProjectBuilder.builder().build()
         project.plugins.apply("dev.androidbroadcast.featured")
 
@@ -19,7 +19,7 @@ class GenerateProguardRulesTaskRegistrationTest {
     }
 
     @Test
-    fun `generateProguardRules task is of correct type`() {
+    fun `generateFeaturedProguardRules task is of correct type`() {
         val project = ProjectBuilder.builder().build()
         project.plugins.apply("dev.androidbroadcast.featured")
 
@@ -29,7 +29,7 @@ class GenerateProguardRulesTaskRegistrationTest {
     }
 
     @Test
-    fun `generateProguardRules task is in featured group`() {
+    fun `generateFeaturedProguardRules task is in featured group`() {
         val project = ProjectBuilder.builder().build()
         project.plugins.apply("dev.androidbroadcast.featured")
 
@@ -39,7 +39,7 @@ class GenerateProguardRulesTaskRegistrationTest {
     }
 
     @Test
-    fun `generateProguardRules task has outputFile configured`() {
+    fun `generateFeaturedProguardRules task has outputFile configured`() {
         val project = ProjectBuilder.builder().build()
         project.plugins.apply("dev.androidbroadcast.featured")
 
@@ -49,7 +49,7 @@ class GenerateProguardRulesTaskRegistrationTest {
     }
 
     @Test
-    fun `generateProguardRules task depends on resolveFeatureFlags task`() {
+    fun `generateFeaturedProguardRules task depends on resolveFeatureFlags task`() {
         val project = ProjectBuilder.builder().build()
         project.plugins.apply("dev.androidbroadcast.featured")
 

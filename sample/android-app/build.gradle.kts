@@ -48,6 +48,9 @@ dependencies {
     implementation(project(":sample:shared"))
     implementation(project(":featured-debug-ui"))
     implementation(project(":featured-platform"))
+    implementation(project(":providers:datastore"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
+    // viewModel { } composable used in setContent to scope VMs to the Activity ViewModelStore.
+    implementation(libs.androidx.lifecycle.viewmodelCompose)
 }

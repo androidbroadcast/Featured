@@ -14,7 +14,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -38,12 +42,11 @@ import androidx.compose.ui.unit.dp
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
 import dev.androidbroadcast.featured.ConfigValues
-import dev.androidbroadcast.featured.registry.FlagRegistry
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 
 /**
- * A ready-to-use debug screen that lists all feature flags registered in [FlagRegistry]
+ * A ready-to-use debug screen that lists all feature flags in the provided [registry]
  * and allows toggling boolean flags or viewing current values for other types.
  *
  * Flags are grouped by [ConfigParam.category]. Each flag shows its current value, source
@@ -55,7 +58,17 @@ import kotlinx.coroutines.launch
  *
  * Intended for debug/internal builds only.
  *
+ * Pass `GeneratedFeaturedRegistry.all` (from the `dev.androidbroadcast.featured.application`
+ * plugin) or build the list explicitly.
+ *
  * @param configValues The [ConfigValues] instance used to read and override flag values.
+ * @param registry The list of [ConfigParam] instances to display. Must be a stable
+ *   reference (a top-level `val`, an `object` property, or a `remember`-ed list).
+ *   The screen keys its internal `LaunchedEffect` on this list via `equals` (structural).
+ *   A freshly-allocated list on every recomposition may restart the effect; prefer a
+ *   stable top-level `val` or `object` property for predictable behavior.
+ *   Each [ConfigParam.key] must be unique within the list; duplicates cause a
+ *   runtime crash in `LazyColumn` key collision.
  * @param modifier Optional [Modifier] for the root composable.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +76,7 @@ import kotlinx.coroutines.launch
 @Suppress("ktlint:standard:function-naming")
 public fun FeatureFlagsDebugScreen(
     configValues: ConfigValues,
+    registry: List<ConfigParam<*>>,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -70,16 +84,15 @@ public fun FeatureFlagsDebugScreen(
         mutableStateOf<Map<String?, List<DebugFlagItem<*>>>>(emptyMap())
     }
 
-    LaunchedEffect(configValues) {
-        val params = FlagRegistry.all()
-        groupedItems = groupFlagsByCategory(buildDebugItems(configValues, params))
+    LaunchedEffect(configValues, registry) {
+        groupedItems = groupFlagsByCategory(buildDebugItems(configValues, registry))
 
         // Reactive: observe all params and refresh on any change.
         // On each emission all params are re-read — acceptable for a debug-only screen.
-        val flows = params.map { param -> configValues.observe(param) }
+        val flows = registry.map { param -> configValues.observe(param) }
         if (flows.isNotEmpty()) {
             flows.merge().collect {
-                groupedItems = groupFlagsByCategory(buildDebugItems(configValues, params))
+                groupedItems = groupFlagsByCategory(buildDebugItems(configValues, registry))
             }
         }
     }
@@ -97,7 +110,7 @@ public fun FeatureFlagsDebugScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "No feature flags registered.",
+                    text = "No feature flags to display.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -146,6 +159,15 @@ public fun FeatureFlagsDebugScreen(
                                     )
                                 }
                             },
+                            onEnumSelect = { newValue ->
+                                scope.launch {
+                                    @Suppress("UNCHECKED_CAST")
+                                    configValues.override(
+                                        item.param as ConfigParam<Any>,
+                                        newValue,
+                                    )
+                                }
+                            },
                             onResetToDefault = {
                                 scope.launch {
                                     configValues.resetOverride(item.param)
@@ -165,6 +187,7 @@ private fun FlagItemCard(
     item: DebugFlagItem<*>,
     onToggleBoolean: (Boolean) -> Unit,
     onScalarInput: (Any) -> Unit,
+    onEnumSelect: (Any) -> Unit,
     onResetToDefault: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -209,6 +232,21 @@ private fun FlagItemCard(
                 ScalarInputField(
                     item = item,
                     onScalarInput = onScalarInput,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                )
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            val enumConstants = item.param.enumConstants as List<Enum<*>>?
+            if (enumConstants != null) {
+                EnumDropdown(
+                    label = item.key,
+                    currentValue = item.currentValue as Enum<*>,
+                    options = enumConstants,
+                    onSelect = onEnumSelect,
                     modifier =
                         Modifier
                             .fillMaxWidth()
@@ -328,5 +366,49 @@ private fun SourceBadge(source: ConfigValue.Source) {
         contentColor = style.contentColor,
     ) {
         Text(text = style.label, style = MaterialTheme.typography.labelSmall)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+@Suppress("ktlint:standard:function-naming")
+private fun EnumDropdown(
+    label: String,
+    currentValue: Enum<*>,
+    options: List<Enum<*>>,
+    onSelect: (Any) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier = modifier,
+    ) {
+        OutlinedTextField(
+            value = currentValue.name,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier =
+                Modifier
+                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                    .fillMaxWidth(),
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.name) },
+                    onClick = {
+                        onSelect(option)
+                        expanded = false
+                    },
+                )
+            }
+        }
     }
 }
