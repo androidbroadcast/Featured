@@ -39,9 +39,13 @@ jobs:
       - uses: github/codeql-action/init@v4
         with:
           languages: java-kotlin
+          build-mode: manual
 
       - name: Build for CodeQL
-        # autobuild looks for 'testClasses' which doesn't exist in KMP; build manually instead
-        run: ./gradlew assembleDebug
+        # autobuild looks for 'testClasses' which doesn't exist in KMP; build manually instead.
+        # --no-build-cache + --rerun-tasks force Kotlin to actually recompile so the CodeQL
+        # tracer observes source. Without this, cached/up-to-date compile tasks are skipped and
+        # CodeQL fails with "no source code seen during build" (exit code 32).
+        run: ./gradlew assembleDebug --no-build-cache --rerun-tasks
 
       - uses: github/codeql-action/analyze@v4

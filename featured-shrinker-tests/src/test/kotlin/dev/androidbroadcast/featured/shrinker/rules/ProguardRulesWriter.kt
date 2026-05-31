@@ -50,6 +50,32 @@ internal fun writeBooleanRules(
 }
 
 /**
+ * Same `-assumevalues` block as [writeBooleanRules] with `returnValue = false`, but with an
+ * extra `-keep class … { *; }` on the **dead-branch** class ([IF_BRANCH_CODE_FQN]).
+ *
+ * This models a consumer that — deliberately or, far more commonly, via a broad wildcard or
+ * `@Keep` rule — pins a class that is only reachable through a disabled flag branch.
+ *
+ * The `-assumevalues` rule still lets R8 constant-fold the flag and drop the dead branch's
+ * *call site*, so behaviour is unchanged. But `-keep` is an unconditional GC root: the class
+ * itself can no longer be tree-shaken and survives in the output despite being unreachable,
+ * silently defeating the size benefit of build-time flags.
+ */
+internal fun writeBooleanRulesWithKeptDeadBranch(dest: File) {
+    dest.writeText(
+        """
+        -assumevalues class $BOOL_EXTENSIONS_FQN {
+            boolean $IS_DARK_MODE_ENABLED($CONFIG_VALUES_FQN) return false;
+        }
+        -keep class $BIFURCATED_CALLER_FQN { *; }
+        -keep class $IF_BRANCH_CODE_FQN { *; }
+        -keepclassmembers class $ELSE_BRANCH_CODE_FQN { public static int sideEffect; }
+        -dontwarn **
+        """.trimIndent(),
+    )
+}
+
+/**
  * No `-assumevalues` block — R8 cannot constant-fold the flag value.
  * The `-keepclassmembers` rules ensure the `sideEffect` field is not stripped
  * while the branch-target classes remain alive via reachability from the kept caller.
