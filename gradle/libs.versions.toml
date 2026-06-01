@@ -29,6 +29,7 @@ spotless = "8.4.0"
 ktlint = "1.8.0"
 turbine = "1.2.1"
 mavenPublish = "0.36.0"
+pluginPublish = "2.1.1"
 dokka = "2.2.0"
 detekt = "1.23.8"
 configcat = "5.1.0"
@@ -93,5 +94,6 @@ kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
+pluginPublish = { id = "com.gradle.plugin-publish", version.ref = "pluginPublish" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
