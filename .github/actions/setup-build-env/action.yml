@@ -1,5 +1,5 @@
 name: Setup Build Environment
-description: Checkout code, configure Java 21 (Temurin), and set up Gradle with caching
+description: Checkout code, configure Java 17 (Temurin), and set up Gradle with caching
 
 runs:
   using: composite
