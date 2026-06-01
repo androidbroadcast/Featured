@@ -1,0 +1,66 @@
+name: Publish Plugin to Gradle Plugin Portal
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+    # No branches: branch pushes produce SNAPSHOTs; Portal rejects them.
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to check out (e.g. v1.0.0). Must point to the exact release tag."
+        required: true
+      version:
+        description: "Plugin version to publish (e.g. 1.0.0, without leading v)."
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish-plugin-portal:
+    name: Publish plugin to Gradle Plugin Portal
+    runs-on: ubuntu-latest
+    environment: Main
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # On tag push: check out the triggering tag.
+          # On workflow_dispatch: check out the explicit ref input so develop-HEAD
+          # (1.1.0-SNAPSHOT) is never published in place of the release tag.
+          ref: ${{ inputs.ref || github.ref }}
+
+      - uses: ./.github/actions/setup-build-env
+
+      - name: Determine version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ -n "${INPUT_VERSION}" ]]; then
+            # Manual dispatch: use the explicitly supplied version.
+            VERSION="${INPUT_VERSION}"
+          else
+            # Tag push: strip the leading "v" from the tag (e.g. v1.0.0 -> 1.0.0).
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          echo "VERSION_NAME=${VERSION}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Publish plugin to Gradle Plugin Portal
+        # publishPlugins uploads directly — no manual promotion step unlike Maven Central.
+        # GPG signing env is required: com.gradle.plugin-publish creates maven publications
+        # for plugin markers and the signing plugin signs them as part of publishPlugins.
+        env:
+          GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+          GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_KEY_PASSWORD }}
+          ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
+        run: ./gradlew --no-daemon :featured-gradle-plugin:publishPlugins --no-configuration-cache
