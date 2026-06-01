@@ -11,7 +11,7 @@ plugins {
 
 kotlin {
     explicitApi()
-    jvmToolchain(21)
+    jvmToolchain(17)
 
     android {
         namespace = "dev.androidbroadcast.featured.debugui"
@@ -24,7 +24,7 @@ kotlin {
                 .get()
                 .toInt()
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
