@@ -12,7 +12,7 @@ group = "dev.androidbroadcast.featured"
 
 kotlin {
     explicitApi()
-    jvmToolchain(21)
+    jvmToolchain(17)
 }
 
 gradlePlugin {

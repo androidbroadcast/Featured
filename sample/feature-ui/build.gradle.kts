@@ -7,7 +7,7 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
 
     android {
         namespace = "dev.androidbroadcast.featured.sample.ui"
@@ -20,7 +20,7 @@ kotlin {
                 .get()
                 .toInt()
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
