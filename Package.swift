@@ -21,8 +21,8 @@ let package = Package(
         .binaryTarget(
             name: "FeaturedCore",
             // Updated automatically by CI on each release.
-            url: "https://github.com/AndroidBroadcast/Featured/releases/download/v1.0.0/FeaturedCore.xcframework.zip",
-            checksum: "e74984347e12aa67796d6ca7d30b1ac3104f697b3faf73703718e49045924a01"
+            url: "https://github.com/AndroidBroadcast/Featured/releases/download/v1.1.0/FeaturedCore.xcframework.zip",
+            checksum: "28b0d80da0bdce65eca3eafd4f836e4dcd49e10f2fcf7ea8c38eb8aa31e2be6f"
         ),
     ]
 )
