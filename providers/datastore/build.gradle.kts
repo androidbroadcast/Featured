@@ -10,7 +10,7 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
     explicitApi()
 
     android {
@@ -24,7 +24,7 @@ kotlin {
                 .get()
                 .toInt()
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 

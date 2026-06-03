@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-06-03
+
+### Changed
+
+- Lowered the minimum supported JDK / JVM bytecode target from 21 to 17. Featured artifacts now target JVM 17, widening consumer compatibility — projects on JDK 17 toolchains can now consume the library. Consumers on newer JDKs are unaffected. (#233)
+- The Gradle plugin and its plugin marker artifact are now published to the Gradle Plugin Portal via a dedicated workflow; the Maven Central listing is kept free of plugin-marker artifacts. (#228, #231)
+
 ## [1.0.0] - 2026-05-30
 
 ### Removed
@@ -124,6 +131,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - License mismatch: use MIT in all POM declarations (#174)
 - Stale artifact IDs in quick-start docs (#179)
 
-[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/androidbroadcast/Featured/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/androidbroadcast/Featured/compare/v1.0.0-Beta1...v1.0.0
 [1.0.0-Beta1]: https://github.com/androidbroadcast/Featured/releases/tag/v1.0.0-Beta1
