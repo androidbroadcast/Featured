@@ -1,5 +1,5 @@
-// AGP and the Featured plugin are injected via GradleRunner.withPluginClasspath().
-// No pluginManagement repositories needed — the plugins are resolved from the injected classpath.
+// The Featured plugin is injected via GradleRunner.withPluginClasspath(); AGP is resolved
+// from the Google Maven repository declared in pluginManagement below.
 pluginManagement {
     repositories {
         google {

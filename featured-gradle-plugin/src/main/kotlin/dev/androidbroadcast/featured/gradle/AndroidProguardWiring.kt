@@ -37,7 +37,8 @@ internal fun wireProguardToApplicationVariants(
 /**
  * Wires the generated ProGuard rules file as consumer ProGuard rules for every library variant.
  *
- * Called lazily — only when `com.android.library` is present on the project.
+ * Called lazily — only when `com.android.library` or `com.android.kotlin.multiplatform.library`
+ * is present on the project.
  *
  * Library modules do not run R8 themselves, so [Variant.proguardFiles] would never be applied.
  * Consumer ProGuard rules are bundled into the AAR and forwarded to every consuming app's R8,
@@ -63,7 +64,7 @@ internal fun wireProguardToLibraryVariants(
     // variant.consumerProguardFiles, so we wire an explicit dependsOn on every
     // export*ConsumerProguardFiles task (AGP's task for packaging consumer rules into the AAR).
     project.tasks.configureEach { task ->
-        if (task.name.endsWith("ConsumerProguardFiles")) {
+        if (task.name.startsWith("export") && task.name.endsWith("ConsumerProguardFiles")) {
             task.dependsOn(proguardTask)
         }
     }

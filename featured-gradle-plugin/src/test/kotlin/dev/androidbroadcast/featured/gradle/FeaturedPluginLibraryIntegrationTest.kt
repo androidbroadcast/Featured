@@ -46,7 +46,7 @@ class FeaturedPluginLibraryIntegrationTest {
         projectDir = tempFolder.newFolder("android-library-project")
         copyManifestFixture("android-library-project", projectDir)
 
-        projectDir.resolve("local.properties").writeText("sdk.dir=${sdkDir!!.absolutePath}\n")
+        projectDir.resolve("local.properties").writeText("sdk.dir=${sdkDir!!.invariantSeparatorsPath}\n")
     }
 
     // ── Tests ─────────────────────────────────────────────────────────────────
@@ -101,11 +101,17 @@ class FeaturedPluginLibraryIntegrationTest {
             "Expected consumer proguard intermediate dir to exist at ${consumerProguardDir.path}",
         )
 
-        val combinedContent =
+        val consumerProguardFiles =
             consumerProguardDir
                 .walkTopDown()
                 .filter { it.isFile && (it.name.endsWith(".pro") || it.name == "proguard.txt") }
-                .joinToString("\n") { it.readText() }
+                .toList()
+        assertTrue(
+            consumerProguardFiles.isNotEmpty(),
+            "Expected at least one consumer proguard file (.pro or proguard.txt) under ${consumerProguardDir.path}",
+        )
+
+        val combinedContent = consumerProguardFiles.joinToString("\n") { it.readText() }
         assertContainsAssumevaluesBlock(combinedContent)
     }
 
