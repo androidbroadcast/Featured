@@ -95,6 +95,10 @@ class ResolveFlagsTaskCacheTest {
                     "--configuration-cache-problems=warn",
                 ).build()
 
+        assertTrue(
+            run2.output.contains("Reusing configuration cache"),
+            "Second run should reuse the configuration cache.\n${run2.output}",
+        )
         assertEquals(
             TaskOutcome.FROM_CACHE,
             run2.task(":$RESOLVE_FLAGS_TASK_NAME")?.outcome,
