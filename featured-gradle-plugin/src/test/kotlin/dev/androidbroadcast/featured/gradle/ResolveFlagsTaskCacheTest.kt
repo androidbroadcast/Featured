@@ -43,8 +43,7 @@ class ResolveFlagsTaskCacheTest {
                     "--build-cache",
                     "--configuration-cache",
                     "--configuration-cache-problems=warn",
-                )
-                .build()
+                ).build()
 
         assertEquals(
             TaskOutcome.SUCCESS,
@@ -64,8 +63,7 @@ class ResolveFlagsTaskCacheTest {
                     "--build-cache",
                     "--configuration-cache",
                     "--configuration-cache-problems=warn",
-                )
-                .build()
+                ).build()
 
         assertEquals(
             TaskOutcome.SUCCESS,
@@ -83,8 +81,7 @@ class ResolveFlagsTaskCacheTest {
                 "--build-cache",
                 "--configuration-cache",
                 "--configuration-cache-problems=warn",
-            )
-            .build()
+            ).build()
 
         // Delete the output so the task must use the cache (simulates `clean`).
         projectDir.resolve("build").deleteRecursively()
@@ -96,8 +93,7 @@ class ResolveFlagsTaskCacheTest {
                     "--build-cache",
                     "--configuration-cache",
                     "--configuration-cache-problems=warn",
-                )
-                .build()
+                ).build()
 
         assertEquals(
             TaskOutcome.FROM_CACHE,
@@ -109,7 +105,10 @@ class ResolveFlagsTaskCacheTest {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private fun writeSettingsFile(projectDir: File, cacheDir: File) {
+    private fun writeSettingsFile(
+        projectDir: File,
+        cacheDir: File,
+    ) {
         projectDir.resolve("settings.gradle.kts").writeText(
             """
             pluginManagement {
