@@ -48,9 +48,16 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_KEY_PASSWORD }}
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
-        # publishToMavenCentral = manual promotion (no auto-release); --no-configuration-cache for
-        # release-pipeline debuggability (runs once per tag, CC savings are zero).
-        run: ./gradlew --no-daemon publishToMavenCentral --no-configuration-cache
+        # On a version tag: pass -PmavenCentralAutomaticPublishing=true so the Vanniktech plugin
+        # releases the Central deployment automatically (no manual staging promote needed).
+        # On SNAPSHOT branch pushes: plain upload to the snapshots repo, no auto-release.
+        # --no-configuration-cache for release-pipeline debuggability (runs once per tag, CC savings are zero).
+        run: |
+          AUTO=""
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            AUTO="-PmavenCentralAutomaticPublishing=true"
+          fi
+          ./gradlew --no-daemon publishToMavenCentral $AUTO --no-configuration-cache
 
   publish-xcframework:
     name: Publish XCFramework to GitHub Release
@@ -68,7 +75,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
 
       - uses: gradle/actions/setup-gradle@v6
 

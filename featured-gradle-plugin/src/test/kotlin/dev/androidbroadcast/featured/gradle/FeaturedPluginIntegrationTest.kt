@@ -1,5 +1,7 @@
 package dev.androidbroadcast.featured.gradle
 
+import dev.androidbroadcast.featured.gradle.manifest.androidSdkDirOrNull
+import dev.androidbroadcast.featured.gradle.manifest.copyManifestFixture
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Assume.assumeTrue
@@ -33,17 +35,17 @@ class FeaturedPluginIntegrationTest {
 
     @Before
     fun setUp() {
-        val sdkDir = androidSdkDir()
+        val sdkDir = androidSdkDirOrNull()
         assumeTrue(
             "ANDROID_HOME or ANDROID_SDK_ROOT must be set to run integration tests",
             sdkDir != null,
         )
 
         projectDir = tempFolder.newFolder("android-project")
-        copyFixture(projectDir)
+        copyManifestFixture("android-project", projectDir)
 
         // Write local.properties with sdk.dir so AGP can locate the Android SDK.
-        projectDir.resolve("local.properties").writeText("sdk.dir=${sdkDir!!.absolutePath}\n")
+        projectDir.resolve("local.properties").writeText("sdk.dir=${sdkDir!!.invariantSeparatorsPath}\n")
     }
 
     // ── Tests ─────────────────────────────────────────────────────────────────
@@ -217,50 +219,6 @@ class FeaturedPluginIntegrationTest {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
-
-    /** Returns the Android SDK directory from environment, or null if not set. */
-    private fun androidSdkDir(): File? {
-        val path =
-            System.getenv("ANDROID_HOME")?.takeIf { it.isNotBlank() }
-                ?: System.getenv("ANDROID_SDK_ROOT")?.takeIf { it.isNotBlank() }
-                ?: return null
-        return File(path).takeIf { it.isDirectory }
-    }
-
-    /**
-     * Copies the fixture project from `src/test/fixtures/android-project/` into [dest].
-     *
-     * The fixture is located relative to the plugin module's project directory, which
-     * Gradle TestKit passes as the working directory when running tests.
-     */
-    private fun copyFixture(dest: File) {
-        val fixtureSource = fixtureDir()
-        fixtureSource
-            .walkTopDown()
-            .filter { it.isFile }
-            .forEach { file ->
-                val relative = file.relativeTo(fixtureSource)
-                val target = dest.resolve(relative)
-                target.parentFile?.mkdirs()
-                file.copyTo(target, overwrite = true)
-            }
-    }
-
-    /**
-     * Resolves the fixture directory. The plugin module's project directory is either
-     * injected as the `user.dir` system property by Gradle's test task, or derived
-     * relative to this class file's location.
-     */
-    private fun fixtureDir(): File {
-        // Gradle's test task sets user.dir to the module project directory.
-        val moduleDir = File(System.getProperty("user.dir"))
-        val candidate = moduleDir.resolve("src/test/fixtures/android-project")
-        require(candidate.isDirectory) {
-            "Fixture directory not found at ${candidate.absolutePath}. " +
-                "Expected it relative to module project dir: ${moduleDir.absolutePath}"
-        }
-        return candidate
-    }
 
     /**
      * Creates a [GradleRunner] for the fixture project.

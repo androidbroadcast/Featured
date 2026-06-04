@@ -42,17 +42,7 @@ internal const val GENERATE_CONFIG_PARAM_TASK_NAME = "generateConfigParam"
 public class FeaturedPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         val extension = target.extensions.create("featured", FeaturedExtension::class.java)
-        val resolveTask = registerResolveFlagsTask(target)
-
-        // Wire DSL descriptors after the build script runs so the featured { } block is evaluated first.
-        // Calling afterEvaluate here (not inside the task config block) avoids IllegalMutationException
-        // when tasks are realized after project evaluation (e.g. in ProjectBuilder-based unit tests).
-        target.afterEvaluate {
-            resolveTask.configure { task ->
-                task.localFlagDescriptors.set(extension.localFlags.toDescriptors())
-                task.remoteFlagDescriptors.set(extension.remoteFlags.toDescriptors())
-            }
-        }
+        val resolveTask = registerResolveFlagsTask(target, extension)
 
         registerConfigParamTask(target, resolveTask)
         val proguardTask = registerProguardTask(target, resolveTask)
@@ -61,19 +51,31 @@ public class FeaturedPlugin : Plugin<Project> {
         val manifestTask = registerManifestTask(target, resolveTask)
         registerFeaturedManifestConfiguration(target, manifestTask)
         wireToRootAggregator(target, resolveTask)
-        listOf("com.android.application", "com.android.library").forEach { pluginId ->
-            target.plugins.withId(pluginId) {
-                wireProguardToVariants(target, proguardTask)
-            }
+        target.plugins.withId("com.android.application") {
+            wireProguardToApplicationVariants(target, proguardTask)
+        }
+        target.plugins.withId("com.android.library") {
+            wireProguardToLibraryVariants(target, proguardTask)
+        }
+        target.plugins.withId("com.android.kotlin.multiplatform.library") {
+            wireProguardToKmpLibraryVariants(target, proguardTask)
         }
     }
 
-    private fun registerResolveFlagsTask(target: Project): TaskProvider<ResolveFlagsTask> =
+    private fun registerResolveFlagsTask(
+        target: Project,
+        extension: FeaturedExtension,
+    ): TaskProvider<ResolveFlagsTask> =
         target.tasks.register(RESOLVE_FLAGS_TASK_NAME, ResolveFlagsTask::class.java) { task ->
             task.group = "featured"
             task.description = "Resolves feature flags declared in the featured { } DSL for '${target.path}'."
             task.moduleName.set(target.path)
             task.outputFile.set(target.layout.buildDirectory.file("featured/flags.txt"))
+            // Use lazy providers so the descriptors are evaluated after the build script's
+            // featured { } block has run. This ensures that changes to flag defaults are
+            // reflected in the task's @Input fingerprint and correctly invalidate the build cache.
+            task.localFlagDescriptors.set(target.provider { extension.localFlags.toDescriptors() })
+            task.remoteFlagDescriptors.set(target.provider { extension.remoteFlags.toDescriptors() })
         }
 
     private fun registerConfigParamTask(

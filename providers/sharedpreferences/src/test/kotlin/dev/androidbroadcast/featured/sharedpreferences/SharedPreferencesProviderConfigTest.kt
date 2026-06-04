@@ -27,7 +27,7 @@ import org.robolectric.annotation.Config
 enum class CheckoutVariant { LEGACY, NEW_SINGLE_PAGE, NEW_MULTI_STEP }
 
 @RunWith(AndroidJUnit4::class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, sdk = [34])
 class SharedPreferencesProviderConfigTest {
     private lateinit var provider: SharedPreferencesProviderConfig
 
