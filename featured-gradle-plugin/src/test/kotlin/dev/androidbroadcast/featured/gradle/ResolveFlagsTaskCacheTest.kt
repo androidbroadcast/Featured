@@ -38,7 +38,12 @@ class ResolveFlagsTaskCacheTest {
         // Run 1: cold cache → task executes and caches result.
         val run1 =
             gradleRunner(projectDir)
-                .withArguments(RESOLVE_FLAGS_TASK_NAME, "--build-cache")
+                .withArguments(
+                    RESOLVE_FLAGS_TASK_NAME,
+                    "--build-cache",
+                    "--configuration-cache",
+                    "--configuration-cache-problems=warn",
+                )
                 .build()
 
         assertEquals(
@@ -54,7 +59,12 @@ class ResolveFlagsTaskCacheTest {
         // Run 2: build-cache populated; the task MUST re-execute because its @Input changed.
         val run2 =
             gradleRunner(projectDir)
-                .withArguments(RESOLVE_FLAGS_TASK_NAME, "--build-cache")
+                .withArguments(
+                    RESOLVE_FLAGS_TASK_NAME,
+                    "--build-cache",
+                    "--configuration-cache",
+                    "--configuration-cache-problems=warn",
+                )
                 .build()
 
         assertEquals(
@@ -68,7 +78,12 @@ class ResolveFlagsTaskCacheTest {
     @Test
     fun `resolveFeatureFlags is served from cache when nothing changes`() {
         gradleRunner(projectDir)
-            .withArguments(RESOLVE_FLAGS_TASK_NAME, "--build-cache")
+            .withArguments(
+                RESOLVE_FLAGS_TASK_NAME,
+                "--build-cache",
+                "--configuration-cache",
+                "--configuration-cache-problems=warn",
+            )
             .build()
 
         // Delete the output so the task must use the cache (simulates `clean`).
@@ -76,7 +91,12 @@ class ResolveFlagsTaskCacheTest {
 
         val run2 =
             gradleRunner(projectDir)
-                .withArguments(RESOLVE_FLAGS_TASK_NAME, "--build-cache")
+                .withArguments(
+                    RESOLVE_FLAGS_TASK_NAME,
+                    "--build-cache",
+                    "--configuration-cache",
+                    "--configuration-cache-problems=warn",
+                )
                 .build()
 
         assertEquals(
@@ -109,7 +129,10 @@ class ResolveFlagsTaskCacheTest {
         )
     }
 
-    private fun writeBuildFile(projectDir: File, flagDefault: Boolean) {
+    private fun writeBuildFile(
+        projectDir: File,
+        flagDefault: Boolean,
+    ) {
         projectDir.resolve("build.gradle.kts").writeText(
             """
             plugins {
