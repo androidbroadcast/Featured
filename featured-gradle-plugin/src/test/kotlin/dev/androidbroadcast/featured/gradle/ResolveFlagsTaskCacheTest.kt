@@ -96,7 +96,8 @@ class ResolveFlagsTaskCacheTest {
                 ).build()
 
         assertTrue(
-            run2.output.contains("Reusing configuration cache"),
+            run2.output.contains("Configuration cache entry reused") ||
+                run2.output.contains("Reusing configuration cache"),
             "Second run should reuse the configuration cache.\n${run2.output}",
         )
         assertEquals(
