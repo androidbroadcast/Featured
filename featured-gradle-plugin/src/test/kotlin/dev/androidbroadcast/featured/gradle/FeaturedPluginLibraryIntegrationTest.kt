@@ -1,5 +1,7 @@
 package dev.androidbroadcast.featured.gradle
 
+import dev.androidbroadcast.featured.gradle.manifest.androidSdkDirOrNull
+import dev.androidbroadcast.featured.gradle.manifest.copyManifestFixture
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Assume.assumeTrue
@@ -35,14 +37,14 @@ class FeaturedPluginLibraryIntegrationTest {
 
     @Before
     fun setUp() {
-        val sdkDir = androidSdkDir()
+        val sdkDir = androidSdkDirOrNull()
         assumeTrue(
             "ANDROID_HOME or ANDROID_SDK_ROOT must be set to run integration tests",
             sdkDir != null,
         )
 
         projectDir = tempFolder.newFolder("android-library-project")
-        copyFixture(projectDir)
+        copyManifestFixture("android-library-project", projectDir)
 
         projectDir.resolve("local.properties").writeText("sdk.dir=${sdkDir!!.absolutePath}\n")
     }
@@ -99,16 +101,12 @@ class FeaturedPluginLibraryIntegrationTest {
             "Expected consumer proguard intermediate dir to exist at ${consumerProguardDir.path}",
         )
 
-        val consumerProguardFiles =
+        val combinedContent =
             consumerProguardDir
                 .walkTopDown()
-                .filter { (it.isFile && it.name.endsWith(".pro")) || it.name == "proguard.txt" }
-                .toList()
-
-        val combinedContent = consumerProguardFiles.joinToString("\n") { it.readText() }
-        assertContainsAssumevaluesBlock(
-            combinedContent,
-        )
+                .filter { it.isFile && (it.name.endsWith(".pro") || it.name == "proguard.txt") }
+                .joinToString("\n") { it.readText() }
+        assertContainsAssumevaluesBlock(combinedContent)
     }
 
     // ── Assertions ────────────────────────────────────────────────────────────
@@ -136,37 +134,6 @@ class FeaturedPluginLibraryIntegrationTest {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
-
-    private fun androidSdkDir(): File? {
-        val path =
-            System.getenv("ANDROID_HOME")?.takeIf { it.isNotBlank() }
-                ?: System.getenv("ANDROID_SDK_ROOT")?.takeIf { it.isNotBlank() }
-                ?: return null
-        return File(path).takeIf { it.isDirectory }
-    }
-
-    private fun copyFixture(dest: File) {
-        val fixtureSource = fixtureDir()
-        fixtureSource
-            .walkTopDown()
-            .filter { it.isFile }
-            .forEach { file ->
-                val relative = file.relativeTo(fixtureSource)
-                val target = dest.resolve(relative)
-                target.parentFile?.mkdirs()
-                file.copyTo(target, overwrite = true)
-            }
-    }
-
-    private fun fixtureDir(): File {
-        val moduleDir = File(System.getProperty("user.dir"))
-        val candidate = moduleDir.resolve("src/test/fixtures/android-library-project")
-        require(candidate.isDirectory) {
-            "Fixture directory not found at ${candidate.absolutePath}. " +
-                "Expected it relative to module project dir: ${moduleDir.absolutePath}"
-        }
-        return candidate
-    }
 
     private fun gradleRunner(projectDir: File): GradleRunner =
         GradleRunner
