@@ -2,6 +2,7 @@ package dev.androidbroadcast.featured.gradle
 
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -21,23 +22,28 @@ class ResolveFlagsTaskCacheTest {
     @get:Rule
     val tempFolder = TemporaryFolder()
 
-    @Test
-    fun `resolveFeatureFlags is not served from cache when a flag default changes`() {
-        val projectDir = tempFolder.newFolder("project")
-        val cacheDir = tempFolder.newFolder("build-cache")
+    private lateinit var projectDir: File
+    private lateinit var cacheDir: File
 
+    @Before
+    fun setUp() {
+        projectDir = tempFolder.newFolder("project")
+        cacheDir = tempFolder.newFolder("build-cache")
         writeSettingsFile(projectDir, cacheDir)
         writeBuildFile(projectDir, flagDefault = false)
+    }
 
+    @Test
+    fun `resolveFeatureFlags is not served from cache when a flag default changes`() {
         // Run 1: cold cache → task executes and caches result.
         val run1 =
             gradleRunner(projectDir)
-                .withArguments(RESOLVE_TASK, "--build-cache", "--stacktrace")
+                .withArguments(RESOLVE_FLAGS_TASK_NAME, "--build-cache")
                 .build()
 
         assertEquals(
             TaskOutcome.SUCCESS,
-            run1.task(":$RESOLVE_TASK")?.outcome,
+            run1.task(":$RESOLVE_FLAGS_TASK_NAME")?.outcome,
             "First run: expected SUCCESS.\n${run1.output}",
         )
         assertFlagsFileContains(projectDir, "my_flag|false|Boolean")
@@ -48,28 +54,21 @@ class ResolveFlagsTaskCacheTest {
         // Run 2: build-cache populated; the task MUST re-execute because its @Input changed.
         val run2 =
             gradleRunner(projectDir)
-                .withArguments(RESOLVE_TASK, "--build-cache", "--stacktrace")
+                .withArguments(RESOLVE_FLAGS_TASK_NAME, "--build-cache")
                 .build()
 
-        val outcome2 = run2.task(":$RESOLVE_TASK")?.outcome
-        assertTrue(
-            outcome2 == TaskOutcome.SUCCESS,
-            "Second run: expected SUCCESS (task should re-run because flag default changed), " +
-                "got $outcome2.\n${run2.output}",
+        assertEquals(
+            TaskOutcome.SUCCESS,
+            run2.task(":$RESOLVE_FLAGS_TASK_NAME")?.outcome,
+            "Second run: expected SUCCESS (task should re-run because flag default changed).\n${run2.output}",
         )
         assertFlagsFileContains(projectDir, "my_flag|true|Boolean")
     }
 
     @Test
     fun `resolveFeatureFlags is served from cache when nothing changes`() {
-        val projectDir = tempFolder.newFolder("project")
-        val cacheDir = tempFolder.newFolder("build-cache")
-
-        writeSettingsFile(projectDir, cacheDir)
-        writeBuildFile(projectDir, flagDefault = false)
-
         gradleRunner(projectDir)
-            .withArguments(RESOLVE_TASK, "--build-cache")
+            .withArguments(RESOLVE_FLAGS_TASK_NAME, "--build-cache")
             .build()
 
         // Delete the output so the task must use the cache (simulates `clean`).
@@ -77,12 +76,12 @@ class ResolveFlagsTaskCacheTest {
 
         val run2 =
             gradleRunner(projectDir)
-                .withArguments(RESOLVE_TASK, "--build-cache")
+                .withArguments(RESOLVE_FLAGS_TASK_NAME, "--build-cache")
                 .build()
 
         assertEquals(
             TaskOutcome.FROM_CACHE,
-            run2.task(":$RESOLVE_TASK")?.outcome,
+            run2.task(":$RESOLVE_FLAGS_TASK_NAME")?.outcome,
             "Second run with unchanged inputs should be FROM_CACHE.\n${run2.output}",
         )
         assertFlagsFileContains(projectDir, "my_flag|false|Boolean")
@@ -126,7 +125,10 @@ class ResolveFlagsTaskCacheTest {
         )
     }
 
-    private fun assertFlagsFileContains(projectDir: File, expected: String) {
+    private fun assertFlagsFileContains(
+        projectDir: File,
+        expected: String,
+    ) {
         val flagsFile = projectDir.resolve("build/featured/flags.txt")
         assertTrue(flagsFile.exists(), "flags.txt must exist at ${flagsFile.path}")
         val content = flagsFile.readText()
@@ -142,8 +144,4 @@ class ResolveFlagsTaskCacheTest {
             .withProjectDir(projectDir)
             .withPluginClasspath()
             .forwardOutput()
-
-    private companion object {
-        const val RESOLVE_TASK = RESOLVE_FLAGS_TASK_NAME
-    }
 }
