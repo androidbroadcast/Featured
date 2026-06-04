@@ -102,7 +102,7 @@ class FeaturedPluginLibraryIntegrationTest {
         val consumerProguardFiles =
             consumerProguardDir
                 .walkTopDown()
-                .filter { it.isFile && it.name.endsWith(".pro") || it.name == "proguard.txt" }
+                .filter { (it.isFile && it.name.endsWith(".pro")) || it.name == "proguard.txt" }
                 .toList()
 
         val combinedContent = consumerProguardFiles.joinToString("\n") { it.readText() }
