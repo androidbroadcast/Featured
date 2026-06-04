@@ -64,10 +64,11 @@ public class FeaturedPlugin : Plugin<Project> {
         target.plugins.withId("com.android.application") {
             wireProguardToApplicationVariants(target, proguardTask)
         }
-        listOf("com.android.library", "com.android.kotlin.multiplatform.library").forEach { pluginId ->
-            target.plugins.withId(pluginId) {
-                wireProguardToLibraryVariants(target, proguardTask)
-            }
+        target.plugins.withId("com.android.library") {
+            wireProguardToLibraryVariants(target, proguardTask)
+        }
+        target.plugins.withId("com.android.kotlin.multiplatform.library") {
+            wireProguardToKmpLibraryVariants(target, proguardTask)
         }
     }
 
