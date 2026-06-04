@@ -61,10 +61,14 @@ public class FeaturedPlugin : Plugin<Project> {
         val manifestTask = registerManifestTask(target, resolveTask)
         registerFeaturedManifestConfiguration(target, manifestTask)
         wireToRootAggregator(target, resolveTask)
-        listOf("com.android.application", "com.android.library").forEach { pluginId ->
-            target.plugins.withId(pluginId) {
-                wireProguardToVariants(target, proguardTask)
-            }
+        target.plugins.withId("com.android.application") {
+            wireProguardToApplicationVariants(target, proguardTask)
+        }
+        target.plugins.withId("com.android.library") {
+            wireProguardToLibraryVariants(target, proguardTask)
+        }
+        target.plugins.withId("com.android.kotlin.multiplatform.library") {
+            wireProguardToKmpLibraryVariants(target, proguardTask)
         }
     }
 
