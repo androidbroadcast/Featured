@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-06-04
+
+### Fixed
+
+- Generated ProGuard `-assumevalues` rules are now registered as `consumerProguardFiles` for
+  `com.android.library` modules, ensuring rules are bundled into the AAR and applied by the
+  consuming app's R8. Previously the rules were wired only via `variant.proguardFiles`, which
+  has no effect in library modules and silently defeated dead-code elimination for flags
+  declared in library modules. (#240)
+- Flag descriptors are now wired to `ResolveFlagsTask` via a lazy `provider { }` instead of
+  an eager `afterEvaluate` block. Changing a flag's `default` value in `build.gradle.kts` now
+  correctly invalidates the build cache; previously the task could be served FROM-CACHE with
+  the old default, causing stale generated output. (#241)
+
+### Changed
+
+- Maven Central releases are now promoted automatically when triggered by a version tag; the
+  manual staging-promotion step in Sonatype Central Portal is no longer required. (#237)
+
 ## [1.1.0] - 2026-06-03
 
 ### Changed
@@ -131,7 +150,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - License mismatch: use MIT in all POM declarations (#174)
 - Stale artifact IDs in quick-start docs (#179)
 
-[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/androidbroadcast/Featured/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/androidbroadcast/Featured/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/androidbroadcast/Featured/compare/v1.0.0-Beta1...v1.0.0
 [1.0.0-Beta1]: https://github.com/androidbroadcast/Featured/releases/tag/v1.0.0-Beta1
