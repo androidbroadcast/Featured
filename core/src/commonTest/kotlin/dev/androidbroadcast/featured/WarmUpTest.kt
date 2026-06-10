@@ -59,7 +59,7 @@ class WarmUpTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `initialize and warmUp — getValueCached returns REMOTE source for warmed params`() =
+    fun initializeAndWarmUpGetValueCachedReturnsRemoteSourceForWarmedParams() =
         runTest {
             val param = ConfigParam("feat_a", "default")
             val remote = MutableRemoteProvider(mapOf("feat_a" to "from_cache"))
@@ -82,7 +82,7 @@ class WarmUpTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `fetch after warmUp — getValueCached reflects updated remote values without getValue`() =
+    fun fetchAfterWarmUpGetValueCachedReflectsUpdatedRemoteValuesWithoutGetValue() =
         runTest {
             val param = ConfigParam("feat_b", "default")
             val remote = MutableRemoteProvider(mapOf("feat_b" to "v1"))
@@ -105,7 +105,7 @@ class WarmUpTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `param not in warmUp — getValueCached returns DEFAULT after fetch`() =
+    fun paramNotInWarmUpGetValueCachedReturnsDefaultAfterFetch() =
         runTest {
             val warmParam = ConfigParam("warm", "default_warm")
             val coldParam = ConfigParam("cold", "default_cold")
@@ -130,7 +130,7 @@ class WarmUpTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `warmUp of 50 params — all entries present in snapshot after batch write`() =
+    fun warmUpOf50ParamsAllEntriesPresentInSnapshotAfterBatchWrite() =
         runTest {
             val paramCount = 50
             val params =
@@ -153,7 +153,7 @@ class WarmUpTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `warmUp with failing provider — param resolves to defaultValue and error is reported`() =
+    fun warmUpWithFailingProviderParamResolvesToDefaultValueAndErrorIsReported() =
         runTest {
             val param = ConfigParam("feat_e", "the_default")
             val capturedErrors = mutableListOf<Throwable>()
@@ -181,7 +181,7 @@ class WarmUpTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `fetch with active observer — warm-refresh does not regress snapshot to DEFAULT`() =
+    fun fetchWithActiveObserverWarmRefreshDoesNotRegressSnapshotToDefault() =
         runTest {
             val param = ConfigParam("feat_f", false)
             val remote = MutableRemoteProvider(mapOf("feat_f" to true))
@@ -223,7 +223,7 @@ class WarmUpTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `warmUp called twice with same params — idempotent, second call refreshes values`() =
+    fun warmUpCalledTwiceWithSameParamsIdempotentSecondCallRefreshesValues() =
         runTest {
             val param = ConfigParam("feat_g", "default")
             val remote = MutableRemoteProvider(mapOf("feat_g" to "v1"))
@@ -245,7 +245,7 @@ class WarmUpTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `warmUp before initialize — initialize refresh populates snapshot with REMOTE values`() =
+    fun warmUpBeforeInitializeRefreshPopulatesSnapshotWithRemoteValues() =
         runTest {
             val param = ConfigParam("feat_h", "default_h")
             val remote = MutableRemoteProvider(mapOf("feat_h" to "cached_remote"))
@@ -274,7 +274,7 @@ class WarmUpTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `mergeWarmResults — LOCAL current kept when resolved is non-LOCAL`() {
+    fun mergeWarmResultsLocalCurrentKeptWhenResolvedIsNonLocal() {
         val key = "flag"
         val localValue = ConfigValue("local_override", ConfigValue.Source.LOCAL)
         val remoteValue = ConfigValue("remote_value", ConfigValue.Source.REMOTE)
@@ -289,7 +289,7 @@ class WarmUpTest {
     }
 
     @Test
-    fun `mergeWarmResults — non-LOCAL current replaced by fresh resolved`() {
+    fun mergeWarmResultsNonLocalCurrentReplacedByFreshResolved() {
         val key = "flag"
         val staleRemote = ConfigValue("stale", ConfigValue.Source.REMOTE)
         val freshRemote = ConfigValue("fresh", ConfigValue.Source.REMOTE)
@@ -304,7 +304,7 @@ class WarmUpTest {
     }
 
     @Test
-    fun `mergeWarmResults — absent current slot filled by resolved`() {
+    fun mergeWarmResultsAbsentCurrentSlotFilledByResolved() {
         val key = "flag"
         val remoteValue = ConfigValue("remote_value", ConfigValue.Source.REMOTE)
 
@@ -317,7 +317,7 @@ class WarmUpTest {
     }
 
     @Test
-    fun `mergeWarmResults — DEFAULT-sourced resolved entry is not written into snapshot`() {
+    fun mergeWarmResultsDefaultSourcedResolvedEntryIsNotWrittenIntoSnapshot() {
         val key = "flag"
         val defaultValue = ConfigValue("default_val", ConfigValue.Source.DEFAULT)
 
@@ -335,7 +335,7 @@ class WarmUpTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `initialize — provider throws, exception propagates and snapshot stays cold for warmed param`() =
+    fun initializeProviderThrowsExceptionPropagatesAndSnapshotStaysColdForWarmedParam() =
         runTest {
             val param = ConfigParam("feat_i", "cold_default")
             val failingProvider =
@@ -371,7 +371,7 @@ class WarmUpTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `warmUp mixed outcome — param1 warmed REMOTE, param2 absent from snapshot, one error reported`() =
+    fun warmUpMixedOutcomeParam1WarmRemoteParam2AbsentFromSnapshotOneErrorReported() =
         runTest {
             val param1 = ConfigParam("feat_j1", "default_j1")
             val param2 = ConfigParam("feat_j2", "default_j2")
