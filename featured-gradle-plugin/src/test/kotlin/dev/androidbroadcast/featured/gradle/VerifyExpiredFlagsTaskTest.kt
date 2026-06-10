@@ -10,7 +10,6 @@ import java.io.File
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 /**
@@ -141,16 +140,6 @@ class VerifyExpiredFlagsTaskTest {
             TaskOutcome.SUCCESS,
             verifyOutcome,
             "Run 2: verifyExpiredFlags should be SUCCESS (non-cacheable).\n${run2.output}",
-        )
-        assertNotEquals(
-            TaskOutcome.SKIPPED,
-            verifyOutcome,
-            "Run 2: verifyExpiredFlags must not be SKIPPED.\n${run2.output}",
-        )
-        assertNotEquals(
-            TaskOutcome.UP_TO_DATE,
-            verifyOutcome,
-            "Run 2: verifyExpiredFlags must not be UP_TO_DATE.\n${run2.output}",
         )
         assertTrue(
             run2.output.contains("expired on 2000-01-01"),

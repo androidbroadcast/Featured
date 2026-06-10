@@ -43,13 +43,12 @@ public abstract class VerifyExpiredFlagsTask : DefaultTask() {
         val today = LocalDate.now()
         val entries = flagsFile.parseLocalFlagEntries()
 
-        val expired = mutableListOf<LocalFlagEntry>()
         for (entry in entries) {
             val raw = entry.expiresAt ?: continue
             try {
                 val date = LocalDate.parse(raw)
                 if (date < today) {
-                    expired += entry
+                    logger.warn("Featured: flag '${entry.key}' in ${entry.moduleName} expired on ${entry.expiresAt}")
                 }
             } catch (_: DateTimeParseException) {
                 logger.warn(
@@ -57,10 +56,6 @@ public abstract class VerifyExpiredFlagsTask : DefaultTask() {
                         " format '$raw' (expected YYYY-MM-DD)",
                 )
             }
-        }
-
-        for (entry in expired) {
-            logger.warn("Featured: flag '${entry.key}' in ${entry.moduleName} expired on ${entry.expiresAt}")
         }
     }
 }
