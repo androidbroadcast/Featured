@@ -1,6 +1,7 @@
 package dev.androidbroadcast.featured
 
 import app.cash.turbine.test
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -197,24 +198,156 @@ class InMemoryConfigValueProviderTest {
             }
         }
 
-    // G2: clear() does not emit a change signal — pin the documented invariant.
+    // G2: clear() emits DEFAULT for every key that was set — contract change from prior behavior.
     @Test
-    fun clear_doesNotEmitChangeSignal() =
+    fun clearEmitsDefaultForPreviouslySetKey() =
         runTest {
             val provider = InMemoryConfigValueProvider()
             val param = ConfigParam("key", "default")
             provider.set(param, "value")
 
             provider.observe(param).test {
-                // consume initial emission
+                // consume initial LOCAL emission
                 awaitItem()
 
                 provider.clear()
 
-                // clear() must not emit — no new events should follow
+                val afterClear = awaitItem()
+                assertEquals("default", afterClear.value)
+                assertEquals(ConfigValue.Source.DEFAULT, afterClear.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun clearEmitsDefaultForEachSetKey() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param1 = ConfigParam("k1", "d1")
+            val param2 = ConfigParam("k2", "d2")
+            provider.set(param1, "v1")
+            provider.set(param2, "v2")
+
+            provider.observe(param1).test {
+                awaitItem() // initial for param1
+
+                provider.observe(param2).test {
+                    awaitItem() // initial for param2
+
+                    provider.clear()
+
+                    // Both observers must receive their DEFAULT frame.
+                    val afterClear2 = awaitItem()
+                    assertEquals("d2", afterClear2.value)
+                    assertEquals(ConfigValue.Source.DEFAULT, afterClear2.source)
+
+                    cancelAndIgnoreRemainingEvents()
+                }
+
+                // Outer (param1) observer must also have received its DEFAULT frame.
+                val afterClear1 = awaitItem()
+                assertEquals("d1", afterClear1.value)
+                assertEquals(ConfigValue.Source.DEFAULT, afterClear1.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun observeAfterClearEmitsDefaultAsFirstFrame() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param = ConfigParam("after_clear_key", "my_default")
+            provider.set(param, "stored_value")
+
+            provider.clear()
+
+            // Subscriber attached AFTER clear() — must see DEFAULT as the first frame, not LOCAL.
+            provider.observe(param).test {
+                val first = awaitItem()
+                assertEquals("my_default", first.value)
+                assertEquals(ConfigValue.Source.DEFAULT, first.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun clearWithNoStoredKeysIsNoOp() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param = ConfigParam("any_key", "default")
+
+            provider.observe(param).test {
+                awaitItem() // initial DEFAULT
+
+                // clear() on empty storage must not emit and must not crash.
+                provider.clear()
                 expectNoEvents()
 
                 cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun clearTwiceSecondIsNoOp() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param = ConfigParam("double_clear_key", "default")
+            provider.set(param, "value")
+
+            provider.observe(param).test {
+                awaitItem() // initial LOCAL
+
+                provider.clear()
+                val afterFirst = awaitItem()
+                assertEquals(ConfigValue.Source.DEFAULT, afterFirst.source)
+
+                // Second clear — storage is already empty, must produce no emissions.
+                provider.clear()
+                expectNoEvents()
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun clearDoesNotEmitForKeyNeverSet() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val setParam = ConfigParam("set_key", "default_set")
+            val unsetParam = ConfigParam("unset_key", "default_unset")
+            provider.set(setParam, "value")
+
+            provider.observe(unsetParam).test {
+                awaitItem() // initial DEFAULT (key never set)
+
+                provider.clear()
+
+                // unset_key was not in storage — clear() must not emit for it
+                expectNoEvents()
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    // Parallel resetOverride of N keys must not lose any removals.
+    @Test
+    fun parallelResetOverrideOfNKeysLosesNoRemovals() =
+        runTest {
+            val n = 50
+            val provider = InMemoryConfigValueProvider()
+            val params = List(n) { i -> ConfigParam("pk$i", i) }
+            params.forEach { p -> provider.set(p, p.defaultValue + 1) }
+
+            params
+                .map { p ->
+                    launch { provider.resetOverride(p) }
+                }.forEach { it.join() }
+
+            params.forEach { p ->
+                assertNull(provider.get(p), "key ${p.key} should be absent after resetOverride")
             }
         }
 
