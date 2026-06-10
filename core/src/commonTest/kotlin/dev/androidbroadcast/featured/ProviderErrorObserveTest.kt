@@ -53,25 +53,19 @@ class ProviderErrorObserveTest {
                     onProviderError = { errors.add(it) },
                 )
 
-            val collected = mutableListOf<String>()
-
-            // Collection must complete without throwing; the Flow stays alive after the
-            // local provider's Flow terminates with an exception.
+            // With the trigger-model, local provider emissions are used only as change
+            // signals — their payloads are discarded. getValue() is called for each signal,
+            // and since the local provider's get() returns null (no value stored), the
+            // resolved value is DEFAULT. Because the second DEFAULT equals the first,
+            // distinctUntilChanged suppresses it and no second frame is emitted.
             configValues.observe(testParam).test {
-                // Initial emission from getValue(param) — local provider's get() returns null
-                // so this resolves to the default value.
+                // Initial emission — local.get() returns null, falls through to DEFAULT.
                 val initial = awaitItem()
                 assertEquals("DEFAULT", initial.value)
                 assertEquals(ConfigValue.Source.DEFAULT, initial.source)
-                collected.add(initial.value)
 
-                // Emission from the local provider's observe() before it throws.
-                // distinctUntilChanged passes it because "local_value" ≠ "DEFAULT".
-                val fromLocal = awaitItem()
-                assertEquals("local_value", fromLocal.value)
-                assertEquals(ConfigValue.Source.LOCAL, fromLocal.source)
-                collected.add(fromLocal.value)
-
+                // No second frame: the signal from the local provider re-resolves to DEFAULT
+                // which is deduplicated. The exception is routed to onProviderError.
                 cancelAndIgnoreRemainingEvents()
             }
 
@@ -82,9 +76,5 @@ class ProviderErrorObserveTest {
                 "Expected IllegalStateException but was ${errors[0]::class}",
             )
             assertEquals("simulated provider error", errors[0].message)
-
-            // Both values were collected — flow did not crash before the second emission.
-            assertTrue("DEFAULT" in collected)
-            assertTrue("local_value" in collected)
         }
 }

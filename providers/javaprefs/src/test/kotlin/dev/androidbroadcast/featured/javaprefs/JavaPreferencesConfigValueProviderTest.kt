@@ -188,16 +188,17 @@ class JavaPreferencesConfigValueProviderTest {
         }
 
     @Test
-    fun `observe emits null-skipped on resetOverride`() =
+    fun `observe emits DEFAULT on resetOverride when no value remains`() =
         runTest {
             provider.set(stringParam, "present")
 
-            // After resetOverride, observe should not emit (null is filtered)
             provider.observe(stringParam).test {
                 assertEquals("present", awaitItem().value)
 
                 provider.resetOverride(stringParam)
-                expectNoEvents()
+                val afterReset = awaitItem()
+                assertEquals("default", afterReset.value)
+                assertEquals(ConfigValue.Source.DEFAULT, afterReset.source)
 
                 cancelAndIgnoreRemainingEvents()
             }
@@ -265,10 +266,12 @@ class JavaPreferencesConfigValueProviderTest {
         }
 
     @Test
-    fun `observe emits nothing when value never set`() =
+    fun `observe emits DEFAULT immediately when key has never been written`() =
         runTest {
             provider.observe(stringParam).test {
-                expectNoEvents()
+                val emission = awaitItem()
+                assertEquals("default", emission.value)
+                assertEquals(ConfigValue.Source.DEFAULT, emission.source)
                 cancelAndIgnoreRemainingEvents()
             }
         }

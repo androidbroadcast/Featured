@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -152,16 +151,20 @@ public class JavaPreferencesConfigValueProvider(
             node.flush()
         }
 
+    /**
+     * Conforms to [LocalConfigValueProvider.observe] contract: always emits immediately on
+     * collection — [ConfigValue.Source.LOCAL] when a value is stored,
+     * [ConfigValue.Source.DEFAULT] wrapping [ConfigParam.defaultValue] otherwise.
+     */
     override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
-        flow<ConfigValue<T>?> {
-            emit(get(param))
+        flow {
+            emit(get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT))
             emitAll(
                 changedKeysFlow
                     .filter { it == param.key }
-                    .map { get(param) },
+                    .map { get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT) },
             )
-        }.filterNotNull()
-            .distinctUntilChanged()
+        }.distinctUntilChanged()
 }
 
 /**

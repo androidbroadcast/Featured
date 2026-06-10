@@ -152,18 +152,22 @@ class InMemoryConfigValueProviderTest {
         }
 
     @Test
-    fun testObserveNonExistentParam() =
+    fun observeEmitsDefaultImmediately_whenKeyNeverWritten() =
         runTest {
             val provider = InMemoryConfigValueProvider()
-            val param = ConfigParam("non_existent", "default")
+            val param = ConfigParam("non_existent", "my_default")
 
             provider.observe(param).test {
-                // Should not emit anything initially since param doesn't exist
-                provider.set(param, "new_value")
+                // Contract: always emits immediately — DEFAULT when key is absent
+                val initial = awaitItem()
+                assertEquals("my_default", initial.value)
+                assertEquals(ConfigValue.Source.DEFAULT, initial.source)
 
-                val emission = awaitItem()
-                assertEquals("new_value", emission.value)
-                assertEquals(ConfigValue.Source.LOCAL, emission.source)
+                // Subsequent set emits LOCAL
+                provider.set(param, "new_value")
+                val afterSet = awaitItem()
+                assertEquals("new_value", afterSet.value)
+                assertEquals(ConfigValue.Source.LOCAL, afterSet.source)
 
                 cancelAndIgnoreRemainingEvents()
             }

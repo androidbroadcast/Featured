@@ -385,6 +385,19 @@ class SharedPreferencesProviderConfigTest {
         }
 
     @Test
+    fun `observe emits DEFAULT immediately when key has never been written`() =
+        runTest {
+            val param = ConfigParam("never_written_key", "my_default")
+
+            provider.observe(param).test {
+                val emission = awaitItem()
+                assertEquals("my_default", emission.value)
+                assertEquals(ConfigValue.Source.DEFAULT, emission.source)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
     fun `additionalContext is included in the merged coroutine context`() {
         val coroutineName = CoroutineName("test-context-inclusion")
         val context: Application = ApplicationProvider.getApplicationContext()

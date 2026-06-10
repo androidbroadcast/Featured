@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.map
 import platform.Foundation.NSUserDefaults
 
 /**
@@ -127,20 +127,22 @@ public class NSUserDefaultsConfigValueProvider(
     /**
      * Returns a [Flow] that emits a [ConfigValue] for [param] on every change to its key.
      *
-     * The flow emits the current persisted value immediately (skipping `null` if unset) and
-     * then emits again whenever [set] or [resetOverride] is called for the same key.
-     * Consecutive identical values are deduplicated via `distinctUntilChanged`.
+     * Conforms to [LocalConfigValueProvider.observe] contract: the flow always emits immediately
+     * upon collection — [ConfigValue.Source.LOCAL] when a value is persisted,
+     * [ConfigValue.Source.DEFAULT] wrapping [ConfigParam.defaultValue] otherwise. It then emits
+     * again whenever [set] or [resetOverride] is called for the same key. Consecutive identical
+     * values are deduplicated via `distinctUntilChanged`.
      *
      * @param param The configuration parameter to observe.
      * @return A cold [Flow] that completes when the collector's scope is cancelled.
      */
     override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
         flow {
-            get(param)?.let { emit(it) }
+            emit(get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT))
             emitAll(
                 changedKeyFlow
                     .filter { key -> key == param.key }
-                    .mapNotNull { get(param) },
+                    .map { get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT) },
             )
         }.distinctUntilChanged()
 

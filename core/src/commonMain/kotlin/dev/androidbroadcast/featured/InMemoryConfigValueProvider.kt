@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.map
 
 /**
  * A [LocalConfigValueProvider] that stores configuration overrides in memory.
@@ -83,8 +83,12 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
 
     /**
      * Returns a [kotlinx.coroutines.flow.Flow] that emits the current value for [param]
-     * immediately (if an override exists) and then emits again on every subsequent [set]
-     * or [resetOverride] call for the same key.
+     * immediately and then emits again on every subsequent [set] or [resetOverride] call
+     * for the same key.
+     *
+     * Conforms to [LocalConfigValueProvider.observe] contract: the initial emission is always
+     * present — [ConfigValue.Source.LOCAL] when a value is stored, [ConfigValue.Source.DEFAULT]
+     * wrapping [ConfigParam.defaultValue] otherwise.
      *
      * The flow completes only when the collector's scope is cancelled. It does **not** emit
      * after [clear] because [clear] does not signal individual key changes.
@@ -94,11 +98,12 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
      */
     override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
         flow {
-            get(param)?.let { emit(it) }
+            emit(get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT))
 
-            changedKeyFlow
-                .filter { key -> key == param.key }
-                .mapNotNull { get(param) }
-                .let { emitAll(it) }
+            emitAll(
+                changedKeyFlow
+                    .filter { key -> key == param.key }
+                    .map { get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT) },
+            )
         }
 }
