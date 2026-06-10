@@ -5,10 +5,12 @@ import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import platform.Foundation.NSUserDefaults
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class NSUserDefaultsConfigValueProviderTest {
@@ -28,14 +30,14 @@ class NSUserDefaultsConfigValueProviderTest {
     // --- get ---
 
     @Test
-    fun `get returns null when key not set`() =
+    fun getReturnsNullWhenKeyNotSet() =
         runTest {
             val param = ConfigParam("missing_key", false)
             assertNull(provider.get(param))
         }
 
     @Test
-    fun `get returns stored Boolean value`() =
+    fun getReturnsStoredBooleanValue() =
         runTest {
             val param = ConfigParam("bool_key", false)
             provider.set(param, true)
@@ -44,7 +46,7 @@ class NSUserDefaultsConfigValueProviderTest {
         }
 
     @Test
-    fun `get returns stored Int value`() =
+    fun getReturnsStoredIntValue() =
         runTest {
             val param = ConfigParam("int_key", 0)
             provider.set(param, 42)
@@ -53,7 +55,7 @@ class NSUserDefaultsConfigValueProviderTest {
         }
 
     @Test
-    fun `get returns stored Long value`() =
+    fun getReturnsStoredLongValue() =
         runTest {
             val param = ConfigParam("long_key", 0L)
             provider.set(param, 123456789L)
@@ -62,7 +64,7 @@ class NSUserDefaultsConfigValueProviderTest {
         }
 
     @Test
-    fun `get returns stored Double value`() =
+    fun getReturnsStoredDoubleValue() =
         runTest {
             val param = ConfigParam("double_key", 0.0)
             provider.set(param, 3.14)
@@ -71,7 +73,7 @@ class NSUserDefaultsConfigValueProviderTest {
         }
 
     @Test
-    fun `get returns stored Float value`() =
+    fun getReturnsStoredFloatValue() =
         runTest {
             val param = ConfigParam("float_key", 0f)
             provider.set(param, 2.5f)
@@ -80,7 +82,7 @@ class NSUserDefaultsConfigValueProviderTest {
         }
 
     @Test
-    fun `get returns stored String value`() =
+    fun getReturnsStoredStringValue() =
         runTest {
             val param = ConfigParam("string_key", "")
             provider.set(param, "hello")
@@ -88,10 +90,48 @@ class NSUserDefaultsConfigValueProviderTest {
             assertEquals(ConfigValue("hello", ConfigValue.Source.LOCAL), result)
         }
 
+    // --- reserved key protection ---
+
+    @Test
+    fun getWithReservedKeyThrows() =
+        runTest {
+            val param = ConfigParam(NSUserDefaultsConfigValueProvider.RESERVED_INDEX_KEY, "default")
+            assertFailsWith<IllegalArgumentException> {
+                provider.get(param)
+            }
+        }
+
+    @Test
+    fun setWithReservedKeyThrows() =
+        runTest {
+            val param = ConfigParam(NSUserDefaultsConfigValueProvider.RESERVED_INDEX_KEY, "default")
+            assertFailsWith<IllegalArgumentException> {
+                provider.set(param, "value")
+            }
+        }
+
+    @Test
+    fun reservedKeyIsInvisibleViaObserve() =
+        runTest {
+            // The reserved key must not surface as a provider value — observe emits DEFAULT
+            val param = ConfigParam(NSUserDefaultsConfigValueProvider.RESERVED_INDEX_KEY, "my_default")
+            // Manually write something at the reserved key to simulate index presence
+            val defaults = NSUserDefaults(suiteName = suiteName)
+            defaults.setObject(listOf("some_key"), forKey = NSUserDefaultsConfigValueProvider.RESERVED_INDEX_KEY)
+
+            provider.observe(param).test {
+                val emission = awaitItem()
+                // get() throws for the reserved key, so observe must emit DEFAULT (error path)
+                assertEquals("my_default", emission.value)
+                assertEquals(ConfigValue.Source.DEFAULT, emission.source)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
     // --- resetOverride ---
 
     @Test
-    fun `resetOverride makes get return null`() =
+    fun resetOverrideMakesGetReturnNull() =
         runTest {
             val param = ConfigParam("reset_key", false)
             provider.set(param, true)
@@ -102,7 +142,7 @@ class NSUserDefaultsConfigValueProviderTest {
     // --- clear ---
 
     @Test
-    fun `clear removes all values`() =
+    fun clearRemovesProviderOwnedValues() =
         runTest {
             val boolParam = ConfigParam("clear_bool", false)
             val strParam = ConfigParam("clear_str", "")
@@ -113,10 +153,69 @@ class NSUserDefaultsConfigValueProviderTest {
             assertNull(provider.get(strParam))
         }
 
+    @Test
+    fun clearDoesNotTouchForeignKeyInSameSuite() =
+        runTest {
+            // A foreign key written directly into the same suite must survive clear().
+            val foreignKey = "foreign.key.written.directly"
+            val defaults = NSUserDefaults(suiteName = suiteName)
+            defaults.setObject("foreign_value", forKey = foreignKey)
+
+            val ownedParam = ConfigParam("owned_key", "default")
+            provider.set(ownedParam, "owned_value")
+
+            provider.clear()
+
+            // Provider-owned key is gone
+            assertNull(provider.get(ownedParam))
+            // Foreign key survives — clear() only removes index-tracked keys
+            assertEquals("foreign_value", defaults.objectForKey(foreignKey))
+        }
+
+    @Test
+    fun clearNotifiesActiveObserversWithDefault() =
+        runTest {
+            val param = ConfigParam("obs_clear_key", "my_default")
+            provider.set(param, "stored")
+
+            provider.observe(param).test {
+                // Initial LOCAL emission
+                val initial = awaitItem()
+                assertEquals("stored", initial.value)
+                assertEquals(ConfigValue.Source.LOCAL, initial.source)
+
+                provider.clear()
+
+                val afterClear = awaitItem()
+                assertEquals("my_default", afterClear.value)
+                assertEquals(ConfigValue.Source.DEFAULT, afterClear.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun clearIndexSurvivesAcrossProviderInstances() =
+        runTest {
+            // Set a value via the original provider so the key is indexed
+            val param = ConfigParam("persist_key", "default")
+            provider.set(param, "value")
+
+            // Create a second provider over the same suite (simulates app restart)
+            val provider2 = NSUserDefaultsConfigValueProvider(suiteName = suiteName)
+
+            // clear() on provider2 must still find and remove the key
+            provider2.clear()
+
+            // Both provider instances agree the key is gone
+            assertNull(provider.get(param))
+            assertNull(provider2.get(param))
+        }
+
     // --- observe ---
 
     @Test
-    fun `observe emits current value immediately when set`() =
+    fun observeEmitsCurrentValueImmediatelyWhenSet() =
         runTest {
             val param = ConfigParam("observe_key", false)
             provider.set(param, true)
@@ -125,16 +224,14 @@ class NSUserDefaultsConfigValueProviderTest {
         }
 
     @Test
-    fun `observe emits updated value after set`() =
+    fun observeEmitsUpdatedValueAfterSet() =
         runTest {
             val param = ConfigParam("observe_update_key", 0)
             provider.set(param, 1)
 
             provider.observe(param).test {
-                // First emission: current stored value
                 assertEquals(ConfigValue(1, ConfigValue.Source.LOCAL), awaitItem())
 
-                // Reactive emission: new value after set
                 provider.set(param, 99)
                 assertEquals(ConfigValue(99, ConfigValue.Source.LOCAL), awaitItem())
 
@@ -143,7 +240,7 @@ class NSUserDefaultsConfigValueProviderTest {
         }
 
     @Test
-    fun `observe emits DEFAULT immediately when key has never been written`() =
+    fun observeEmitsDefaultImmediatelyWhenKeyHasNeverBeenWritten() =
         runTest {
             val param = ConfigParam("never_written_bool", false)
 
@@ -155,15 +252,13 @@ class NSUserDefaultsConfigValueProviderTest {
             }
         }
 
-    // G5: resetOverride after set → observe emits DEFAULT-sourced frame.
     @Test
-    fun `observe emits DEFAULT after resetOverride when value cleared`() =
+    fun observeEmitsDefaultAfterResetOverrideWhenValueCleared() =
         runTest {
             val param = ConfigParam("reset_obs_key", false)
             provider.set(param, true)
 
             provider.observe(param).test {
-                // Initial LOCAL frame
                 val initial = awaitItem()
                 assertEquals(true, initial.value)
                 assertEquals(ConfigValue.Source.LOCAL, initial.source)
