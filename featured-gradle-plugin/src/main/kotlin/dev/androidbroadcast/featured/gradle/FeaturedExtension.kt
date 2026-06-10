@@ -31,6 +31,13 @@ package dev.androidbroadcast.featured.gradle
  * - `GeneratedLocalFlags` / `GeneratedRemoteFlags` — typed `ConfigParam` instances
  * - Extension functions: `ConfigValues.isDarkModeEnabled()`, `ConfigValues.getMaxRetries()`, etc.
  * - ProGuard/R8 `-assumevalues` rules for local flags (enabling dead-code elimination in release builds)
+ *
+ * To fail the build on expired flags instead of just warning:
+ * ```kotlin
+ * featured {
+ *     expiredFlagsMode = ExpiredFlagsMode.ERROR
+ * }
+ * ```
  */
 public open class FeaturedExtension {
     /** Container for flags resolved entirely on-device (local overrides). */
@@ -38,6 +45,24 @@ public open class FeaturedExtension {
 
     /** Container for flags controlled by a remote config service. */
     public val remoteFlags: FlagContainer = FlagContainer()
+
+    /**
+     * Controls how [VerifyExpiredFlagsTask] reacts to flags whose `expiresAt` date is in the past.
+     *
+     * - [ExpiredFlagsMode.WARN] (default) — emits a Gradle warning per expired flag; build succeeds.
+     * - [ExpiredFlagsMode.ERROR] — fails the build and lists all expired flags in the error message.
+     *
+     * Invalid `expiresAt` format strings are always reported as warnings and are never escalated,
+     * regardless of this setting.
+     *
+     * Usage:
+     * ```kotlin
+     * featured {
+     *     expiredFlagsMode = ExpiredFlagsMode.ERROR
+     * }
+     * ```
+     */
+    public var expiredFlagsMode: ExpiredFlagsMode = ExpiredFlagsMode.WARN
 
     /** Configures local feature flags. */
     public fun localFlags(configure: FlagContainer.() -> Unit): Unit = localFlags.configure()

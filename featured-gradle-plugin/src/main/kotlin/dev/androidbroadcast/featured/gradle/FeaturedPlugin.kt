@@ -45,7 +45,7 @@ public class FeaturedPlugin : Plugin<Project> {
         val extension = target.extensions.create("featured", FeaturedExtension::class.java)
         val resolveTask = registerResolveFlagsTask(target, extension)
 
-        val verifyTask = registerVerifyExpiredFlagsTask(target, resolveTask)
+        val verifyTask = registerVerifyExpiredFlagsTask(target, extension, resolveTask)
         registerConfigParamTask(target, resolveTask, verifyTask)
         val proguardTask = registerProguardTask(target, resolveTask, verifyTask)
         registerIosConstValTask(target, resolveTask, verifyTask)
@@ -82,12 +82,14 @@ public class FeaturedPlugin : Plugin<Project> {
 
     private fun registerVerifyExpiredFlagsTask(
         target: Project,
+        extension: FeaturedExtension,
         resolveTask: TaskProvider<ResolveFlagsTask>,
     ): TaskProvider<VerifyExpiredFlagsTask> =
         target.tasks.register(VERIFY_EXPIRED_FLAGS_TASK_NAME, VerifyExpiredFlagsTask::class.java) { task ->
             task.group = "featured"
-            task.description = "Warns about feature flags whose expiresAt date is in the past for '${target.path}'."
+            task.description = "Verifies feature flags whose expiresAt date is in the past for '${target.path}'."
             task.flagsFile.set(resolveTask.flatMap { it.outputFile })
+            task.mode.set(target.provider { extension.expiredFlagsMode })
             task.dependsOn(resolveTask)
         }
 
