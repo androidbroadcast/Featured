@@ -55,6 +55,7 @@ import dev.androidbroadcast.featured.ConfigValues
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * A ready-to-use debug screen that lists all feature flags in the provided [registry]
@@ -128,15 +129,30 @@ public fun FeatureFlagsDebugScreen(
     // Initial build is parallel — O(latency), not O(N×latency).
     LaunchedEffect(configValues, registry) {
         isInitializing = true
-        // Parallel initial read of all params.
-        val initial: Map<String, DebugFlagItem<*>> =
-            coroutineScope {
-                registry
-                    .map { param -> async { buildDebugItemForParam(configValues, param) } }
-                    .associate { deferred -> deferred.await().let { it.key to it } }
-            }
-        itemsById = initial
-        isInitializing = false
+        try {
+            // Parallel initial read of all params. Per-child runCatching isolates failures:
+            // one bad provider cannot cancel siblings or leave isInitializing true forever.
+            val initial: Map<String, DebugFlagItem<*>> =
+                coroutineScope {
+                    registry
+                        .map { param ->
+                            async {
+                                runCatching { buildDebugItemForParam(configValues, param) }
+                                    .onFailure { e ->
+                                        if (e is CancellationException) throw e
+                                        println(
+                                            "Featured debug-ui: failed to build item for '${param.key}': $e",
+                                        )
+                                    }.getOrNull()
+                            }
+                        }.mapNotNull { deferred -> deferred.await() }
+                        .associateBy { it.key }
+                }
+            itemsById = initial
+        } finally {
+            // Guarantee the spinner is cleared even if coroutineScope throws.
+            isInitializing = false
+        }
 
         // Per-item reactive subscriptions: each param update only its own map slot.
         // Single-threaded UI dispatcher: collectors are main-confined and the update has no
@@ -144,9 +160,16 @@ public fun FeatureFlagsDebugScreen(
         // Do not move collection off the main dispatcher.
         registry.forEach { param ->
             launch {
-                configValues.observe(param).collect { _ ->
-                    val updated = buildDebugItemForParam(configValues, param)
-                    itemsById = itemsById + (updated.key to updated)
+                try {
+                    configValues.observe(param).collect { _ ->
+                        val updated = buildDebugItemForParam(configValues, param)
+                        itemsById = itemsById + (updated.key to updated)
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // Slot stays stale; screen remains functional for other params.
+                    println("Featured debug-ui: collector died for '${param.key}': $e")
                 }
             }
         }
@@ -161,7 +184,9 @@ public fun FeatureFlagsDebugScreen(
     // Derive visible items: filter then group. Applied before grouping so empty categories
     // are dropped automatically.
     val allItems = itemsById.values.toList()
-    val filteredItems = filterFlags(allItems, query = searchQuery, overriddenOnly = overriddenOnly)
+    // Guard: pass an empty query when search is closed so a stale searchQuery can never
+    // silently filter the list after the user dismisses the search bar.
+    val filteredItems = filterFlags(allItems, query = if (isSearchActive) searchQuery else "", overriddenOnly = overriddenOnly)
     val groupedItems = groupFlagsByCategory(filteredItems)
 
     // True when the registry is non-empty but active filters produce no matches.
@@ -309,34 +334,62 @@ public fun FeatureFlagsDebugScreen(
                                     item = item,
                                     onToggleBoolean = { newValue ->
                                         scope.launch {
-                                            @Suppress("UNCHECKED_CAST")
-                                            configValues.override(
-                                                item.param as ConfigParam<Boolean>,
-                                                newValue,
-                                            )
+                                            runCatching {
+                                                @Suppress("UNCHECKED_CAST")
+                                                configValues.override(
+                                                    item.param as ConfigParam<Boolean>,
+                                                    newValue,
+                                                )
+                                            }.onFailure { e ->
+                                                if (e is CancellationException) throw e
+                                                println(
+                                                    "Featured debug-ui: failed to write boolean override for '${item.key}': $e",
+                                                )
+                                            }
                                         }
                                     },
                                     onScalarInput = { newValue ->
                                         scope.launch {
-                                            @Suppress("UNCHECKED_CAST")
-                                            configValues.override(
-                                                item.param as ConfigParam<Any>,
-                                                newValue,
-                                            )
+                                            runCatching {
+                                                @Suppress("UNCHECKED_CAST")
+                                                configValues.override(
+                                                    item.param as ConfigParam<Any>,
+                                                    newValue,
+                                                )
+                                            }.onFailure { e ->
+                                                if (e is CancellationException) throw e
+                                                println(
+                                                    "Featured debug-ui: failed to write scalar override for '${item.key}': $e",
+                                                )
+                                            }
                                         }
                                     },
                                     onEnumSelect = { newValue ->
                                         scope.launch {
-                                            @Suppress("UNCHECKED_CAST")
-                                            configValues.override(
-                                                item.param as ConfigParam<Any>,
-                                                newValue,
-                                            )
+                                            runCatching {
+                                                @Suppress("UNCHECKED_CAST")
+                                                configValues.override(
+                                                    item.param as ConfigParam<Any>,
+                                                    newValue,
+                                                )
+                                            }.onFailure { e ->
+                                                if (e is CancellationException) throw e
+                                                println(
+                                                    "Featured debug-ui: failed to write enum override for '${item.key}': $e",
+                                                )
+                                            }
                                         }
                                     },
                                     onResetToDefault = {
                                         scope.launch {
-                                            configValues.resetOverride(item.param)
+                                            runCatching {
+                                                configValues.resetOverride(item.param)
+                                            }.onFailure { e ->
+                                                if (e is CancellationException) throw e
+                                                println(
+                                                    "Featured debug-ui: failed to reset override for '${item.key}': $e",
+                                                )
+                                            }
                                         }
                                     },
                                 )
