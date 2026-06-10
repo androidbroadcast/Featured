@@ -3,6 +3,8 @@ package dev.androidbroadcast.featured.nsuserdefaults
 import app.cash.turbine.test
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import platform.Foundation.NSUserDefaults
@@ -125,6 +127,15 @@ class NSUserDefaultsConfigValueProviderTest {
                 assertEquals("my_default", emission.value)
                 assertEquals(ConfigValue.Source.DEFAULT, emission.source)
                 cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun resetOverrideWithReservedKeyThrows() =
+        runTest {
+            val param = ConfigParam(NSUserDefaultsConfigValueProvider.RESERVED_INDEX_KEY, "default")
+            assertFailsWith<IllegalArgumentException> {
+                provider.resetOverride(param)
             }
         }
 
@@ -269,6 +280,34 @@ class NSUserDefaultsConfigValueProviderTest {
                 assertEquals(ConfigValue.Source.DEFAULT, afterReset.source)
 
                 cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    // --- index atomicity ---
+
+    @Test
+    fun parallelSetsAllKeysAppearedInIndex() =
+        runTest {
+            val keyCount = 20
+            val params = (0 until keyCount).map { i -> ConfigParam("parallel_key_$i", false) }
+
+            coroutineScope {
+                params
+                    .map { param ->
+                        async { provider.set(param, true) }
+                    }.forEach { it.await() }
+            }
+
+            // Every key set concurrently must be present in the index so clear() can remove them.
+            params.forEach { param ->
+                assertEquals(
+                    expected = ConfigValue(true, ConfigValue.Source.LOCAL),
+                    actual = provider.get(param),
+                )
+            }
+            provider.clear()
+            params.forEach { param ->
+                assertNull(provider.get(param))
             }
         }
 }

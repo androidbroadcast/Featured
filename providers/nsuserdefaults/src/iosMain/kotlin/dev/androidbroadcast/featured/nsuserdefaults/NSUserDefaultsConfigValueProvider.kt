@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import platform.Foundation.NSArray
 import platform.Foundation.NSUserDefaults
 
@@ -34,6 +36,10 @@ import platform.Foundation.NSUserDefaults
  * index and always reads directly from [NSUserDefaults]. Setting or getting the reserved key
  * itself throws [IllegalArgumentException].
  *
+ * **Concurrency:** in-process index read-modify-write operations (in [addToIndex], [removeFromIndex],
+ * and [clear]) are serialized via an internal [Mutex]. Cross-process access or crash-interrupted
+ * writes may still desync the index; the self-healing invariant above covers that case.
+ *
  * ```kotlin
  * val provider = NSUserDefaultsConfigValueProvider(suiteName = "com.example.app.flags")
  * val configValues = ConfigValues(localProvider = provider)
@@ -52,6 +58,7 @@ public class NSUserDefaultsConfigValueProvider(
         }
 
     private val changedKeyFlow = MutableSharedFlow<String>(extraBufferCapacity = Int.MAX_VALUE)
+    private val indexMutex = Mutex()
 
     /**
      * Returns the persisted value for [param], or `null` if it has not been set.
@@ -123,6 +130,7 @@ public class NSUserDefaultsConfigValueProvider(
      * @param param The configuration parameter whose override should be cleared.
      */
     override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
+        requireNotReservedKey(param.key)
         defaults.removeObjectForKey(param.key)
         removeFromIndex(param.key)
         changedKeyFlow.tryEmit(param.key)
@@ -143,11 +151,15 @@ public class NSUserDefaultsConfigValueProvider(
      * [get] never reads the index and always queries NSUserDefaults directly.
      */
     override suspend fun clear() {
-        val writtenKeys = readIndex()
-        for (key in writtenKeys) {
-            defaults.removeObjectForKey(key)
-        }
-        defaults.removeObjectForKey(RESERVED_INDEX_KEY)
+        val writtenKeys =
+            indexMutex.withLock {
+                val keys = readIndex()
+                for (key in keys) {
+                    defaults.removeObjectForKey(key)
+                }
+                defaults.removeObjectForKey(RESERVED_INDEX_KEY)
+                keys
+            }
         for (key in writtenKeys) {
             changedKeyFlow.tryEmit(key)
         }
@@ -218,18 +230,22 @@ public class NSUserDefaultsConfigValueProvider(
         }
     }
 
-    private fun addToIndex(key: String) {
-        val current = readIndex().toMutableList()
-        if (!current.contains(key)) {
-            current.add(key)
+    private suspend fun addToIndex(key: String) {
+        indexMutex.withLock {
+            val current = readIndex().toMutableList()
+            if (!current.contains(key)) {
+                current.add(key)
+            }
+            defaults.setObject(current, forKey = RESERVED_INDEX_KEY)
         }
-        defaults.setObject(current, forKey = RESERVED_INDEX_KEY)
     }
 
-    private fun removeFromIndex(key: String) {
-        val current = readIndex().toMutableList()
-        current.remove(key)
-        defaults.setObject(current, forKey = RESERVED_INDEX_KEY)
+    private suspend fun removeFromIndex(key: String) {
+        indexMutex.withLock {
+            val current = readIndex().toMutableList()
+            current.remove(key)
+            defaults.setObject(current, forKey = RESERVED_INDEX_KEY)
+        }
     }
 
     private fun requireNotReservedKey(key: String) {
