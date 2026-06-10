@@ -40,9 +40,29 @@ public abstract class VerifyExpiredFlagsTask : DefaultTask() {
 
     @TaskAction
     public fun verify() {
-        val today = LocalDate.now()
-        val entries = flagsFile.parseLocalFlagEntries()
+        check(flagsFile.isPresent) {
+            "$path: flagsFile property is not set"
+        }
 
+        val file = flagsFile.get().asFile
+        if (!file.exists()) {
+            logger.warn(
+                "Featured: verifyExpiredFlags — flags file not found at ${file.absolutePath}," +
+                    " no expiry check performed",
+            )
+            return
+        }
+
+        val nonBlankLineCount = file.readLines().count { it.isNotBlank() }
+        val entries = flagsFile.parseLocalFlagEntries()
+        val dropped = nonBlankLineCount - entries.size
+        if (dropped > 0) {
+            logger.warn(
+                "Featured: verifyExpiredFlags skipped $dropped unrecognized line(s) in ${file.absolutePath}",
+            )
+        }
+
+        val today = LocalDate.now()
         for (entry in entries) {
             val raw = entry.expiresAt ?: continue
             try {

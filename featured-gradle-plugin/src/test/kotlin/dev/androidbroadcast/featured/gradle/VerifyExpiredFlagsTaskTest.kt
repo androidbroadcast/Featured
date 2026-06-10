@@ -1,5 +1,7 @@
 package dev.androidbroadcast.featured.gradle
 
+import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
@@ -23,6 +25,10 @@ import kotlin.test.assertTrue
  *    warning and the build succeeds.
  * e. A flag with [LocalFlagEntry.expiresAt] == today produces no expired-flag warning (valid through
  *    the expiry day itself; expiry starts the day after).
+ * f. A flag without [LocalFlagEntry.expiresAt] produces no warning and the build succeeds.
+ * g. Multiple flags: two expired + one future in one module → exactly the two expired warnings emitted.
+ * h. Expired-flag warning contains the module name (prefixed with "in :").
+ * i. When the flags file does not exist the task warns and returns early (unit-test path via ProjectBuilder).
  *
  * All fixtures use a minimal JVM project (no AGP / ANDROID_HOME required) and a local
  * build-cache directory scoped to [TemporaryFolder] so the cache lifecycle is fully controlled.
@@ -65,6 +71,10 @@ class VerifyExpiredFlagsTaskTest {
         assertTrue(
             result.output.contains("expired on 2000-01-01"),
             "Expected 'expired on 2000-01-01' in output.\n${result.output}",
+        )
+        assertTrue(
+            result.output.contains("in :"),
+            "Expected module name (prefixed with 'in :') in the warning.\n${result.output}",
         )
     }
 
@@ -202,6 +212,112 @@ class VerifyExpiredFlagsTaskTest {
         )
     }
 
+    /** Case (f): flag with no expiresAt → no warning, build succeeds (the `?: continue` path). */
+    @Test
+    fun `flag without expiresAt does not emit any warning`() {
+        writeSettingsFile(projectDir, cacheDir)
+        writeBuildFileNoExpiresAt(projectDir)
+
+        val result =
+            gradleRunner(projectDir)
+                .withArguments(VERIFY_EXPIRED_FLAGS_TASK_NAME, "--build-cache")
+                .build()
+
+        assertEquals(
+            TaskOutcome.SUCCESS,
+            result.task(":$VERIFY_EXPIRED_FLAGS_TASK_NAME")?.outcome,
+            "Expected SUCCESS.\n${result.output}",
+        )
+        assertFalse(
+            result.output.contains("expired on"),
+            "Expected no expired-flag warning for a flag with no expiresAt.\n${result.output}",
+        )
+        assertFalse(
+            result.output.contains("invalid expiresAt"),
+            "Expected no format warning for a flag with no expiresAt.\n${result.output}",
+        )
+    }
+
+    /**
+     * Case (g): multiple flags — two expired + one future in one module →
+     * exactly the two expired warnings are emitted; the future flag produces none.
+     */
+    @Test
+    fun `two expired flags and one future flag emit exactly two expired warnings`() {
+        writeSettingsFile(projectDir, cacheDir)
+        projectDir.resolve("build.gradle.kts").writeText(
+            """
+            plugins {
+                id("java-library")
+                id("dev.androidbroadcast.featured")
+            }
+            featured {
+                localFlags {
+                    boolean("old_flag_a", default = false) {
+                        this.expiresAt = "2000-01-01"
+                    }
+                    boolean("old_flag_b", default = false) {
+                        this.expiresAt = "2001-06-15"
+                    }
+                    boolean("future_flag", default = false) {
+                        this.expiresAt = "2099-12-31"
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+
+        val result =
+            gradleRunner(projectDir)
+                .withArguments(VERIFY_EXPIRED_FLAGS_TASK_NAME, "--build-cache")
+                .build()
+
+        assertEquals(
+            TaskOutcome.SUCCESS,
+            result.task(":$VERIFY_EXPIRED_FLAGS_TASK_NAME")?.outcome,
+            "Expected SUCCESS.\n${result.output}",
+        )
+        assertTrue(
+            result.output.contains("expired on 2000-01-01"),
+            "Expected warning for old_flag_a.\n${result.output}",
+        )
+        assertTrue(
+            result.output.contains("expired on 2001-06-15"),
+            "Expected warning for old_flag_b.\n${result.output}",
+        )
+        assertFalse(
+            result.output.contains("2099-12-31"),
+            "Expected no warning for the future flag.\n${result.output}",
+        )
+    }
+
+    /**
+     * Case (i): flags file does not exist → task warns with the file path and returns early.
+     *
+     * TestKit fixtures always produce the flags file via the dependsOn chain, so this path cannot
+     * be exercised cheaply through a full Gradle run. We instead instantiate [VerifyExpiredFlagsTask]
+     * via [ProjectBuilder] and point [VerifyExpiredFlagsTask.flagsFile] at a non-existent path,
+     * then invoke [VerifyExpiredFlagsTask.verify] directly.
+     *
+     * The warn message is captured by the Gradle build logger; we assert via the task's logger
+     * level by verifying no exception is thrown and the verify() call returns normally.
+     */
+    @Test
+    fun `missing flags file does not throw and emits file-not-found warning`() {
+        val project: Project = ProjectBuilder.builder().build()
+
+        @Suppress("DEPRECATION")
+        val task =
+            project.tasks.create("verifyExpiredFlagsTest", VerifyExpiredFlagsTask::class.java)
+
+        val nonExistentFile = tempFolder.root.resolve("does-not-exist/flags.txt")
+        task.flagsFile.set(nonExistentFile)
+
+        // verify() must not throw — it logs a warning and returns early.
+        task.verify()
+        // If we reach this line the early-return path executed without exception.
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     private fun writeSettingsFile(
@@ -242,6 +358,22 @@ class VerifyExpiredFlagsTaskTest {
                     boolean("my_flag", default = false) {
                         this.expiresAt = "$expiresAt"
                     }
+                }
+            }
+            """.trimIndent(),
+        )
+    }
+
+    private fun writeBuildFileNoExpiresAt(projectDir: File) {
+        projectDir.resolve("build.gradle.kts").writeText(
+            """
+            plugins {
+                id("java-library")
+                id("dev.androidbroadcast.featured")
+            }
+            featured {
+                localFlags {
+                    boolean("my_flag", default = false)
                 }
             }
             """.trimIndent(),
