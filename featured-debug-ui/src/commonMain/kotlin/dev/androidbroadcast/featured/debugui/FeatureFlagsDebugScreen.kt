@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,6 +26,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -70,6 +75,8 @@ import kotlin.coroutines.cancellation.CancellationException
  * "Reset to default" button that clears the override.
  *
  * Supports search by flag key/category and filtering to locally-overridden flags only.
+ * A "Reset all overrides" action in the top bar resets every overridden flag at once and
+ * offers an undo snackbar.
  *
  * Intended for debug/internal builds only.
  *
@@ -95,6 +102,7 @@ public fun FeatureFlagsDebugScreen(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Per-item state map: each param key → its current DebugFlagItem.
     // Built once at startup (parallel) then updated individually on each param change.
@@ -110,6 +118,9 @@ public fun FeatureFlagsDebugScreen(
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var isSearchActive by rememberSaveable { mutableStateOf(false) }
     var overriddenOnly by rememberSaveable { mutableStateOf(false) }
+
+    // Whether the "Reset all" confirmation dialog is open.
+    var showResetAllDialog by remember { mutableStateOf(false) }
 
     // Auto-focus on first expansion only — not on state restoration after a config change.
     // rememberSaveable ensures hasFocusedOnce survives activity recreation alongside
@@ -193,8 +204,115 @@ public fun FeatureFlagsDebugScreen(
     // True when the registry is non-empty but active filters produce no matches.
     val isEmptyDueToFilter = allItems.isNotEmpty() && filteredItems.isEmpty()
 
+    // Compute the reset plan from the full (unfiltered) item list so the "Reset all" count
+    // and enabled state always reflect the actual number of overridden flags, regardless of
+    // which filter is active.
+    val resetPlan = buildResetPlan(allItems)
+    val hasOverrides = resetPlan.isNotEmpty()
+
+    // "Reset all" confirmation dialog — shown before committing any changes.
+    if (showResetAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetAllDialog = false },
+            title = { Text("Reset ${overrideLabel(resetPlan.size)}?") },
+            text = { Text("Values return to remote or default. You can undo from the snackbar.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showResetAllDialog = false
+                        // Snapshot then reset: capture the plan NOW (before any async work
+                        // starts) so undo has consistent values even if subscriptions fire
+                        // between resets.
+                        val plan = resetPlan
+                        // Navigation away cancels this job; completed resets stay applied
+                        // and undo is not offered after disposal — acceptable for a debug surface.
+                        scope.launch {
+                            // Parallel reset — isolate per-item failures so one bad provider
+                            // cannot prevent other params from being reset.
+                            // Single-threaded UI dispatcher: failedKeys is written only from
+                            // this coroutine's continuation; plain mutable list is race-free.
+                            val failedKeys = mutableListOf<String>()
+                            coroutineScope {
+                                plan
+                                    .map { entry ->
+                                        async {
+                                            runCatching {
+                                                configValues.resetOverride(entry.param)
+                                            }.onFailure { e ->
+                                                if (e is CancellationException) throw e
+                                                failedKeys += entry.param.key
+                                                println(
+                                                    "Featured debug-ui: failed to reset override for '${entry.param.key}': $e",
+                                                )
+                                            }
+                                        }
+                                    }.forEach { it.await() }
+                            }
+
+                            val resetCount = plan.size - failedKeys.size
+                            val resetMessage =
+                                if (failedKeys.isEmpty()) {
+                                    "Reset ${overrideLabel(plan.size)}"
+                                } else {
+                                    "Reset $resetCount of ${plan.size} overrides"
+                                }
+                            val result =
+                                snackbarHostState.showSnackbar(
+                                    message = resetMessage,
+                                    actionLabel = "Undo",
+                                    duration = SnackbarDuration.Long,
+                                )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                // Undo: restore all snapshotted values in parallel.
+                                val undoFailCount =
+                                    mutableListOf<String>()
+                                        .also { undoFailed ->
+                                            coroutineScope {
+                                                plan
+                                                    .map { entry ->
+                                                        async {
+                                                            runCatching {
+                                                                @Suppress("UNCHECKED_CAST")
+                                                                configValues.override(
+                                                                    entry.param as ConfigParam<Any>,
+                                                                    entry.previousValue,
+                                                                )
+                                                            }.onFailure { e ->
+                                                                if (e is CancellationException) throw e
+                                                                undoFailed += entry.param.key
+                                                                println(
+                                                                    "Featured debug-ui: failed to restore override for '${entry.param.key}': $e",
+                                                                )
+                                                            }
+                                                        }
+                                                    }.forEach { it.await() }
+                                            }
+                                        }.size
+                                if (undoFailCount > 0) {
+                                    val restoredCount = plan.size - undoFailCount
+                                    snackbarHostState.showSnackbar(
+                                        message = "Restored $restoredCount of ${plan.size} overrides",
+                                        duration = SnackbarDuration.Short,
+                                    )
+                                }
+                            }
+                        }
+                    },
+                ) {
+                    Text("Reset")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetAllDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+        )
+    }
+
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             if (isSearchActive) {
                 SearchTopAppBar(
@@ -210,7 +328,16 @@ public fun FeatureFlagsDebugScreen(
                 TopAppBar(
                     title = { Text("Feature Flags") },
                     actions = {
-                        // Space reserved for a future «Reset all overrides» action.
+                        TextButton(
+                            onClick = { showResetAllDialog = true },
+                            enabled = hasOverrides,
+                            modifier =
+                                Modifier.semantics {
+                                    contentDescription = "Reset all overrides"
+                                },
+                        ) {
+                            Text("Reset all")
+                        }
                         TextButton(
                             onClick = {
                                 isSearchActive = true
@@ -278,6 +405,9 @@ public fun FeatureFlagsDebugScreen(
 
                 isEmptyDueToFilter -> {
                     // Registry has flags but none pass the active filters.
+                    // The snackbar must be visible above this state — SnackbarHost is in
+                    // the Scaffold so it is always rendered in the correct z-layer above
+                    // the content regardless of which branch is shown here.
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
@@ -403,6 +533,9 @@ public fun FeatureFlagsDebugScreen(
         }
     }
 }
+
+/** Returns "1 override" or "N overrides" for use in dialog titles and snackbar messages. */
+private fun overrideLabel(count: Int): String = if (count == 1) "1 override" else "$count overrides"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
