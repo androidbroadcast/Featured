@@ -318,6 +318,38 @@ class VerifyExpiredFlagsTaskTest {
         // If we reach this line the early-return path executed without exception.
     }
 
+    /**
+     * Case (j): requesting [GENERATE_PROGUARD_TASK_NAME] directly with an expired flag →
+     * [VerifyExpiredFlagsTask] is gated before it and the expired-flag warning appears in output.
+     * Verifies that the [dependsOn] wiring added to [registerProguardTask] is in effect even
+     * when [GENERATE_CONFIG_PARAM_TASK_NAME] is not part of the requested task graph.
+     */
+    @Test
+    fun `proguard task with expired flag gates on verify task and emits expired warning`() {
+        writeSettingsFile(projectDir, cacheDir)
+        writeBuildFile(projectDir, expiresAt = "2000-01-01")
+
+        val result =
+            gradleRunner(projectDir)
+                .withArguments(GENERATE_PROGUARD_TASK_NAME, "--build-cache")
+                .build()
+
+        assertEquals(
+            TaskOutcome.SUCCESS,
+            result.task(":$GENERATE_PROGUARD_TASK_NAME")?.outcome,
+            "Expected proguard task SUCCESS.\n${result.output}",
+        )
+        assertEquals(
+            TaskOutcome.SUCCESS,
+            result.task(":$VERIFY_EXPIRED_FLAGS_TASK_NAME")?.outcome,
+            "Expected verifyExpiredFlags to run as a dependency of $GENERATE_PROGUARD_TASK_NAME.\n${result.output}",
+        )
+        assertTrue(
+            result.output.contains("expired on 2000-01-01"),
+            "Expected expired-flag warning in output when requesting proguard task.\n${result.output}",
+        )
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     private fun writeSettingsFile(

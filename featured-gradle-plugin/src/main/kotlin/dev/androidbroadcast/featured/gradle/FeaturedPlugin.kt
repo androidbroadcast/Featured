@@ -47,9 +47,9 @@ public class FeaturedPlugin : Plugin<Project> {
 
         val verifyTask = registerVerifyExpiredFlagsTask(target, resolveTask)
         registerConfigParamTask(target, resolveTask, verifyTask)
-        val proguardTask = registerProguardTask(target, resolveTask)
-        registerIosConstValTask(target, resolveTask)
-        registerXcconfigTask(target, resolveTask)
+        val proguardTask = registerProguardTask(target, resolveTask, verifyTask)
+        registerIosConstValTask(target, resolveTask, verifyTask)
+        registerXcconfigTask(target, resolveTask, verifyTask)
         val manifestTask = registerManifestTask(target, resolveTask)
         registerFeaturedManifestConfiguration(target, manifestTask)
         wireToRootAggregator(target, resolveTask)
@@ -111,6 +111,7 @@ public class FeaturedPlugin : Plugin<Project> {
     private fun registerProguardTask(
         target: Project,
         resolveTask: TaskProvider<ResolveFlagsTask>,
+        verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
     ): TaskProvider<GenerateProguardRulesTask> =
         target.tasks.register(GENERATE_PROGUARD_TASK_NAME, GenerateProguardRulesTask::class.java) { task ->
             task.group = "featured"
@@ -119,11 +120,13 @@ public class FeaturedPlugin : Plugin<Project> {
             task.modulePath.set(target.path)
             task.outputFile.set(target.layout.buildDirectory.file("featured/proguard-featured.pro"))
             task.dependsOn(resolveTask)
+            task.dependsOn(verifyTask)
         }
 
     private fun registerIosConstValTask(
         target: Project,
         resolveTask: TaskProvider<ResolveFlagsTask>,
+        verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
     ) {
         target.tasks.register(GENERATE_IOS_CONST_VAL_TASK_NAME, GenerateIosConstValTask::class.java) { task ->
             task.group = "featured"
@@ -136,12 +139,14 @@ public class FeaturedPlugin : Plugin<Project> {
                 target.layout.buildDirectory.file("generated/featured/commonMain/FeatureFlagExpect.kt"),
             )
             task.dependsOn(resolveTask)
+            task.dependsOn(verifyTask)
         }
     }
 
     private fun registerXcconfigTask(
         target: Project,
         resolveTask: TaskProvider<ResolveFlagsTask>,
+        verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
     ) {
         target.tasks.register(GENERATE_XCCONFIG_TASK_NAME, GenerateXcconfigTask::class.java) { task ->
             task.group = "featured"
@@ -149,6 +154,7 @@ public class FeaturedPlugin : Plugin<Project> {
             task.scanResultFile.set(resolveTask.flatMap { it.outputFile })
             task.outputFile.set(target.layout.buildDirectory.file("featured/FeatureFlags.generated.xcconfig"))
             task.dependsOn(resolveTask)
+            task.dependsOn(verifyTask)
         }
     }
 
