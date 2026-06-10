@@ -215,7 +215,6 @@ public fun FeatureFlagsDebugScreen(
         AlertDialog(
             onDismissRequest = { showResetAllDialog = false },
             title = { Text("Reset ${resetPlan.size} overrides?") },
-            text = { Text("This cannot be undone.") },
             confirmButton = {
                 TextButton(
                     onClick = {
