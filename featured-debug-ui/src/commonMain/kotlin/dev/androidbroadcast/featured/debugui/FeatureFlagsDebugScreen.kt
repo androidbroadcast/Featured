@@ -97,8 +97,9 @@ import kotlin.coroutines.cancellation.CancellationException
  *   override / reset operation. The screen recovers from all these errors without
  *   crashing; this callback is the hook to observe or log them.
  *
- *   Default behavior: prints the full stack trace to stdout via [println], which is the
- *   same as the pre-#268 behavior.
+ *   Default behavior: prints the full stack trace to stdout via [println]. This is
+ *   equivalent to the pre-#268 behavior (errors are printed to stdout; the format now
+ *   includes the full stack trace).
  *
  *   To silence diagnostics entirely, pass `onError = {}`.
  *   To route through your own logger, pass e.g. `onError = { Timber.w(it) }`.
@@ -481,19 +482,19 @@ public fun FeatureFlagsDebugScreen(
                                 FlagItemCard(
                                     item = item,
                                     onToggleBoolean = { newValue ->
-                                        launchCatching(scope, onError, "Failed to override '${item.key}'") {
+                                        launchCatching(scope, onError, "Failed to override '${item.key}' (boolean)") {
                                             @Suppress("UNCHECKED_CAST")
                                             configValues.override(item.param as ConfigParam<Boolean>, newValue)
                                         }
                                     },
                                     onScalarInput = { newValue ->
-                                        launchCatching(scope, onError, "Failed to override '${item.key}'") {
+                                        launchCatching(scope, onError, "Failed to override '${item.key}' (scalar)") {
                                             @Suppress("UNCHECKED_CAST")
                                             configValues.override(item.param as ConfigParam<Any>, newValue)
                                         }
                                     },
                                     onEnumSelect = { newValue ->
-                                        launchCatching(scope, onError, "Failed to override '${item.key}'") {
+                                        launchCatching(scope, onError, "Failed to override '${item.key}' (enum)") {
                                             @Suppress("UNCHECKED_CAST")
                                             configValues.override(item.param as ConfigParam<Any>, newValue)
                                         }
