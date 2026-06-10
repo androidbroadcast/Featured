@@ -50,7 +50,7 @@ class ErrorReportingTest {
     }
 
     @Test
-    fun reportError_nullReceivedWhenCallbackThrows() {
+    fun reportError_callbackInvokedBeforeThrow() {
         var received: Throwable? = null
         val throwable = debugUiError("msg", RuntimeException())
 
