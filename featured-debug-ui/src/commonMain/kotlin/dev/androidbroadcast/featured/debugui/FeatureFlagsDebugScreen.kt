@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -99,17 +100,21 @@ public fun FeatureFlagsDebugScreen(
         mutableStateOf<Map<String, DebugFlagItem<*>>>(emptyMap())
     }
 
+    // True until the parallel initial build completes and assigns itemsById for the first time.
+    // Prevents the «No feature flags to display» empty state from flashing before data arrives.
+    var isInitializing by remember { mutableStateOf(true) }
+
     // Search / filter state — survives configuration changes.
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var isSearchActive by rememberSaveable { mutableStateOf(false) }
     var overriddenOnly by rememberSaveable { mutableStateOf(false) }
 
     // Auto-focus on first expansion only — not on state restoration after a config change.
-    // A plain `remember` (not rememberSaveable) means this resets on recreation, but the
-    // LaunchedEffect key is `isSearchActive` so it only fires when the value changes, not
-    // on recomposition. Combined with the hasFocusedOnce guard (also non-saveable), the
-    // keyboard does not re-flash when the screen is restored with isSearchActive == true.
-    var hasFocusedOnce by remember { mutableStateOf(false) }
+    // rememberSaveable ensures hasFocusedOnce survives activity recreation alongside
+    // isSearchActive (also rememberSaveable). Without this, rotation would reset
+    // hasFocusedOnce to false while isSearchActive stayed true, causing the keyboard to
+    // re-raise on every configuration change.
+    var hasFocusedOnce by rememberSaveable { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(isSearchActive) {
@@ -122,6 +127,7 @@ public fun FeatureFlagsDebugScreen(
     // Per-item subscription: each param has its own coroutine that updates only its slot.
     // Initial build is parallel — O(latency), not O(N×latency).
     LaunchedEffect(configValues, registry) {
+        isInitializing = true
         // Parallel initial read of all params.
         val initial: Map<String, DebugFlagItem<*>> =
             coroutineScope {
@@ -130,8 +136,12 @@ public fun FeatureFlagsDebugScreen(
                     .associate { deferred -> deferred.await().let { it.key to it } }
             }
         itemsById = initial
+        isInitializing = false
 
         // Per-item reactive subscriptions: each param update only its own map slot.
+        // Single-threaded UI dispatcher: collectors are main-confined and the update has no
+        // suspension between read and write, so the copy-on-write map update is race-free.
+        // Do not move collection off the main dispatcher.
         registry.forEach { param ->
             launch {
                 configValues.observe(param).collect { _ ->
@@ -213,6 +223,18 @@ public fun FeatureFlagsDebugScreen(
             }
 
             when {
+                isInitializing -> {
+                    // Initial parallel build in progress — show a spinner to avoid the
+                    // «No feature flags» empty state flashing before data arrives.
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
                 allItems.isEmpty() -> {
                     // Registry is empty — no flags registered at all.
                     Column(
@@ -340,7 +362,10 @@ private fun SearchTopAppBar(
     TopAppBar(
         modifier = modifier,
         navigationIcon = {
-            TextButton(onClick = onClose) {
+            TextButton(
+                onClick = onClose,
+                modifier = Modifier.semantics { contentDescription = "Close search" },
+            ) {
                 Text("✕")
             }
         },
@@ -365,7 +390,10 @@ private fun SearchTopAppBar(
                     ),
                 trailingIcon = {
                     if (query.isNotEmpty()) {
-                        TextButton(onClick = { onQueryChange("") }) {
+                        TextButton(
+                            onClick = { onQueryChange("") },
+                            modifier = Modifier.semantics { contentDescription = "Clear search query" },
+                        ) {
                             Text("✕", style = MaterialTheme.typography.labelSmall)
                         }
                     }
