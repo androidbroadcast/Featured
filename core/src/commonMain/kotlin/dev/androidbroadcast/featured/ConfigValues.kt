@@ -325,6 +325,9 @@ public class ConfigValues(
      * into the snapshot in a single atomic batch update.
      *
      * Empty [params] is a no-op — the [coroutineScope] is skipped entirely to avoid overhead.
+     *
+     * DEFAULT-sourced results are filtered out before the merge to preserve the invariant that
+     * DEFAULT values are never written into the snapshot (consistent with [getValue]).
      */
     private suspend fun refreshWarmSet(params: Collection<ConfigParam<*>>) {
         if (params.isEmpty()) return
@@ -338,7 +341,8 @@ public class ConfigValues(
                             param.key to getValue(typedParam)
                         }
                     }.awaitAll()
-            snapshot.update { current -> current + resolved }
+                    .filter { (_, configValue) -> configValue.source != ConfigValue.Source.DEFAULT }
+            snapshot.update { current -> mergeWarmResults(current, resolved) }
         }
     }
 
@@ -420,4 +424,46 @@ public class ConfigValues(
 
     /** Companion object used as a receiver for extension factories (e.g. ConfigValues.fake). */
     public companion object
+}
+
+/**
+ * Merges a batch of freshly resolved warm-set entries into the current snapshot, applying
+ * an override-protection rule: if the current snapshot already holds a LOCAL-sourced value for a
+ * key and the incoming resolved value is **not** LOCAL-sourced, the current value wins.
+ *
+ * This protects against the following race: a [ConfigValues.override] call (which writes
+ * LOCAL into the snapshot) may land after the warm-refresh batch read its providers but before
+ * the batch commits. Without this rule the batch commit would silently clobber that override.
+ *
+ * For every other combination (current is non-LOCAL, or resolved is LOCAL, or the slot is
+ * absent) the resolved value wins, so fresh provider data always propagates correctly.
+ *
+ * DEFAULT-sourced entries must be filtered out **before** calling this function; DEFAULT is
+ * never written into the snapshot (see [ConfigValues.getValue] KDoc).
+ *
+ * @param current The snapshot map at the moment the atomic update fires.
+ * @param resolved Non-DEFAULT resolved entries from the latest provider pass.
+ * @return A new map reflecting the merged state.
+ */
+internal fun mergeWarmResults(
+    current: Map<String, ConfigValue<*>>,
+    resolved: List<Pair<String, ConfigValue<*>>>,
+): Map<String, ConfigValue<*>> {
+    if (resolved.isEmpty()) return current
+    val result = current.toMutableMap()
+    for ((key, resolvedValue) in resolved) {
+        val currentValue = current[key]
+        // Keep the current snapshot value when an override landed mid-flight:
+        // current slot is LOCAL (written by override/writeSnapshot) and the incoming
+        // resolved value is non-LOCAL (remote or default). The provider is still the
+        // source of truth and the next refresh or getValue call will self-heal.
+        val keepCurrent =
+            currentValue != null &&
+                currentValue.source == ConfigValue.Source.LOCAL &&
+                resolvedValue.source != ConfigValue.Source.LOCAL
+        if (!keepCurrent) {
+            result[key] = resolvedValue
+        }
+    }
+    return result
 }

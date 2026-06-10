@@ -46,8 +46,6 @@ class WarmUpTest {
 
     /** Remote provider that throws on get() to exercise the error-recovery path. */
     private class FailingRemoteProvider : RemoteConfigValueProvider {
-        val errors = mutableListOf<Throwable>()
-
         override suspend fun fetch(activate: Boolean) = Unit
 
         override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T>? = throw RuntimeException("provider unavailable")
@@ -164,14 +162,13 @@ class WarmUpTest {
 
             configValues.warmUp(listOf(param))
 
-            // Provider failed: getValueCached should return DEFAULT value from param.defaultValue.
-            // Note: getValue does NOT write DEFAULT into snapshot when both providers return null
-            // (or throw). The warm-set batch write only writes what getValue returns — here it is
-            // the DEFAULT-sourced ConfigValue returned by getValue's fallback path.
-            // However, refreshWarmSet writes all results including DEFAULT-sourced values into the
-            // snapshot batch. So getValueCached will return that DEFAULT-sourced value.
+            // Provider failed: getValue returns a DEFAULT-sourced ConfigValue from the fallback
+            // path. refreshWarmSet filters DEFAULT-sourced results out before the batch commit,
+            // so no snapshot slot is written. getValueCached falls back to ConfigParam.defaultValue
+            // via the cold-read path, returning DEFAULT source.
             val cached = configValues.getValueCached(param)
             assertEquals("the_default", cached.value)
+            assertEquals(ConfigValue.Source.DEFAULT, cached.source)
             // Error was reported to the handler.
             assertTrue(capturedErrors.isNotEmpty(), "expected at least one provider error")
         }
@@ -232,4 +229,80 @@ class WarmUpTest {
             assertEquals("v2", configValues.getValueCached(param).value)
             assertEquals(ConfigValue.Source.REMOTE, configValues.getValueCached(param).source)
         }
+
+    // ---------------------------------------------------------------------------
+    // (h) warmUp BEFORE initialize — initialize's internal refresh warms from cache
+    // ---------------------------------------------------------------------------
+
+    @Test
+    fun `warmUp before initialize — initialize refresh populates snapshot with REMOTE values`() =
+        runTest {
+            val param = ConfigParam("feat_h", "default_h")
+            val remote = MutableRemoteProvider(mapOf("feat_h" to "cached_remote"))
+            val configValues = ConfigValues(remoteProvider = remote)
+
+            // Register the param in the warm-set before initialize() is called.
+            configValues.warmUp(listOf(param))
+
+            // Simulate a second round: clear snapshot knowledge by verifying it is already warm,
+            // then call initialize() to exercise its internal refreshWarmSet path.
+            assertEquals("cached_remote", configValues.getValueCached(param).value)
+
+            // Update the provider to a new value; initialize() must re-resolve from the provider.
+            remote.put("feat_h", "refreshed_remote")
+            configValues.initialize()
+
+            // refreshWarmSet inside initialize() must resolve the registered warm-set param
+            // and write the freshly resolved REMOTE value into the snapshot.
+            val cached = configValues.getValueCached(param)
+            assertEquals("refreshed_remote", cached.value)
+            assertEquals(ConfigValue.Source.REMOTE, cached.source)
+        }
+
+    // ---------------------------------------------------------------------------
+    // mergeWarmResults — unit tests for the merge rule
+    // ---------------------------------------------------------------------------
+
+    @Test
+    fun `mergeWarmResults — LOCAL current kept when resolved is non-LOCAL`() {
+        val key = "flag"
+        val localValue = ConfigValue("local_override", ConfigValue.Source.LOCAL)
+        val remoteValue = ConfigValue("remote_value", ConfigValue.Source.REMOTE)
+
+        val current = mapOf(key to localValue)
+        val resolved = listOf(key to remoteValue as ConfigValue<*>)
+
+        val result = mergeWarmResults(current, resolved)
+
+        // LOCAL current must win: an override landed mid-flight; resolved is non-LOCAL.
+        assertEquals(localValue, result[key])
+    }
+
+    @Test
+    fun `mergeWarmResults — non-LOCAL current replaced by fresh resolved`() {
+        val key = "flag"
+        val staleRemote = ConfigValue("stale", ConfigValue.Source.REMOTE)
+        val freshRemote = ConfigValue("fresh", ConfigValue.Source.REMOTE)
+
+        val current = mapOf(key to staleRemote)
+        val resolved = listOf(key to freshRemote as ConfigValue<*>)
+
+        val result = mergeWarmResults(current, resolved)
+
+        // non-LOCAL current must be overwritten with the fresh resolved value.
+        assertEquals(freshRemote, result[key])
+    }
+
+    @Test
+    fun `mergeWarmResults — absent current slot filled by resolved`() {
+        val key = "flag"
+        val remoteValue = ConfigValue("remote_value", ConfigValue.Source.REMOTE)
+
+        val current = emptyMap<String, ConfigValue<*>>()
+        val resolved = listOf(key to remoteValue as ConfigValue<*>)
+
+        val result = mergeWarmResults(current, resolved)
+
+        assertEquals(remoteValue, result[key])
+    }
 }
