@@ -3,6 +3,7 @@
 
 package dev.androidbroadcast.featured
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
@@ -80,7 +81,9 @@ import kotlin.concurrent.atomics.update
  * @param onProviderError Callback invoked whenever a provider throws during [getValue] or
  *   [observe]. Defaults to logging the error to the platform log (Android: `Log.w`,
  *   iOS: `NSLog`, JVM: `System.err`). Pass `{}` to silence errors; pass a custom handler
- *   to route them to your own observability system.
+ *   to route them to your own observability system. The callback should not throw; any
+ *   exception thrown by it is silently ignored to preserve the "errors never propagate
+ *   to callers" guarantee.
  * @throws IllegalArgumentException if both [localProvider] and [remoteProvider] are `null`.
  */
 public class ConfigValues(
@@ -109,6 +112,20 @@ public class ConfigValues(
      * are always consistent snapshots. Thread-safe on all KMP targets.
      */
     private val snapshot = AtomicReference<Map<String, ConfigValue<*>>>(emptyMap())
+
+    /**
+     * Forwards [error] to [onProviderError], swallowing any exception the handler itself throws.
+     *
+     * This ensures that a misbehaving error handler cannot break the read path — [getValue] and
+     * [observe] must remain safe for callers regardless of what [onProviderError] does.
+     */
+    private fun reportProviderError(error: Throwable) {
+        try {
+            onProviderError(error)
+        } catch (_: Throwable) {
+            // handler must not break the read path
+        }
+    }
 
     /** Writes [configValue] into the snapshot under [param]'s key (copy-on-write). */
     private fun <T : Any> writeSnapshot(
@@ -165,7 +182,10 @@ public class ConfigValues(
     public suspend fun <T : Any> getValue(param: ConfigParam<T>): ConfigValue<T> {
         val localValue =
             localProvider?.runCatching { get(param) }?.getOrElse { error ->
-                onProviderError(error)
+                // runCatching captures CancellationException — propagate it so coroutine
+                // cancellation is not silently swallowed as a provider error.
+                if (error is CancellationException) throw error
+                reportProviderError(error)
                 null
             }
         if (localValue != null) {
@@ -175,7 +195,8 @@ public class ConfigValues(
 
         val remoteValue =
             remoteProvider?.runCatching { get(param) }?.getOrElse { error ->
-                onProviderError(error)
+                if (error is CancellationException) throw error
+                reportProviderError(error)
                 null
             }
         if (remoteValue != null) {
@@ -297,8 +318,8 @@ public class ConfigValues(
      * @return A [Flow] of [ConfigValue] for the specified parameter.
      */
     public fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> {
-        val localFlow = localProvider?.observe(param)?.catch { e -> onProviderError(e) }
-        val remoteFlow = fetchSignal.map { getValue(param) }.catch { e -> onProviderError(e) }
+        val localFlow = localProvider?.observe(param)?.catch { e -> reportProviderError(e) }
+        val remoteFlow = fetchSignal.map { getValue(param) }.catch { e -> reportProviderError(e) }
 
         return flow<ConfigValue<T>> {
             emit(getValue(param))
