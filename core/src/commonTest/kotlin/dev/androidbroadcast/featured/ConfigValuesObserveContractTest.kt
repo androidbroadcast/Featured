@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -77,11 +78,15 @@ class ConfigValuesObserveContractTest {
          * Returns a Flow that ALWAYS emits on every key change — not filtered by [param].
          * This simulates DataStore's behaviour where a write to any preference triggers an
          * emission of the full preferences snapshot.
+         *
+         * onStart emits the current snapshot immediately upon subscription, mirroring real DataStore
+         * which always delivers the current value first. The re-resolve triggered by changeSignal
+         * for an unchanged key is suppressed by distinctUntilChanged inside ConfigValues.observe.
          */
         override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
-            changeSignal.map {
-                get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
-            }
+            changeSignal
+                .map { get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT) }
+                .onStart { emit(get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)) }
     }
 
     // --- test cases ---
