@@ -451,7 +451,7 @@ internal fun mergeWarmResults(
 ): Map<String, ConfigValue<*>> {
     if (resolved.isEmpty()) return current
     val result = current.toMutableMap()
-    for ((key, resolvedValue) in resolved) {
+    resolved.forEach { (key, resolvedValue) ->
         val currentValue = current[key]
         // Keep the current snapshot value when an override landed mid-flight:
         // current slot is LOCAL (written by override/writeSnapshot) and the incoming
