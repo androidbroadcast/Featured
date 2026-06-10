@@ -4,7 +4,7 @@ package dev.androidbroadcast.featured
  * Converts between a typed value [T] and its [String] representation.
  *
  * Implement this interface to add support for custom types in providers that serialize
- * values as strings (SharedPreferences, DataStore, Firebase Remote Config).
+ * values as strings (SharedPreferences, DataStore, NSUserDefaults, Firebase Remote Config).
  *
  * A built-in implementation for enum classes is available via [enumConverter]:
  * ```kotlin
@@ -57,14 +57,11 @@ public interface TypeConverter<T : Any> {
  *
  * - `DataStoreConfigValueProvider.registerConverter(enumConverter<T>())`
  * - `JavaPreferencesConfigValueProvider.registerConverter(enumConverter<T>())`
+ * - `NSUserDefaultsConfigValueProvider.registerConverter(enumConverter<T>())`
  * - `SharedPreferencesProviderConfig.registerConverter(enumConverter<T>())`
  *
  * `FirebaseConfigValueProvider` handles enums automatically via reflection — no registration
  * is required.
- *
- * **iOS caveat:** `NSUserDefaultsConfigValueProvider` does not support enums at this time —
- * it has no converter API. Use a `String` flag as a workaround on iOS and convert the raw
- * value to your enum manually at the call site.
  *
  * @param T The enum class to convert.
  * @return A [TypeConverter] that round-trips [T] by enum constant name.
