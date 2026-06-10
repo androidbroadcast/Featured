@@ -140,6 +140,9 @@ kover {
         filters {
             excludes {
                 classes("*Test*", "*Mock*", "*Fake*")
+                // Platform-specific logging actuals are not executable from JVM tests;
+                // logging is not business logic and does not need coverage measurement.
+                classes("dev.androidbroadcast.featured.LogProviderError*")
             }
         }
 
