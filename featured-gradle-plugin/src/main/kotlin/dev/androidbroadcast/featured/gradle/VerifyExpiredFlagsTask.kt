@@ -2,7 +2,7 @@ package dev.androidbroadcast.featured.gradle
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
@@ -21,14 +21,17 @@ import java.time.format.DateTimeParseException
  * [flagsFile] declares the task-graph dependency on [ResolveFlagsTask] output. Caching is
  * explicitly disabled (`outputs.upToDateWhen { false }`), so this field does not contribute
  * to a cache key.
+ *
+ * A flag is reported as expired starting the day AFTER its `expiresAt` date — the flag is
+ * considered valid through the expiry day itself.
  */
 public abstract class VerifyExpiredFlagsTask : DefaultTask() {
     /**
-     * `@InputFile` declares the task-graph dependency on `ResolveFlagsTask` output. Caching is
-     * explicitly disabled (`outputs.upToDateWhen { false }`), so this field does not contribute
-     * to a cache key.
+     * Declared `@Internal`: the task is never up-to-date (`outputs.upToDateWhen { false }`),
+     * so no input snapshot is taken; the task-graph dependency on [ResolveFlagsTask] is
+     * established explicitly at registration via `dependsOn`.
      */
-    @get:InputFile
+    @get:Internal
     public abstract val flagsFile: RegularFileProperty
 
     init {
