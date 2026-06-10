@@ -81,6 +81,15 @@ class VerifyExpiredFlagsTaskTest {
             result.output.contains("in :"),
             "Expected module name (prefixed with 'in :') in the warning.\n${result.output}",
         )
+        // Pin WARN line format: key follows "Featured: flag " directly, no "  - " prefix.
+        assertTrue(
+            result.output.contains("Featured: flag 'my_flag' in :"),
+            "WARN line must not contain '  - ' between 'flag' and the key.\n${result.output}",
+        )
+        assertFalse(
+            result.output.contains("Featured: flag   - "),
+            "WARN line must not contain garbled '  - ' prefix.\n${result.output}",
+        )
     }
 
     /** Case (b): future expiresAt → no expired warning. */
@@ -383,6 +392,10 @@ class VerifyExpiredFlagsTaskTest {
         assertTrue(
             result.output.contains("2000-01-01"),
             "Error message should contain the expiry date.\n${result.output}",
+        )
+        assertTrue(
+            result.output.contains("in :"),
+            "Error message should contain the module name prefixed with 'in :'.\n${result.output}",
         )
     }
 

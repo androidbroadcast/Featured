@@ -92,7 +92,7 @@ public abstract class VerifyExpiredFlagsTask : DefaultTask() {
             try {
                 val date = LocalDate.parse(raw)
                 if (date < today) {
-                    expiredMessages += "  - '${entry.key}' in ${entry.moduleName} expired on $raw"
+                    expiredMessages += "'${entry.key}' in ${entry.moduleName} expired on $raw"
                 }
             } catch (_: DateTimeParseException) {
                 // Invalid date format is a format diagnostic, not an expiry event — always warn,
@@ -117,7 +117,7 @@ public abstract class VerifyExpiredFlagsTask : DefaultTask() {
                 throw GradleException(
                     buildString {
                         appendLine("Featured: the following flags have expired and must be cleaned up:")
-                        expiredMessages.forEach { appendLine(it) }
+                        expiredMessages.forEach { appendLine("  - $it") }
                     }.trimEnd(),
                 )
             }
