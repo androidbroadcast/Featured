@@ -1,6 +1,7 @@
 package dev.androidbroadcast.featured
 
 import app.cash.turbine.test
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -197,24 +198,86 @@ class InMemoryConfigValueProviderTest {
             }
         }
 
-    // G2: clear() does not emit a change signal — pin the documented invariant.
+    // G2: clear() emits DEFAULT for every key that was set — contract change from prior behavior.
     @Test
-    fun clear_doesNotEmitChangeSignal() =
+    fun clearEmitsDefaultForPreviouslySetKey() =
         runTest {
             val provider = InMemoryConfigValueProvider()
             val param = ConfigParam("key", "default")
             provider.set(param, "value")
 
             provider.observe(param).test {
-                // consume initial emission
+                // consume initial LOCAL emission
                 awaitItem()
 
                 provider.clear()
 
-                // clear() must not emit — no new events should follow
+                val afterClear = awaitItem()
+                assertEquals("default", afterClear.value)
+                assertEquals(ConfigValue.Source.DEFAULT, afterClear.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun clearEmitsDefaultForEachSetKey() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param1 = ConfigParam("k1", "d1")
+            val param2 = ConfigParam("k2", "d2")
+            provider.set(param1, "v1")
+            provider.set(param2, "v2")
+
+            provider.observe(param1).test {
+                awaitItem() // initial
+
+                provider.clear()
+
+                val afterClear = awaitItem()
+                assertEquals("d1", afterClear.value)
+                assertEquals(ConfigValue.Source.DEFAULT, afterClear.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun clearDoesNotEmitForKeyNeverSet() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val setParam = ConfigParam("set_key", "default_set")
+            val unsetParam = ConfigParam("unset_key", "default_unset")
+            provider.set(setParam, "value")
+
+            provider.observe(unsetParam).test {
+                awaitItem() // initial DEFAULT (key never set)
+
+                provider.clear()
+
+                // unset_key was not in storage — clear() must not emit for it
                 expectNoEvents()
 
                 cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    // Parallel resetOverride of N keys must not lose any removals.
+    @Test
+    fun parallelResetOverrideOfNKeysLosesNoRemovals() =
+        runTest {
+            val n = 50
+            val provider = InMemoryConfigValueProvider()
+            val params = List(n) { i -> ConfigParam("pk$i", i) }
+            params.forEach { p -> provider.set(p, p.defaultValue + 1) }
+
+            params
+                .map { p ->
+                    launch { provider.resetOverride(p) }
+                }.forEach { it.join() }
+
+            params.forEach { p ->
+                assertNull(provider.get(p), "key ${p.key} should be absent after resetOverride")
             }
         }
 

@@ -54,12 +54,11 @@ public interface LocalConfigValueProvider : ConfigValueProvider {
      * fallback instead. The error is surfaced separately through [ConfigValues.observe] when it
      * re-resolves via [ConfigValues.getValue] and calls [onProviderError][ConfigValues.onProviderError].
      *
-     * **After [clear]:** behavior is implementation-defined. [InMemoryConfigValueProvider] does
-     * not emit after [clear] because [clear] does not signal individual key changes. Persistent
-     * providers backed by system storage (SharedPreferences, NSUserDefaults, DataStore) may or
-     * may not emit depending on whether their storage layer fires a change notification.
-     * Callers that need reliable reactive updates after a bulk clear should call [resetOverride]
-     * per parameter instead.
+     * **After [clear]:** both reference implementations ([InMemoryConfigValueProvider] and
+     * [dev.androidbroadcast.featured.nsuserdefaults.NSUserDefaultsConfigValueProvider]) emit a
+     * [ConfigValue] with [ConfigValue.Source.DEFAULT] for every key that was removed. Custom
+     * implementations are strongly encouraged to follow the same contract so that callers do not
+     * need to call [resetOverride] per parameter after a bulk clear.
      *
      * **Payload:** the flow emits [ConfigValue]`<T>` rather than [Unit] so that consumers other
      * than [ConfigValues] — such as custom observers that bypass the priority chain — can use the
