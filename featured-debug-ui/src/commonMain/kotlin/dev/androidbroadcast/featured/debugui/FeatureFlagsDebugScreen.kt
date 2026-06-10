@@ -29,6 +29,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -417,7 +418,10 @@ private fun SearchTopAppBar(
         navigationIcon = {
             TextButton(
                 onClick = onClose,
-                modifier = Modifier.semantics { contentDescription = "Close search" },
+                modifier =
+                    Modifier
+                        .minimumInteractiveComponentSize()
+                        .semantics { contentDescription = "Close search" },
             ) {
                 Text("✕")
             }
@@ -445,7 +449,10 @@ private fun SearchTopAppBar(
                     if (query.isNotEmpty()) {
                         TextButton(
                             onClick = { onQueryChange("") },
-                            modifier = Modifier.semantics { contentDescription = "Clear search query" },
+                            modifier =
+                                Modifier
+                                    .minimumInteractiveComponentSize()
+                                    .semantics { contentDescription = "Clear search query" },
                         ) {
                             Text("✕", style = MaterialTheme.typography.labelSmall)
                         }
