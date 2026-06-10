@@ -214,7 +214,8 @@ public fun FeatureFlagsDebugScreen(
     if (showResetAllDialog) {
         AlertDialog(
             onDismissRequest = { showResetAllDialog = false },
-            title = { Text("Reset ${resetPlan.size} overrides?") },
+            title = { Text("Reset ${overrideLabel(resetPlan.size)}?") },
+            text = { Text("Values return to remote or default. You can undo from the snackbar.") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -223,9 +224,14 @@ public fun FeatureFlagsDebugScreen(
                         // starts) so undo has consistent values even if subscriptions fire
                         // between resets.
                         val plan = resetPlan
+                        // Navigation away cancels this job; completed resets stay applied
+                        // and undo is not offered after disposal — acceptable for a debug surface.
                         scope.launch {
                             // Parallel reset — isolate per-item failures so one bad provider
                             // cannot prevent other params from being reset.
+                            // Single-threaded UI dispatcher: failedKeys is written only from
+                            // this coroutine's continuation; plain mutable list is race-free.
+                            val failedKeys = mutableListOf<String>()
                             coroutineScope {
                                 plan
                                     .map { entry ->
@@ -234,6 +240,7 @@ public fun FeatureFlagsDebugScreen(
                                                 configValues.resetOverride(entry.param)
                                             }.onFailure { e ->
                                                 if (e is CancellationException) throw e
+                                                failedKeys += entry.param.key
                                                 println(
                                                     "Featured debug-ui: failed to reset override for '${entry.param.key}': $e",
                                                 )
@@ -242,32 +249,51 @@ public fun FeatureFlagsDebugScreen(
                                     }.forEach { it.await() }
                             }
 
+                            val resetCount = plan.size - failedKeys.size
+                            val resetMessage =
+                                if (failedKeys.isEmpty()) {
+                                    "Reset ${overrideLabel(plan.size)}"
+                                } else {
+                                    "Reset $resetCount of ${plan.size} overrides"
+                                }
                             val result =
                                 snackbarHostState.showSnackbar(
-                                    message = "Reset ${plan.size} overrides",
+                                    message = resetMessage,
                                     actionLabel = "Undo",
                                     duration = SnackbarDuration.Long,
                                 )
                             if (result == SnackbarResult.ActionPerformed) {
                                 // Undo: restore all snapshotted values in parallel.
-                                coroutineScope {
-                                    plan
-                                        .map { entry ->
-                                            async {
-                                                runCatching {
-                                                    @Suppress("UNCHECKED_CAST")
-                                                    configValues.override(
-                                                        entry.param as ConfigParam<Any>,
-                                                        entry.previousValue,
-                                                    )
-                                                }.onFailure { e ->
-                                                    if (e is CancellationException) throw e
-                                                    println(
-                                                        "Featured debug-ui: failed to restore override for '${entry.param.key}': $e",
-                                                    )
-                                                }
+                                val undoFailCount =
+                                    mutableListOf<String>()
+                                        .also { undoFailed ->
+                                            coroutineScope {
+                                                plan
+                                                    .map { entry ->
+                                                        async {
+                                                            runCatching {
+                                                                @Suppress("UNCHECKED_CAST")
+                                                                configValues.override(
+                                                                    entry.param as ConfigParam<Any>,
+                                                                    entry.previousValue,
+                                                                )
+                                                            }.onFailure { e ->
+                                                                if (e is CancellationException) throw e
+                                                                undoFailed += entry.param.key
+                                                                println(
+                                                                    "Featured debug-ui: failed to restore override for '${entry.param.key}': $e",
+                                                                )
+                                                            }
+                                                        }
+                                                    }.forEach { it.await() }
                                             }
-                                        }.forEach { it.await() }
+                                        }.size
+                                if (undoFailCount > 0) {
+                                    val restoredCount = plan.size - undoFailCount
+                                    snackbarHostState.showSnackbar(
+                                        message = "Restored $restoredCount of ${plan.size} overrides",
+                                        duration = SnackbarDuration.Short,
+                                    )
                                 }
                             }
                         }
@@ -507,6 +533,9 @@ public fun FeatureFlagsDebugScreen(
         }
     }
 }
+
+/** Returns "1 override" or "N overrides" for use in dialog titles and snackbar messages. */
+private fun overrideLabel(count: Int): String = if (count == 1) "1 override" else "$count overrides"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
