@@ -12,6 +12,7 @@ import org.gradle.api.attributes.Usage
 import org.gradle.api.tasks.TaskProvider
 
 internal const val RESOLVE_FLAGS_TASK_NAME = "resolveFeatureFlags"
+internal const val VERIFY_EXPIRED_FLAGS_TASK_NAME = "verifyExpiredFlags"
 internal const val SCAN_ALL_TASK_NAME = "scanAllLocalFlags"
 internal const val GENERATE_PROGUARD_TASK_NAME = "generateFeaturedProguardRules"
 internal const val GENERATE_IOS_CONST_VAL_TASK_NAME = "generateIosConstVal"
@@ -44,7 +45,8 @@ public class FeaturedPlugin : Plugin<Project> {
         val extension = target.extensions.create("featured", FeaturedExtension::class.java)
         val resolveTask = registerResolveFlagsTask(target, extension)
 
-        registerConfigParamTask(target, resolveTask)
+        val verifyTask = registerVerifyExpiredFlagsTask(target, resolveTask)
+        registerConfigParamTask(target, resolveTask, verifyTask)
         val proguardTask = registerProguardTask(target, resolveTask)
         registerIosConstValTask(target, resolveTask)
         registerXcconfigTask(target, resolveTask)
@@ -78,9 +80,21 @@ public class FeaturedPlugin : Plugin<Project> {
             task.remoteFlagDescriptors.set(target.provider { extension.remoteFlags.toDescriptors() })
         }
 
+    private fun registerVerifyExpiredFlagsTask(
+        target: Project,
+        resolveTask: TaskProvider<ResolveFlagsTask>,
+    ): TaskProvider<VerifyExpiredFlagsTask> =
+        target.tasks.register(VERIFY_EXPIRED_FLAGS_TASK_NAME, VerifyExpiredFlagsTask::class.java) { task ->
+            task.group = "featured"
+            task.description = "Warns about feature flags whose expiresAt date is in the past for '${target.path}'."
+            task.flagsFile.set(resolveTask.flatMap { it.outputFile })
+            task.dependsOn(resolveTask)
+        }
+
     private fun registerConfigParamTask(
         target: Project,
         resolveTask: TaskProvider<ResolveFlagsTask>,
+        verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
     ) {
         target.tasks.register(GENERATE_CONFIG_PARAM_TASK_NAME, GenerateConfigParamTask::class.java) { task ->
             task.group = "featured"
@@ -90,6 +104,7 @@ public class FeaturedPlugin : Plugin<Project> {
             task.modulePath.set(target.path)
             task.outputDir.set(target.layout.buildDirectory.dir("generated/featured/commonMain"))
             task.dependsOn(resolveTask)
+            task.dependsOn(verifyTask)
         }
     }
 
