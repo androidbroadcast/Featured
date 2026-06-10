@@ -400,7 +400,6 @@ private fun SearchTopAppBar(
                 },
             )
         },
-        actions = {},
     )
 }
 
@@ -584,13 +583,12 @@ private fun SourceBadge(source: ConfigValue.Source) {
                 BadgeStyle(source.name, MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-    val sourceLabel = style.label
     Badge(
         containerColor = style.containerColor,
         contentColor = style.contentColor,
         modifier =
             Modifier.semantics {
-                contentDescription = "Source: $sourceLabel"
+                contentDescription = "Source: ${style.label}"
             },
     ) {
         Text(text = style.label, style = MaterialTheme.typography.labelSmall)

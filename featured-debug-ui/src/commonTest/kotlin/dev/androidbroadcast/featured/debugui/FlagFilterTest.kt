@@ -14,7 +14,7 @@ class FlagFilterTest {
     ) = DebugFlagItem(
         param = ConfigParam(key = key, defaultValue = true, category = category),
         currentValue = true,
-        overrideValue = if (source == ConfigValue.Source.LOCAL) true else null,
+        overrideValue = true.takeIf { source == ConfigValue.Source.LOCAL },
         source = source,
     )
 
