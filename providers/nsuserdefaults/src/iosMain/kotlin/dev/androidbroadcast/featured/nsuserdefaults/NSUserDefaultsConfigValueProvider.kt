@@ -231,6 +231,10 @@ public class NSUserDefaultsConfigValueProvider(
      * again whenever [set], [resetOverride], or [clear] is called for the same key. Consecutive
      * identical values are deduplicated via `distinctUntilChanged`.
      *
+     * Storage or converter errors during the initial read and during reactive updates are caught
+     * and surfaced as a [ConfigValue.Source.DEFAULT]-sourced emission; the flow never terminates
+     * and the error is not propagated to the collector.
+     *
      * The reserved-key guard ([RESERVED_INDEX_KEY]) is checked eagerly at construction time so
      * that passing an invalid [param] throws at the call site rather than being swallowed inside
      * the flow's error-isolation handler.
