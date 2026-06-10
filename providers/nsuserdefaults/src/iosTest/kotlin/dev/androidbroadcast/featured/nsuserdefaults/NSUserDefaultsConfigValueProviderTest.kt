@@ -154,4 +154,26 @@ class NSUserDefaultsConfigValueProviderTest {
                 cancelAndIgnoreRemainingEvents()
             }
         }
+
+    // G5: resetOverride after set → observe emits DEFAULT-sourced frame.
+    @Test
+    fun `observe emits DEFAULT after resetOverride when value cleared`() =
+        runTest {
+            val param = ConfigParam("reset_obs_key", false)
+            provider.set(param, true)
+
+            provider.observe(param).test {
+                // Initial LOCAL frame
+                val initial = awaitItem()
+                assertEquals(true, initial.value)
+                assertEquals(ConfigValue.Source.LOCAL, initial.source)
+
+                provider.resetOverride(param)
+                val afterReset = awaitItem()
+                assertEquals(false, afterReset.value)
+                assertEquals(ConfigValue.Source.DEFAULT, afterReset.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
 }

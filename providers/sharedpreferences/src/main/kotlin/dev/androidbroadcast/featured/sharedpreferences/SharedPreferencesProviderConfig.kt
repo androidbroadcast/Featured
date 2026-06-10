@@ -6,6 +6,7 @@ import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
 import dev.androidbroadcast.featured.LocalConfigValueProvider
 import dev.androidbroadcast.featured.TypeConverter
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -173,7 +174,17 @@ public class SharedPreferencesProviderConfig(
             emitAll(
                 changedKeysFlow
                     .filter { it == param.key }
-                    .map { get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT) },
+                    .map {
+                        // Keep the observe stream alive on storage/converter errors; the error is
+                        // reported by the consumer's re-resolve via ConfigValues.getValue.
+                        try {
+                            get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+                        } catch (ce: CancellationException) {
+                            throw ce
+                        } catch (_: Throwable) {
+                            ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+                        }
+                    },
             )
         }.distinctUntilChanged()
 }

@@ -46,6 +46,25 @@ public interface LocalConfigValueProvider : ConfigValueProvider {
      * by the implementation via `distinctUntilChanged`, but the initial emission is always
      * guaranteed regardless of the current value.
      *
+     * **Lifetime contract:** the flow MUST never complete normally. It terminates only when the
+     * collector's coroutine scope is cancelled.
+     *
+     * **Error contract:** storage or converter errors MUST NOT terminate the flow. Emit a
+     * [ConfigValue] wrapping [ConfigParam.defaultValue] with [ConfigValue.Source.DEFAULT] as a
+     * fallback instead. The error is surfaced separately through [ConfigValues.observe] when it
+     * re-resolves via [ConfigValues.getValue] and calls [onProviderError][ConfigValues.onProviderError].
+     *
+     * **After [clear]:** behavior is implementation-defined. [InMemoryConfigValueProvider] does
+     * not emit after [clear] because [clear] does not signal individual key changes. Persistent
+     * providers backed by system storage (SharedPreferences, NSUserDefaults, DataStore) may or
+     * may not emit depending on whether their storage layer fires a change notification.
+     * Callers that need reliable reactive updates after a bulk clear should call [resetOverride]
+     * per parameter instead.
+     *
+     * **Payload:** the flow emits [ConfigValue]`<T>` rather than [Unit] so that consumers other
+     * than [ConfigValues] — such as custom observers that bypass the priority chain — can use the
+     * emitted value directly without an additional [get] call.
+     *
      * This contract enables [ConfigValues.observe] to use local emissions purely as change
      * signals and always perform a full priority-chain re-resolve via [ConfigValues.getValue],
      * which prevents stale DEFAULT values from clobbering a remote value that is already known.

@@ -7,14 +7,15 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.retryWhen
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.update
 
@@ -430,6 +431,8 @@ public class ConfigValues(
      * - [fetch] completion.
      *
      * Consecutive identical resolved values are deduplicated via `distinctUntilChanged`.
+     * Deduplication compares full [ConfigValue] equality — both value AND source must match for
+     * a frame to be suppressed.
      *
      * **Known cost:** each local-provider signal triggers one full [getValue] call. For
      * whole-store providers (e.g. DataStore) any key change triggers a re-resolve for the
@@ -448,7 +451,14 @@ public class ConfigValues(
             localProvider
                 ?.observe(param)
                 ?.map { }
-                ?.catch { e -> reportProviderError(e) }
+                // A third-party provider whose observe() throws must not permanently silence local
+                // change signals; bounded backoff avoids a hot loop. CancellationException is not
+                // caught by retryWhen — structured concurrency remains intact.
+                ?.retryWhen { cause, attempt ->
+                    reportProviderError(cause)
+                    delay(minOf(attempt + 1, 10) * 100L)
+                    true
+                }
                 ?: emptyFlow()
         val remoteTrigger: Flow<Unit> = fetchSignal
 

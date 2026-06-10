@@ -196,4 +196,49 @@ class InMemoryConfigValueProviderTest {
                 cancelAndIgnoreRemainingEvents()
             }
         }
+
+    // G2: clear() does not emit a change signal — pin the documented invariant.
+    @Test
+    fun clear_doesNotEmitChangeSignal() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param = ConfigParam("key", "default")
+            provider.set(param, "value")
+
+            provider.observe(param).test {
+                // consume initial emission
+                awaitItem()
+
+                provider.clear()
+
+                // clear() must not emit — no new events should follow
+                expectNoEvents()
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    // G3: resetOverride after set → next frame is DEFAULT-sourced.
+    @Test
+    fun resetOverride_afterSet_emitsDefaultSourcedFrame() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param = ConfigParam("key", "my_default")
+            provider.set(param, "value")
+
+            provider.observe(param).test {
+                // Initial LOCAL frame
+                val initial = awaitItem()
+                assertEquals("value", initial.value)
+                assertEquals(ConfigValue.Source.LOCAL, initial.source)
+
+                // resetOverride → should emit DEFAULT-sourced frame
+                provider.resetOverride(param)
+                val afterReset = awaitItem()
+                assertEquals("my_default", afterReset.value)
+                assertEquals(ConfigValue.Source.DEFAULT, afterReset.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
 }

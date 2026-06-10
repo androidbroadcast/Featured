@@ -1,5 +1,6 @@
 package dev.androidbroadcast.featured
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emitAll
@@ -103,7 +104,17 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
             emitAll(
                 changedKeyFlow
                     .filter { key -> key == param.key }
-                    .map { get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT) },
+                    .map {
+                        // Keep the observe stream alive on storage/converter errors; the error is
+                        // reported by the consumer's re-resolve via ConfigValues.getValue.
+                        try {
+                            get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+                        } catch (ce: CancellationException) {
+                            throw ce
+                        } catch (_: Throwable) {
+                            ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+                        }
+                    },
             )
         }
 }

@@ -397,6 +397,28 @@ class SharedPreferencesProviderConfigTest {
             }
         }
 
+    // G4: resetOverride after set → observe emits DEFAULT-sourced frame.
+    @Test
+    fun `observe emits DEFAULT after resetOverride when no value remains`() =
+        runTest {
+            val param = ConfigParam("reset_key", "my_default")
+            provider.set(param, "stored")
+
+            provider.observe(param).test {
+                // Consume initial LOCAL frame
+                val initial = awaitItem()
+                assertEquals("stored", initial.value)
+                assertEquals(ConfigValue.Source.LOCAL, initial.source)
+
+                provider.resetOverride(param)
+                val afterReset = awaitItem()
+                assertEquals("my_default", afterReset.value)
+                assertEquals(ConfigValue.Source.DEFAULT, afterReset.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
     @Test
     fun `additionalContext is included in the merged coroutine context`() {
         val coroutineName = CoroutineName("test-context-inclusion")
