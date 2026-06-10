@@ -166,7 +166,7 @@ public class NSUserDefaultsConfigValueProvider(
                 }
             }
             val current = readIndex().toMutableList()
-            if (!current.contains(key)) {
+            if (key !in current) {
                 current.add(key)
             }
             defaults.setObject(current, forKey = RESERVED_INDEX_KEY)
