@@ -36,9 +36,13 @@ import platform.Foundation.NSUserDefaults
  * index and always reads directly from [NSUserDefaults]. Setting or getting the reserved key
  * itself throws [IllegalArgumentException].
  *
- * **Concurrency:** in-process index read-modify-write operations (in [addToIndex], [removeFromIndex],
- * and [clear]) are serialized via an internal [Mutex]. Cross-process access or crash-interrupted
- * writes may still desync the index; the self-healing invariant above covers that case.
+ * **Concurrency:** in-process [set] / [resetOverride] serialize their NSUserDefaults value-write
+ * together with the corresponding index update under [indexMutex], the same mutex used by [clear].
+ * This closes the window where a key written by [set] could escape [clear]'s index snapshot.
+ * Note that NSUserDefaults [setObject] has no error return — a silent platform failure can desync
+ * the index without a crash; [get] remains unaffected as it reads directly from NSUserDefaults.
+ * Cross-process access or crash-interrupted writes may still desync the index; the self-healing
+ * invariant above covers that case.
  *
  * ```kotlin
  * val provider = NSUserDefaultsConfigValueProvider(suiteName = "com.example.app.flags")
@@ -106,16 +110,24 @@ public class NSUserDefaultsConfigValueProvider(
     ) {
         requireNotReservedKey(param.key)
         val key = param.key
-        when (value) {
-            is Boolean -> defaults.setBool(value, forKey = key)
-            is Int -> defaults.setInteger(value.toLong(), forKey = key)
-            is Long -> defaults.setInteger(value, forKey = key)
-            is Double -> defaults.setDouble(value, forKey = key)
-            is Float -> defaults.setFloat(value, forKey = key)
-            is String -> defaults.setObject(value, forKey = key)
-            else -> throw IllegalArgumentException("Unsupported type: ${param.valueType}")
+        // Value-write and index-update share the mutex with clear() to prevent a race where
+        // a freshly-written key escapes clear()'s index snapshot.
+        indexMutex.withLock {
+            when (value) {
+                is Boolean -> defaults.setBool(value, forKey = key)
+                is Int -> defaults.setInteger(value.toLong(), forKey = key)
+                is Long -> defaults.setInteger(value, forKey = key)
+                is Double -> defaults.setDouble(value, forKey = key)
+                is Float -> defaults.setFloat(value, forKey = key)
+                is String -> defaults.setObject(value, forKey = key)
+                else -> throw IllegalArgumentException("Unsupported type: ${param.valueType}")
+            }
+            val current = readIndex().toMutableList()
+            if (!current.contains(key)) {
+                current.add(key)
+            }
+            defaults.setObject(current, forKey = RESERVED_INDEX_KEY)
         }
-        addToIndex(key)
         changedKeyFlow.tryEmit(key)
     }
 
@@ -131,9 +143,15 @@ public class NSUserDefaultsConfigValueProvider(
      */
     override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
         requireNotReservedKey(param.key)
-        defaults.removeObjectForKey(param.key)
-        removeFromIndex(param.key)
-        changedKeyFlow.tryEmit(param.key)
+        val key = param.key
+        // Remove and index-update share the mutex with set()/clear() to close the in-process race.
+        indexMutex.withLock {
+            defaults.removeObjectForKey(key)
+            val current = readIndex().toMutableList()
+            current.remove(key)
+            defaults.setObject(current, forKey = RESERVED_INDEX_KEY)
+        }
+        changedKeyFlow.tryEmit(key)
     }
 
     /**
@@ -154,15 +172,11 @@ public class NSUserDefaultsConfigValueProvider(
         val writtenKeys =
             indexMutex.withLock {
                 val keys = readIndex()
-                for (key in keys) {
-                    defaults.removeObjectForKey(key)
-                }
+                keys.forEach { key -> defaults.removeObjectForKey(key) }
                 defaults.removeObjectForKey(RESERVED_INDEX_KEY)
                 keys
             }
-        for (key in writtenKeys) {
-            changedKeyFlow.tryEmit(key)
-        }
+        writtenKeys.forEach { key -> changedKeyFlow.tryEmit(key) }
     }
 
     /**
@@ -174,14 +188,20 @@ public class NSUserDefaultsConfigValueProvider(
      * again whenever [set], [resetOverride], or [clear] is called for the same key. Consecutive
      * identical values are deduplicated via `distinctUntilChanged`.
      *
+     * The reserved-key guard ([RESERVED_INDEX_KEY]) is checked eagerly at construction time so
+     * that passing an invalid [param] throws at the call site rather than being swallowed inside
+     * the flow's error-isolation handler.
+     *
      * @param param The configuration parameter to observe.
      * @return A cold [Flow] that completes when the collector's scope is cancelled.
+     * @throws IllegalArgumentException if [param] key equals [RESERVED_INDEX_KEY].
      */
-    override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
-        flow {
+    override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> {
+        requireNotReservedKey(param.key)
+        return flow {
             // Wrap initial get in the same error-isolation as the reactive path so that
-            // invalid param keys (e.g. the reserved index key) emit DEFAULT rather than
-            // terminating the flow with an exception.
+            // other invalid param keys emit DEFAULT rather than terminating the flow with
+            // an exception.
             val initial =
                 try {
                     get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
@@ -207,6 +227,7 @@ public class NSUserDefaultsConfigValueProvider(
                     },
             )
         }.distinctUntilChanged()
+    }
 
     /**
      * Removes the entire NSUserDefaults suite, cleaning up all stored data.
@@ -227,24 +248,6 @@ public class NSUserDefaultsConfigValueProvider(
         val array = defaults.arrayForKey(RESERVED_INDEX_KEY) as? NSArray ?: return emptyList()
         return (0 until array.count.toInt()).mapNotNull { i ->
             array.objectAtIndex(i.toULong()) as? String
-        }
-    }
-
-    private suspend fun addToIndex(key: String) {
-        indexMutex.withLock {
-            val current = readIndex().toMutableList()
-            if (!current.contains(key)) {
-                current.add(key)
-            }
-            defaults.setObject(current, forKey = RESERVED_INDEX_KEY)
-        }
-    }
-
-    private suspend fun removeFromIndex(key: String) {
-        indexMutex.withLock {
-            val current = readIndex().toMutableList()
-            current.remove(key)
-            defaults.setObject(current, forKey = RESERVED_INDEX_KEY)
         }
     }
 

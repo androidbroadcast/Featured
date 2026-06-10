@@ -113,22 +113,14 @@ class NSUserDefaultsConfigValueProviderTest {
         }
 
     @Test
-    fun reservedKeyIsInvisibleViaObserve() =
-        runTest {
-            // The reserved key must not surface as a provider value — observe emits DEFAULT
-            val param = ConfigParam(NSUserDefaultsConfigValueProvider.RESERVED_INDEX_KEY, "my_default")
-            // Manually write something at the reserved key to simulate index presence
-            val defaults = NSUserDefaults(suiteName = suiteName)
-            defaults.setObject(listOf("some_key"), forKey = NSUserDefaultsConfigValueProvider.RESERVED_INDEX_KEY)
-
-            provider.observe(param).test {
-                val emission = awaitItem()
-                // get() throws for the reserved key, so observe must emit DEFAULT (error path)
-                assertEquals("my_default", emission.value)
-                assertEquals(ConfigValue.Source.DEFAULT, emission.source)
-                cancelAndIgnoreRemainingEvents()
-            }
+    fun reservedKeyIsInvisibleViaObserve() {
+        // observe() now guards the reserved key eagerly before building the flow, so it throws
+        // at the call site rather than emitting DEFAULT on first collection.
+        val param = ConfigParam(NSUserDefaultsConfigValueProvider.RESERVED_INDEX_KEY, "my_default")
+        assertFailsWith<IllegalArgumentException> {
+            provider.observe(param)
         }
+    }
 
     @Test
     fun resetOverrideWithReservedKeyThrows() =
@@ -281,6 +273,74 @@ class NSUserDefaultsConfigValueProviderTest {
 
                 cancelAndIgnoreRemainingEvents()
             }
+        }
+
+    // --- eager reserved-key guard in observe() ---
+
+    @Test
+    fun observeWithReservedKeyThrowsAtConstruction() {
+        val param = ConfigParam(NSUserDefaultsConfigValueProvider.RESERVED_INDEX_KEY, "default")
+        // requireNotReservedKey is called before the flow builder, so the exception is thrown
+        // at the call site of observe(), not deferred until the first collection attempt.
+        assertFailsWith<IllegalArgumentException> {
+            provider.observe(param)
+        }
+    }
+
+    // --- clear() edge cases ---
+
+    @Test
+    fun clearOnFreshProviderProducesNoCrashAndNoEmissions() =
+        runTest {
+            val param = ConfigParam("fresh_clear_key", "default")
+            // Observe before any set to attach a subscriber.
+            provider.observe(param).test {
+                awaitItem() // initial DEFAULT
+
+                // clear() on a provider with empty index must not crash and must emit nothing.
+                provider.clear()
+                expectNoEvents()
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun clearTwiceSecondIsNoOp() =
+        runTest {
+            val param = ConfigParam("double_clear_key", "initial")
+            provider.set(param, "stored")
+
+            provider.observe(param).test {
+                awaitItem() // initial LOCAL
+
+                provider.clear()
+                val afterFirst = awaitItem()
+                assertEquals(ConfigValue.Source.DEFAULT, afterFirst.source)
+
+                // Second clear — index is empty, must produce no emissions and no crash.
+                provider.clear()
+                expectNoEvents()
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    // --- index self-heal: direct NSUserDefaults write is readable via get() ---
+
+    @Test
+    fun keyWrittenDirectlyToSuiteIsReadableViaGet() =
+        runTest {
+            // A String value written directly to the suite bypasses the provider's index.
+            // get() must still return it because get() reads from NSUserDefaults directly,
+            // not from the written-key index.
+            val directDefaults = NSUserDefaults(suiteName = suiteName)
+            val param = ConfigParam("direct_write_key", "none")
+            directDefaults.setObject("direct_value", forKey = param.key)
+
+            val result = provider.get(param)
+            assertEquals("direct_value", result?.value)
+            assertEquals(ConfigValue.Source.LOCAL, result?.source)
         }
 
     // --- index atomicity ---

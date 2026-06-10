@@ -230,13 +230,83 @@ class InMemoryConfigValueProviderTest {
             provider.set(param2, "v2")
 
             provider.observe(param1).test {
-                awaitItem() // initial
+                awaitItem() // initial for param1
+
+                provider.observe(param2).test {
+                    awaitItem() // initial for param2
+
+                    provider.clear()
+
+                    // Both observers must receive their DEFAULT frame.
+                    val afterClear2 = awaitItem()
+                    assertEquals("d2", afterClear2.value)
+                    assertEquals(ConfigValue.Source.DEFAULT, afterClear2.source)
+
+                    cancelAndIgnoreRemainingEvents()
+                }
+
+                // Outer (param1) observer must also have received its DEFAULT frame.
+                val afterClear1 = awaitItem()
+                assertEquals("d1", afterClear1.value)
+                assertEquals(ConfigValue.Source.DEFAULT, afterClear1.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun observeAfterClearEmitsDefaultAsFirstFrame() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param = ConfigParam("after_clear_key", "my_default")
+            provider.set(param, "stored_value")
+
+            provider.clear()
+
+            // Subscriber attached AFTER clear() — must see DEFAULT as the first frame, not LOCAL.
+            provider.observe(param).test {
+                val first = awaitItem()
+                assertEquals("my_default", first.value)
+                assertEquals(ConfigValue.Source.DEFAULT, first.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun clearWithNoStoredKeysIsNoOp() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param = ConfigParam("any_key", "default")
+
+            provider.observe(param).test {
+                awaitItem() // initial DEFAULT
+
+                // clear() on empty storage must not emit and must not crash.
+                provider.clear()
+                expectNoEvents()
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun clearTwiceSecondIsNoOp() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param = ConfigParam("double_clear_key", "default")
+            provider.set(param, "value")
+
+            provider.observe(param).test {
+                awaitItem() // initial LOCAL
 
                 provider.clear()
+                val afterFirst = awaitItem()
+                assertEquals(ConfigValue.Source.DEFAULT, afterFirst.source)
 
-                val afterClear = awaitItem()
-                assertEquals("d1", afterClear.value)
-                assertEquals(ConfigValue.Source.DEFAULT, afterClear.source)
+                // Second clear — storage is already empty, must produce no emissions.
+                provider.clear()
+                expectNoEvents()
 
                 cancelAndIgnoreRemainingEvents()
             }

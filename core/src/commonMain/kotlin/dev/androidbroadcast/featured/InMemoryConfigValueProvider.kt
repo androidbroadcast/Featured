@@ -34,7 +34,7 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
     // AtomicReference wrapping an immutable Map prevents lost updates when resetOverride is called
     // concurrently from multiple coroutines (e.g. parallel Reset All from the debug UI).
     private val storageRef = AtomicReference(emptyMap<String, Any>())
-    private val changedKeyFlow = MutableSharedFlow<String>(extraBufferCapacity = 1000)
+    private val changedKeyFlow = MutableSharedFlow<String>(extraBufferCapacity = Int.MAX_VALUE)
 
     /**
      * Returns the locally stored value for [param], or `null` if no override has been set.
@@ -62,7 +62,7 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
         value: T,
     ) {
         storageRef.update { it + (param.key to value) }
-        changedKeyFlow.emit(param.key)
+        changedKeyFlow.tryEmit(param.key)
     }
 
     /**
@@ -75,7 +75,7 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
      */
     public override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
         storageRef.update { it - param.key }
-        changedKeyFlow.emit(param.key)
+        changedKeyFlow.tryEmit(param.key)
     }
 
     /**
@@ -85,16 +85,13 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
      * After this call, [get] returns `null` for every parameter that was previously overridden,
      * and active [observe] flows emit a [ConfigValue] with [ConfigValue.Source.DEFAULT].
      *
-     * The keys snapshot is taken atomically before clearing; each removed key is then emitted
-     * into the change-signal flow so that observers can react without calling [resetOverride]
-     * per parameter.
+     * The map is replaced atomically via a single [AtomicReference.exchange]; the keys of the
+     * returned previous map are the authoritative set of removed keys, eliminating the TOCTOU
+     * window that a separate load() + update() sequence would leave.
      */
     public override suspend fun clear() {
-        val removedKeys = storageRef.load().keys.toList()
-        storageRef.update { emptyMap() }
-        for (key in removedKeys) {
-            changedKeyFlow.emit(key)
-        }
+        val removedKeys = storageRef.exchange(emptyMap()).keys
+        removedKeys.forEach { key -> changedKeyFlow.tryEmit(key) }
     }
 
     /**
@@ -108,6 +105,10 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
      * [ConfigValue.Source.DEFAULT].
      *
      * The flow completes only when the collector's scope is cancelled.
+     *
+     * A [ClassCastException] from a type-mismatched [ConfigParam] (programming error) is caught
+     * in the reactive path and surfaces as [ConfigValue.Source.DEFAULT] rather than terminating
+     * the flow with an exception.
      *
      * @param param The configuration parameter to observe.
      * @return A cold [kotlinx.coroutines.flow.Flow] of [ConfigValue] snapshots.
