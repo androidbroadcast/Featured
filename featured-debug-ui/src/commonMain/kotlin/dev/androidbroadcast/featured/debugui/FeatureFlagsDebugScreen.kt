@@ -242,6 +242,7 @@ public fun FeatureFlagsDebugScreen(
                     label = { Text("Overridden only") },
                     modifier =
                         Modifier.semantics {
+                            contentDescription = "Overridden only"
                             role = Role.Checkbox
                             stateDescription = if (overriddenOnly) "On" else "Off"
                         },
@@ -505,6 +506,10 @@ private fun FlagItemCard(
                         Switch(
                             checked = item.currentValue as Boolean,
                             onCheckedChange = { onToggleBoolean(it) },
+                            modifier =
+                                Modifier.semantics {
+                                    contentDescription = "${item.key} toggle"
+                                },
                         )
                     }
                 }
