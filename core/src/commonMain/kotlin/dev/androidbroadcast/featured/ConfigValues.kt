@@ -124,25 +124,36 @@ public class ConfigValues(
     private val snapshot = AtomicReference<Map<String, ConfigValue<*>>>(emptyMap())
 
     /**
-     * The set of params explicitly registered for automatic snapshot refresh.
+     * Registry of params explicitly registered for automatic snapshot refresh, keyed by
+     * [ConfigParam.key].
      *
-     * Populated only via [warmUp]. [fetch] and [initialize] refresh all params in this set
-     * so the snapshot remains current after each provider round-trip. The set is intentionally
-     * separate from the snapshot map: [clearOverrides] KDoc guarantees that [ConfigValues] does
-     * not maintain a registry of all known params — the snapshot itself stays key-only. The
-     * warm-set is an explicit opt-in registry built from caller-supplied params.
+     * Populated only via [warmUp]. [fetch] and [initialize] refresh all params in this map's
+     * values so the snapshot remains current after each provider round-trip. The map is
+     * intentionally separate from the snapshot: [clearOverrides] KDoc guarantees that
+     * [ConfigValues] does not maintain a registry of all known params — the snapshot itself stays
+     * key-only. This warm-set is an explicit opt-in registry built from caller-supplied params.
+     *
+     * Keyed by [ConfigParam.key]: re-registering a param with the same key replaces the previous
+     * descriptor (last registration wins). This prevents structural duplicates when two
+     * [ConfigParam] instances share the same key.
      */
-    private val warmSet = AtomicReference<Set<ConfigParam<*>>>(emptySet())
+    private val warmSet = AtomicReference<Map<String, ConfigParam<*>>>(emptyMap())
 
     /**
      * Forwards [error] to [onProviderError], swallowing any exception the handler itself throws.
      *
      * This ensures that a misbehaving error handler cannot break the read path — [getValue] and
      * [observe] must remain safe for callers regardless of what [onProviderError] does.
+     *
+     * [CancellationException] thrown by the handler is re-thrown to preserve structured
+     * concurrency — a custom handler that internally hits a cancelled scope must not be silently
+     * swallowed.
      */
     private fun reportProviderError(error: Throwable) {
         try {
             onProviderError(error)
+        } catch (ce: CancellationException) {
+            throw ce
         } catch (_: Throwable) {
             // handler must not break the read path
         }
@@ -299,10 +310,12 @@ public class ConfigValues(
      * [params] without requiring a prior [getValue] or [observe] call. This satisfies the
      * "activate then read sync" pattern used by Firebase Remote Config and similar providers.
      *
-     * The supplied params are also registered in an internal warm-set. [fetch] and [initialize]
-     * automatically refresh all registered params so the snapshot stays current after each
-     * provider round-trip. This registration is idempotent — calling [warmUp] multiple times
-     * with the same params does not cause duplication and re-resolves the latest values.
+     * The supplied params are also registered in an internal warm-set keyed by
+     * [ConfigParam.key]. [fetch] and [initialize] automatically refresh all registered params so
+     * the snapshot stays current after each provider round-trip. Registration is per-key
+     * idempotent — re-registering a param with the same key replaces the previous descriptor
+     * (last registration wins). This prevents silent duplication when the same key is passed in
+     * multiple [warmUp] calls and ensures only one resolve per key occurs during refresh.
      *
      * Provider errors during warm-up are forwarded to [onProviderError] and do not throw; the
      * affected param resolves to its [ConfigParam.defaultValue] for that round (same semantics
@@ -316,7 +329,7 @@ public class ConfigValues(
      *   `GeneratedFeaturedRegistry.all` for a full application warm-up.
      */
     public suspend fun warmUp(params: Collection<ConfigParam<*>>) {
-        warmSet.update { it + params }
+        warmSet.update { current -> current + params.associateBy { it.key } }
         refreshWarmSet(params)
     }
 
@@ -326,8 +339,9 @@ public class ConfigValues(
      *
      * Empty [params] is a no-op — the [coroutineScope] is skipped entirely to avoid overhead.
      *
-     * DEFAULT-sourced results are filtered out before the merge to preserve the invariant that
-     * DEFAULT values are never written into the snapshot (consistent with [getValue]).
+     * The raw resolved list (including DEFAULT-sourced entries) is passed directly to
+     * [mergeWarmResults], which is responsible for filtering out DEFAULT-sourced entries before
+     * writing them into the snapshot.
      */
     private suspend fun refreshWarmSet(params: Collection<ConfigParam<*>>) {
         if (params.isEmpty()) return
@@ -341,7 +355,6 @@ public class ConfigValues(
                             param.key to getValue(typedParam)
                         }
                     }.awaitAll()
-                    .filter { (_, configValue) -> configValue.source != ConfigValue.Source.DEFAULT }
             snapshot.update { current -> mergeWarmResults(current, resolved) }
         }
     }
@@ -364,6 +377,10 @@ public class ConfigValues(
      * loaded cache values immediately for every warmed param. If no params have been registered
      * via [warmUp], this refresh phase is a no-op with zero overhead.
      *
+     * If the provider's [InitializableConfigValueProvider.initialize] throws, the exception
+     * propagates to the caller and the warm-set refresh is skipped. [getValueCached] keeps
+     * returning defaults for warmed params until a later [initialize] or [warmUp] call succeeds.
+     *
      * **Latency note:** this function returns after the warm-set refresh completes. Latency
      * grows proportionally to the number of registered params times the provider's per-param
      * resolution cost. Params never passed to [warmUp] and never individually read are not
@@ -371,7 +388,7 @@ public class ConfigValues(
      */
     public suspend fun initialize() {
         (remoteProvider as? InitializableConfigValueProvider)?.initialize()
-        refreshWarmSet(warmSet.load())
+        refreshWarmSet(warmSet.load().values)
     }
 
     /**
@@ -393,7 +410,7 @@ public class ConfigValues(
         if (remoteProvider == null) return
         remoteProvider.fetch(true)
         fetchSignal.emit(Unit)
-        refreshWarmSet(warmSet.load())
+        refreshWarmSet(warmSet.load().values)
     }
 
     /**
@@ -427,22 +444,28 @@ public class ConfigValues(
 }
 
 /**
- * Merges a batch of freshly resolved warm-set entries into the current snapshot, applying
- * an override-protection rule: if the current snapshot already holds a LOCAL-sourced value for a
- * key and the incoming resolved value is **not** LOCAL-sourced, the current value wins.
+ * Merges a batch of freshly resolved warm-set entries into the current snapshot, applying two
+ * rules:
  *
- * This protects against the following race: a [ConfigValues.override] call (which writes
- * LOCAL into the snapshot) may land after the warm-refresh batch read its providers but before
- * the batch commits. Without this rule the batch commit would silently clobber that override.
+ * 1. **DEFAULT-drop rule:** entries whose resolved value has [ConfigValue.Source.DEFAULT] are
+ *    silently dropped and never written into the snapshot. This is consistent with
+ *    [ConfigValues.getValue], which also never writes DEFAULT into the snapshot, so a later
+ *    override or fetch can still win.
+ *
+ * 2. **LOCAL-protection rule:** if the current snapshot already holds a LOCAL-sourced value for
+ *    a key and the incoming resolved value is **not** LOCAL-sourced, the current value wins.
+ *    This protects against the race where a [ConfigValues.override] call (writing LOCAL into the
+ *    snapshot) lands after the warm-refresh batch read its providers but before the batch commits.
+ *    Without this rule the batch commit would silently clobber that override. The provider
+ *    remains the source of truth and the next refresh or [ConfigValues.getValue] call self-heals.
  *
  * For every other combination (current is non-LOCAL, or resolved is LOCAL, or the slot is
  * absent) the resolved value wins, so fresh provider data always propagates correctly.
  *
- * DEFAULT-sourced entries must be filtered out **before** calling this function; DEFAULT is
- * never written into the snapshot (see [ConfigValues.getValue] KDoc).
+ * Callers pass the raw resolved list — no pre-filtering is required.
  *
  * @param current The snapshot map at the moment the atomic update fires.
- * @param resolved Non-DEFAULT resolved entries from the latest provider pass.
+ * @param resolved Raw resolved entries from the latest provider pass (may include DEFAULT-sourced).
  * @return A new map reflecting the merged state.
  */
 internal fun mergeWarmResults(
@@ -452,11 +475,11 @@ internal fun mergeWarmResults(
     if (resolved.isEmpty()) return current
     val result = current.toMutableMap()
     resolved.forEach { (key, resolvedValue) ->
+        // DEFAULT-drop rule: never write DEFAULT into the snapshot.
+        if (resolvedValue.source == ConfigValue.Source.DEFAULT) return@forEach
         val currentValue = current[key]
-        // Keep the current snapshot value when an override landed mid-flight:
-        // current slot is LOCAL (written by override/writeSnapshot) and the incoming
-        // resolved value is non-LOCAL (remote or default). The provider is still the
-        // source of truth and the next refresh or getValue call will self-heal.
+        // LOCAL-protection rule: keep the current snapshot value when an override landed
+        // mid-flight — current slot is LOCAL and the incoming resolved value is non-LOCAL.
         val keepCurrent =
             currentValue != null &&
                 currentValue.source == ConfigValue.Source.LOCAL &&

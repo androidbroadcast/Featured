@@ -1,9 +1,12 @@
 package dev.androidbroadcast.featured
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -205,6 +208,13 @@ class WarmUpTest {
             assertEquals(true, afterFetch.value)
             assertEquals(ConfigValue.Source.REMOTE, afterFetch.source)
 
+            // No DEFAULT-sourced value must have been emitted to observers during the fetch
+            // warm-refresh cycle — the snapshot was already warm and must stay warm.
+            assertFalse(
+                collectedValues.any { it.source == ConfigValue.Source.DEFAULT },
+                "observer received a DEFAULT-sourced emission during warm fetch; snapshot regressed",
+            )
+
             job.cancel()
         }
 
@@ -305,4 +315,101 @@ class WarmUpTest {
 
         assertEquals(remoteValue, result[key])
     }
+
+    @Test
+    fun `mergeWarmResults — DEFAULT-sourced resolved entry is not written into snapshot`() {
+        val key = "flag"
+        val defaultValue = ConfigValue("default_val", ConfigValue.Source.DEFAULT)
+
+        val current = emptyMap<String, ConfigValue<*>>()
+        val resolved = listOf(key to defaultValue as ConfigValue<*>)
+
+        val result = mergeWarmResults(current, resolved)
+
+        // DEFAULT must never be persisted into the snapshot — slot must remain absent.
+        assertFalse(result.containsKey(key), "DEFAULT-sourced entry must not be written into the snapshot")
+    }
+
+    // ---------------------------------------------------------------------------
+    // (i) initialize() provider throws → exception propagates, snapshot stays cold
+    // ---------------------------------------------------------------------------
+
+    @Test
+    fun `initialize — provider throws, exception propagates and snapshot stays cold for warmed param`() =
+        runTest {
+            val param = ConfigParam("feat_i", "cold_default")
+            val failingProvider =
+                object : RemoteConfigValueProvider, InitializableConfigValueProvider {
+                    override suspend fun initialize() = throw RuntimeException("init failed")
+
+                    override suspend fun fetch(activate: Boolean) = Unit
+
+                    override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T>? = null
+                }
+            val configValues = ConfigValues(remoteProvider = failingProvider)
+
+            // Register the param before initialize() is attempted.
+            configValues.warmUp(listOf(param))
+            // warmUp itself succeeded (get() returns null → DEFAULT, not written); snapshot is cold.
+            assertEquals(ConfigValue.Source.DEFAULT, configValues.getValueCached(param).source)
+
+            // initialize() must propagate the exception from the provider's initialize().
+            assertFailsWith<RuntimeException>("init failed") {
+                configValues.initialize()
+            }
+
+            // Warm-set refresh was skipped — snapshot must still be cold.
+            val cached = configValues.getValueCached(param)
+            assertEquals("cold_default", cached.value)
+            assertEquals(ConfigValue.Source.DEFAULT, cached.source)
+        }
+
+    // ---------------------------------------------------------------------------
+    // (j) mixed warm-up: provider succeeds for param1, throws for param2
+    //     → param1 warmed (REMOTE), param2 absent from snapshot (DEFAULT fallback),
+    //        exactly one error reported
+    // ---------------------------------------------------------------------------
+
+    @Test
+    fun `warmUp mixed outcome — param1 warmed REMOTE, param2 absent from snapshot, one error reported`() =
+        runTest {
+            val param1 = ConfigParam("feat_j1", "default_j1")
+            val param2 = ConfigParam("feat_j2", "default_j2")
+            val capturedErrors = mutableListOf<Throwable>()
+
+            val mixedProvider =
+                object : RemoteConfigValueProvider {
+                    override suspend fun fetch(activate: Boolean) = Unit
+
+                    @Suppress("UNCHECKED_CAST")
+                    override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T>? =
+                        when (param.key) {
+                            "feat_j1" -> ConfigValue("remote_j1" as T, ConfigValue.Source.REMOTE)
+                            "feat_j2" -> throw RuntimeException("j2 unavailable")
+                            else -> null
+                        }
+                }
+
+            val configValues =
+                ConfigValues(
+                    remoteProvider = mixedProvider,
+                    onProviderError = { capturedErrors += it },
+                )
+
+            configValues.warmUp(listOf(param1, param2))
+
+            // param1: provider succeeded → REMOTE in snapshot.
+            val cached1 = configValues.getValueCached(param1)
+            assertEquals("remote_j1", cached1.value)
+            assertEquals(ConfigValue.Source.REMOTE, cached1.source)
+
+            // param2: provider threw → DEFAULT-sourced value filtered out → slot absent → cold read.
+            val cached2 = configValues.getValueCached(param2)
+            assertEquals("default_j2", cached2.value)
+            assertEquals(ConfigValue.Source.DEFAULT, cached2.source)
+
+            // Exactly one error was reported (for param2).
+            assertEquals(1, capturedErrors.size)
+            assertEquals("j2 unavailable", capturedErrors[0].message)
+        }
 }

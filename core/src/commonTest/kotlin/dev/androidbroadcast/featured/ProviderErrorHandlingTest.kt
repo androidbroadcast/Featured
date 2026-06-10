@@ -255,4 +255,23 @@ class ProviderErrorHandlingTest {
             // The handler must NOT have been called — CancellationException is not a provider error.
             assertFalse(errorInvoked.isNotEmpty(), "onProviderError must not be invoked for CancellationException")
         }
+
+    // --- CancellationException thrown by the handler itself is re-thrown ---
+
+    @Test
+    fun cancellationExceptionThrownByHandlerPropagatesOutOfGetValue() =
+        runTest {
+            // The provider fails with a regular RuntimeException, but the handler itself
+            // throws CancellationException (simulates a handler that internally hits a
+            // cancelled scope). reportProviderError must re-throw it to preserve structured
+            // concurrency — it must not be silently swallowed by the catch-all.
+            val configValues =
+                ConfigValues(
+                    remoteProvider = ThrowingRemoteProvider(),
+                    onProviderError = { throw CancellationException("handler cancelled") },
+                )
+            assertFailsWith<CancellationException> {
+                configValues.getValue(testParam)
+            }
+        }
 }
