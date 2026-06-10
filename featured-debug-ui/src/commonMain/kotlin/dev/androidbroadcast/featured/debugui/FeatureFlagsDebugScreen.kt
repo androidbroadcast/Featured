@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
 import dev.androidbroadcast.featured.ConfigValues
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -91,6 +92,21 @@ import kotlin.coroutines.cancellation.CancellationException
  *   stable top-level `val` or `object` property for predictable behavior.
  *   Each [ConfigParam.key] must be unique within the list; duplicates cause a
  *   runtime crash in `LazyColumn` key collision.
+ * @param onError Callback invoked when a non-fatal internal error occurs — for example,
+ *   a provider failure while building a flag item, a dead collector, or a failed
+ *   override / reset operation. The screen recovers from all these errors without
+ *   crashing; this callback is the hook to observe or log them.
+ *
+ *   Default behavior: prints the full stack trace to stdout via [println]. This is
+ *   equivalent to the pre-#268 behavior (errors are printed to stdout; the format now
+ *   includes the full stack trace).
+ *
+ *   To silence diagnostics entirely, pass `onError = {}`.
+ *   To route through your own logger, pass e.g. `onError = { Timber.w(it) }`.
+ *
+ *   **The callback must not throw.** Any exception thrown from it is swallowed so that
+ *   the screen continues to function. Throwing inside the callback will suppress the
+ *   original error context — prefer logging over re-throwing.
  * @param modifier Optional [Modifier] for the root composable.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,6 +115,7 @@ import kotlin.coroutines.cancellation.CancellationException
 public fun FeatureFlagsDebugScreen(
     configValues: ConfigValues,
     registry: List<ConfigParam<*>>,
+    onError: (Throwable) -> Unit = { e -> println("Featured debug-ui: ${e.stackTraceToString()}") },
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -152,8 +169,9 @@ public fun FeatureFlagsDebugScreen(
                                 runCatching { buildDebugItemForParam(configValues, param) }
                                     .onFailure { e ->
                                         if (e is CancellationException) throw e
-                                        println(
-                                            "Featured debug-ui: failed to build item for '${param.key}': $e",
+                                        reportError(
+                                            onError,
+                                            debugUiError("Failed to build item for '${param.key}'", e),
                                         )
                                     }.getOrNull()
                             }
@@ -181,7 +199,7 @@ public fun FeatureFlagsDebugScreen(
                     throw e
                 } catch (e: Exception) {
                     // Slot stays stale; screen remains functional for other params.
-                    println("Featured debug-ui: collector died for '${param.key}': $e")
+                    reportError(onError, debugUiError("Collector died for '${param.key}'", e))
                 }
             }
         }
@@ -241,8 +259,9 @@ public fun FeatureFlagsDebugScreen(
                                             }.onFailure { e ->
                                                 if (e is CancellationException) throw e
                                                 failedKeys += entry.param.key
-                                                println(
-                                                    "Featured debug-ui: failed to reset override for '${entry.param.key}': $e",
+                                                reportError(
+                                                    onError,
+                                                    debugUiError("Failed to reset '${entry.param.key}'", e),
                                                 )
                                             }
                                         }
@@ -264,30 +283,28 @@ public fun FeatureFlagsDebugScreen(
                                 )
                             if (result == SnackbarResult.ActionPerformed) {
                                 // Undo: restore all snapshotted values in parallel.
-                                val undoFailCount =
-                                    mutableListOf<String>()
-                                        .also { undoFailed ->
-                                            coroutineScope {
-                                                plan
-                                                    .map { entry ->
-                                                        async {
-                                                            runCatching {
-                                                                @Suppress("UNCHECKED_CAST")
-                                                                configValues.override(
-                                                                    entry.param as ConfigParam<Any>,
-                                                                    entry.previousValue,
-                                                                )
-                                                            }.onFailure { e ->
-                                                                if (e is CancellationException) throw e
-                                                                undoFailed += entry.param.key
-                                                                println(
-                                                                    "Featured debug-ui: failed to restore override for '${entry.param.key}': $e",
-                                                                )
-                                                            }
-                                                        }
-                                                    }.forEach { it.await() }
+                                var undoFailCount = 0
+                                coroutineScope {
+                                    plan
+                                        .map { entry ->
+                                            async {
+                                                runCatching {
+                                                    @Suppress("UNCHECKED_CAST")
+                                                    configValues.override(
+                                                        entry.param as ConfigParam<Any>,
+                                                        entry.previousValue,
+                                                    )
+                                                }.onFailure { e ->
+                                                    if (e is CancellationException) throw e
+                                                    undoFailCount++
+                                                    reportError(
+                                                        onError,
+                                                        debugUiError("Failed to restore '${entry.param.key}'", e),
+                                                    )
+                                                }
                                             }
-                                        }.size
+                                        }.forEach { it.await() }
+                                }
                                 if (undoFailCount > 0) {
                                     val restoredCount = plan.size - undoFailCount
                                     snackbarHostState.showSnackbar(
@@ -465,63 +482,26 @@ public fun FeatureFlagsDebugScreen(
                                 FlagItemCard(
                                     item = item,
                                     onToggleBoolean = { newValue ->
-                                        scope.launch {
-                                            runCatching {
-                                                @Suppress("UNCHECKED_CAST")
-                                                configValues.override(
-                                                    item.param as ConfigParam<Boolean>,
-                                                    newValue,
-                                                )
-                                            }.onFailure { e ->
-                                                if (e is CancellationException) throw e
-                                                println(
-                                                    "Featured debug-ui: failed to write boolean override for '${item.key}': $e",
-                                                )
-                                            }
+                                        launchCatching(scope, onError, "Failed to override '${item.key}' (boolean)") {
+                                            @Suppress("UNCHECKED_CAST")
+                                            configValues.override(item.param as ConfigParam<Boolean>, newValue)
                                         }
                                     },
                                     onScalarInput = { newValue ->
-                                        scope.launch {
-                                            runCatching {
-                                                @Suppress("UNCHECKED_CAST")
-                                                configValues.override(
-                                                    item.param as ConfigParam<Any>,
-                                                    newValue,
-                                                )
-                                            }.onFailure { e ->
-                                                if (e is CancellationException) throw e
-                                                println(
-                                                    "Featured debug-ui: failed to write scalar override for '${item.key}': $e",
-                                                )
-                                            }
+                                        launchCatching(scope, onError, "Failed to override '${item.key}' (scalar)") {
+                                            @Suppress("UNCHECKED_CAST")
+                                            configValues.override(item.param as ConfigParam<Any>, newValue)
                                         }
                                     },
                                     onEnumSelect = { newValue ->
-                                        scope.launch {
-                                            runCatching {
-                                                @Suppress("UNCHECKED_CAST")
-                                                configValues.override(
-                                                    item.param as ConfigParam<Any>,
-                                                    newValue,
-                                                )
-                                            }.onFailure { e ->
-                                                if (e is CancellationException) throw e
-                                                println(
-                                                    "Featured debug-ui: failed to write enum override for '${item.key}': $e",
-                                                )
-                                            }
+                                        launchCatching(scope, onError, "Failed to override '${item.key}' (enum)") {
+                                            @Suppress("UNCHECKED_CAST")
+                                            configValues.override(item.param as ConfigParam<Any>, newValue)
                                         }
                                     },
                                     onResetToDefault = {
-                                        scope.launch {
-                                            runCatching {
-                                                configValues.resetOverride(item.param)
-                                            }.onFailure { e ->
-                                                if (e is CancellationException) throw e
-                                                println(
-                                                    "Featured debug-ui: failed to reset override for '${item.key}': $e",
-                                                )
-                                            }
+                                        launchCatching(scope, onError, "Failed to reset '${item.key}'") {
+                                            configValues.resetOverride(item.param)
                                         }
                                     },
                                 )
@@ -536,6 +516,51 @@ public fun FeatureFlagsDebugScreen(
 
 /** Returns "1 override" or "N overrides" for use in dialog titles and snackbar messages. */
 private fun overrideLabel(count: Int): String = if (count == 1) "1 override" else "$count overrides"
+
+/**
+ * Launches a coroutine on [scope], runs [block], and forwards any non-cancellation exception
+ * to [onError] via [reportError]. Cancellation exceptions are re-thrown to preserve structured
+ * concurrency.
+ */
+private fun launchCatching(
+    scope: CoroutineScope,
+    onError: (Throwable) -> Unit,
+    errorMessage: String,
+    block: suspend () -> Unit,
+) {
+    scope.launch {
+        runCatching { block() }.onFailure { e ->
+            if (e is CancellationException) throw e
+            reportError(onError, debugUiError(errorMessage, e))
+        }
+    }
+}
+
+/**
+ * Wraps [cause] in an [IllegalStateException] with a human-readable [message] that
+ * describes which flag key was involved. The resulting throwable is passed to the
+ * caller-supplied [FeatureFlagsDebugScreen] `onError` callback.
+ */
+internal fun debugUiError(
+    message: String,
+    cause: Throwable,
+): Throwable = IllegalStateException(message, cause)
+
+/**
+ * Invokes [onError] with the given [throwable] and swallows any exception thrown by the
+ * callback so that the debug screen remains functional. The callback must not throw;
+ * any exception from it is silently discarded here.
+ */
+internal fun reportError(
+    onError: (Throwable) -> Unit,
+    throwable: Throwable,
+) {
+    try {
+        onError(throwable)
+    } catch (_: Throwable) {
+        // Swallowed: a throwing onError must not break the screen.
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
