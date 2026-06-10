@@ -152,18 +152,22 @@ class InMemoryConfigValueProviderTest {
         }
 
     @Test
-    fun testObserveNonExistentParam() =
+    fun observeEmitsDefaultImmediately_whenKeyNeverWritten() =
         runTest {
             val provider = InMemoryConfigValueProvider()
-            val param = ConfigParam("non_existent", "default")
+            val param = ConfigParam("non_existent", "my_default")
 
             provider.observe(param).test {
-                // Should not emit anything initially since param doesn't exist
-                provider.set(param, "new_value")
+                // Contract: always emits immediately — DEFAULT when key is absent
+                val initial = awaitItem()
+                assertEquals("my_default", initial.value)
+                assertEquals(ConfigValue.Source.DEFAULT, initial.source)
 
-                val emission = awaitItem()
-                assertEquals("new_value", emission.value)
-                assertEquals(ConfigValue.Source.LOCAL, emission.source)
+                // Subsequent set emits LOCAL
+                provider.set(param, "new_value")
+                val afterSet = awaitItem()
+                assertEquals("new_value", afterSet.value)
+                assertEquals(ConfigValue.Source.LOCAL, afterSet.source)
 
                 cancelAndIgnoreRemainingEvents()
             }
@@ -188,6 +192,51 @@ class InMemoryConfigValueProviderTest {
                 // Update param1 - should affect param1 observer
                 provider.set(param1, "updated1")
                 assertEquals("updated1", awaitItem().value)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    // G2: clear() does not emit a change signal — pin the documented invariant.
+    @Test
+    fun clear_doesNotEmitChangeSignal() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param = ConfigParam("key", "default")
+            provider.set(param, "value")
+
+            provider.observe(param).test {
+                // consume initial emission
+                awaitItem()
+
+                provider.clear()
+
+                // clear() must not emit — no new events should follow
+                expectNoEvents()
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    // G3: resetOverride after set → next frame is DEFAULT-sourced.
+    @Test
+    fun resetOverride_afterSet_emitsDefaultSourcedFrame() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val param = ConfigParam("key", "my_default")
+            provider.set(param, "value")
+
+            provider.observe(param).test {
+                // Initial LOCAL frame
+                val initial = awaitItem()
+                assertEquals("value", initial.value)
+                assertEquals(ConfigValue.Source.LOCAL, initial.source)
+
+                // resetOverride → should emit DEFAULT-sourced frame
+                provider.resetOverride(param)
+                val afterReset = awaitItem()
+                assertEquals("my_default", afterReset.value)
+                assertEquals(ConfigValue.Source.DEFAULT, afterReset.source)
 
                 cancelAndIgnoreRemainingEvents()
             }

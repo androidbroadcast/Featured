@@ -7,13 +7,15 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.retryWhen
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.update
 
@@ -416,26 +418,55 @@ public class ConfigValues(
     /**
      * Observes changes to the configuration value for the given parameter.
      *
-     * Emits the latest value immediately, then continues to emit updates whenever:
-     * - the value changes via the local provider, **or**
-     * - [fetch] completes and the remote provider returns a new value.
+     * Every emission is a **fully resolved value** obtained by calling [getValue], which applies
+     * the full priority chain: local provider → remote provider → [ConfigParam.defaultValue].
+     * Local-provider emissions are used **only as change signals** — their payloads are discarded
+     * and never re-emitted directly. This prevents a stale [ConfigValue.Source.DEFAULT] from
+     * the local provider (for an absent key) from clobbering a remote value already known to
+     * [getValue].
      *
-     * Note: local-provider direct emissions (i.e. direct calls to the provider's own `set`
-     * method, bypassing [ConfigValues.override]) reach observers reactively but do **not** write
-     * through to the snapshot. Use [ConfigValues.override] instead of the provider's `set` if
+     * The flow emits once immediately upon collection, then on every:
+     * - local-provider change signal (i.e. after [override] or direct provider [set] /
+     *   [resetOverride]), **or**
+     * - [fetch] completion.
+     *
+     * Consecutive identical resolved values are deduplicated via `distinctUntilChanged`.
+     * Deduplication compares full [ConfigValue] equality — both value AND source must match for
+     * a frame to be suppressed.
+     *
+     * **Known cost:** each local-provider signal triggers one full [getValue] call. For
+     * whole-store providers (e.g. DataStore) any key change triggers a re-resolve for the
+     * observed parameter — reads are cheap and this is intentional and documented.
+     *
+     * Note: local-provider direct writes (bypassing [ConfigValues.override]) reach observers
+     * reactively but do **not** write through to the snapshot. Use [ConfigValues.override] if
      * [getValueCached] must reflect the write.
      *
      * @param param The configuration parameter to observe.
-     * @return A [Flow] of [ConfigValue] for the specified parameter.
+     * @return A [Flow] of fully resolved [ConfigValue] that never terminates on provider error.
      */
     public fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> {
-        val localFlow = localProvider?.observe(param)?.catch { e -> reportProviderError(e) }
-        val remoteFlow = fetchSignal.map { getValue(param) }.catch { e -> reportProviderError(e) }
+        // Local emissions are used only as signals — map payload to Unit to make intent explicit.
+        val localTrigger: Flow<Unit> =
+            localProvider
+                ?.observe(param)
+                ?.map { }
+                // A third-party provider whose observe() throws must not permanently silence local
+                // change signals; bounded backoff avoids a hot loop. CancellationException is not
+                // caught by retryWhen — structured concurrency remains intact.
+                ?.retryWhen { cause, attempt ->
+                    reportProviderError(cause)
+                    delay(minOf(attempt + 1, 10) * 100L)
+                    true
+                }
+                ?: emptyFlow()
+        val remoteTrigger: Flow<Unit> = fetchSignal
 
-        return flow<ConfigValue<T>> {
+        return flow {
             emit(getValue(param))
-            val merged = if (localFlow != null) merge(localFlow, remoteFlow) else remoteFlow
-            merged.collect { emit(it) }
+            merge(localTrigger, remoteTrigger).collect {
+                emit(getValue(param))
+            }
         }.distinctUntilChanged()
     }
 
