@@ -120,6 +120,22 @@ class ProviderErrorHandlingTest {
             assertEquals(false, errorCallbackInvoked)
         }
 
+    // --- default handler (logProviderError) does not throw ---
+
+    @Test
+    fun defaultHandlerDoesNotThrowWhenRemoteProviderFailsDuringObserve() =
+        runTest {
+            // ConfigValues constructed without an explicit onProviderError — the default
+            // platform-log handler must not propagate the exception to the caller.
+            val configValues = ConfigValues(remoteProvider = ThrowingRemoteProvider())
+            configValues.observe(testParam).test {
+                val emission = awaitItem()
+                assertEquals("default_value", emission.value)
+                assertEquals(ConfigValue.Source.DEFAULT, emission.source)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
     // --- RED: observe() does not terminate on provider error ---
 
     @Test

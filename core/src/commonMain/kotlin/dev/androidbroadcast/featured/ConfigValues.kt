@@ -25,8 +25,8 @@ import kotlin.concurrent.atomics.update
  * At least one provider must be supplied; passing `null` for both throws [IllegalArgumentException].
  *
  * Provider calls inside [getValue] and [observe] are wrapped in try/catch. If a provider throws,
- * the error is reported to [onProviderError] (if set) and the next provider in the chain is tried.
- * This means [getValue] and [observe] never propagate provider exceptions to callers.
+ * the error is logged to the platform log by default via [onProviderError] and the next provider
+ * in the chain is tried. [getValue] and [observe] never propagate provider exceptions to callers.
  *
  * [fetch] is **not** guarded — the caller explicitly triggers a network operation and is
  * responsible for handling any exceptions it throws.
@@ -77,14 +77,16 @@ import kotlin.concurrent.atomics.update
  *
  * @param localProvider Optional provider for locally persisted overrides.
  * @param remoteProvider Optional provider for remote configuration values.
- * @param onProviderError Optional callback invoked whenever a provider throws during
- *   [getValue] or [observe]. Use this for logging or observability. Defaults to no-op.
+ * @param onProviderError Callback invoked whenever a provider throws during [getValue] or
+ *   [observe]. Defaults to logging the error to the platform log (Android: `Log.w`,
+ *   iOS: `NSLog`, JVM: `System.err`). Pass `{}` to silence errors; pass a custom handler
+ *   to route them to your own observability system.
  * @throws IllegalArgumentException if both [localProvider] and [remoteProvider] are `null`.
  */
 public class ConfigValues(
     private val localProvider: LocalConfigValueProvider? = null,
     private val remoteProvider: RemoteConfigValueProvider? = null,
-    private val onProviderError: (Throwable) -> Unit = {},
+    private val onProviderError: (Throwable) -> Unit = ::logProviderError,
 ) {
     init {
         require(localProvider != null || remoteProvider != null) {
