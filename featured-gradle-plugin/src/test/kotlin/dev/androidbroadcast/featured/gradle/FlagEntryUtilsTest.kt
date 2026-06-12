@@ -22,13 +22,28 @@ class FlagEntryUtilsTest {
     }
 
     @Test
-    fun `toCamelCase all uppercase input lowercases first segment capitalises rest`() {
-        assertEquals("darkMODE", "DARK_MODE".toCamelCase())
+    fun `toCamelCase two words ALL_CAPS`() {
+        assertEquals("darkMode", "DARK_MODE".toCamelCase())
+    }
+
+    @Test
+    fun `toCamelCase three words ALL_CAPS`() {
+        assertEquals("newCheckoutFlow", "NEW_CHECKOUT_FLOW".toCamelCase())
+    }
+
+    @Test
+    fun `toCamelCase single word ALL_CAPS`() {
+        assertEquals("debug", "DEBUG".toCamelCase())
     }
 
     @Test
     fun `toCamelCase no underscores lowercases entire string`() {
         assertEquals("darkmode", "darkMode".toCamelCase())
+    }
+
+    @Test
+    fun `toCamelCase mixed case with underscore`() {
+        assertEquals("darkMode", "dark_mode".toCamelCase())
     }
 
     // ── modulePathToIdentifier ────────────────────────────────────────────────

@@ -53,6 +53,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   failures). The default behavior (print to stdout with full stack trace) is preserved; pass `{}`
   to silence. Mirrors the `ConfigValues.onProviderError` contract. (#273)
 
+### Fixed
+
+- Gradle plugin: `toCamelCase` conversion now fully lowercases each word before capitalising
+  the first letter, so ALL_CAPS flag keys produce correct camelCase names.
+  `DARK_MODE` → `darkMode` (was `darkMODE`), `NEW_CHECKOUT_FLOW` → `newCheckoutFlow`
+  (was `newCHECKOUTFLOW`). **Generated function/property names change for any multi-word
+  ALL_CAPS flag key** (e.g. `isDarkMODEEnabled` → `isDarkModeEnabled`). (#248)
+
 ### Changed
 
 - `ConfigValues` default `onProviderError` handler changed from a silent no-op to platform
