@@ -13,7 +13,15 @@ package dev.androidbroadcast.featured.gradle
  * plugins { id("dev.androidbroadcast.featured") }
  *
  * featured {
+ *     generation {
+ *         // Module-wide defaults for the generated code (all optional):
+ *         packageName = "com.example.flags"        // default: dev.androidbroadcast.featured.generated
+ *         visibility = FeaturedVisibility.INTERNAL // default: INTERNAL
+ *     }
  *     localFlags {
+ *         generation {
+ *             className = "MyLocalFlags" // default: GeneratedLocalFlags<ModuleSuffix>
+ *         }
  *         boolean("dark_mode", default = false) { category = "UI" }
  *         int("max_retries", default = 3)
  *     }
@@ -64,9 +72,22 @@ public open class FeaturedExtension {
      */
     public var expiredFlagsMode: ExpiredFlagsMode = ExpiredFlagsMode.WARN
 
+    /**
+     * Module-wide defaults for the generated code. A value not overridden in a section's
+     * `localFlags { generation { } }` / `remoteFlags { generation { } }` block falls back
+     * to the value set here; unset values fall back to the built-in defaults.
+     *
+     * [GenerationSettings.className] is not supported at this level — there are two
+     * generated objects, so a shared name would always collide.
+     */
+    public val generation: GenerationSettings = GenerationSettings()
+
     /** Configures local feature flags. */
     public fun localFlags(configure: FlagContainer.() -> Unit): Unit = localFlags.configure()
 
     /** Configures remote feature flags. */
     public fun remoteFlags(configure: FlagContainer.() -> Unit): Unit = remoteFlags.configure()
+
+    /** Configures module-wide defaults for the generated code. */
+    public fun generation(configure: GenerationSettings.() -> Unit): Unit = generation.configure()
 }

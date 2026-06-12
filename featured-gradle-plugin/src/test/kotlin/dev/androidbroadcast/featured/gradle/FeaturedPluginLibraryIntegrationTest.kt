@@ -125,7 +125,7 @@ class FeaturedPluginLibraryIntegrationTest {
      *
      * Expected output (from [ProguardRulesGenerator]):
      * ```proguard
-     * -assumevalues class dev.androidbroadcast.featured.generated.GeneratedFlagExtensionsRootKt {
+     * -assumevalues class dev.androidbroadcast.featured.generated.GeneratedLocalFlagExtensionsRootKt {
      *     boolean isDarkModeEnabled(dev.androidbroadcast.featured.ConfigValues) return false;
      * }
      * ```
@@ -154,10 +154,10 @@ class FeaturedPluginLibraryIntegrationTest {
 
     private companion object {
         // The fixture is a single-project (root) build.
-        // modulePathToFileSuffix(":") → "Root" → fileName → "GeneratedFlagExtensionsRoot.kt"
-        // → JVM class: "GeneratedFlagExtensionsRootKt"
+        // modulePathToFileSuffix(":") → "Root" → localFileName → "GeneratedLocalFlagExtensionsRoot.kt"
+        // → JVM class: "GeneratedLocalFlagExtensionsRootKt"
         const val EXTENSIONS_FQN =
-            "dev.androidbroadcast.featured.generated.GeneratedFlagExtensionsRootKt"
+            "dev.androidbroadcast.featured.generated.GeneratedLocalFlagExtensionsRootKt"
         const val CONFIG_VALUES_FQN = "dev.androidbroadcast.featured.ConfigValues"
         const val IS_DARK_MODE_ENABLED = "isDarkModeEnabled"
     }

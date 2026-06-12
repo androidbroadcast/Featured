@@ -27,6 +27,16 @@ public class FlagContainer {
     /** All flags declared in this container. */
     public val flags: List<FlagSpec> get() = _flags.toList()
 
+    /**
+     * Code-generation overrides for this container's flags (class name, package,
+     * visibility). Values not set here fall back to the module-wide defaults in
+     * `featured { generation { } }`.
+     */
+    public val generation: GenerationSettings = GenerationSettings()
+
+    /** Configures code-generation overrides for this container's flags. */
+    public fun generation(configure: GenerationSettings.() -> Unit): Unit = generation.configure()
+
     /** Declares a [Boolean] feature flag. */
     public fun boolean(
         key: String,

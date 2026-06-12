@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `ValueResolutionStrategy` — a pluggable policy that selects the final value from the resolved
+  local, remote, and default candidates. Pass it via the new optional `resolutionStrategy`
+  parameter of `ConfigValues`; the built-in `ValueResolutionStrategy.Default` preserves the
+  classic `local ?: remote ?: default` chain, so existing consumers are unaffected. Enables
+  policies such as "kill-switch AND" (local and remote must both be `true`) and remote-only
+  resolution. (#276)
+- Gradle plugin: new `generation { }` DSL block for customizing the generated code — package
+  (`packageName`), object names (`className`, replaces the default `Generated{Local,Remote}Flags<Suffix>`
+  name entirely), and visibility (`visibility = FeaturedVisibility.PUBLIC/INTERNAL`, default INTERNAL,
+  applied to the objects and their `ConfigValues` extensions). Settings can be declared module-wide in
+  `featured { generation { } }` and overridden per section in `localFlags { }` / `remoteFlags { }`.
+  ProGuard `-assumevalues` rules and iOS const-val files follow the local section's effective package,
+  keeping release-build DCE intact with custom packages.
+
+### Changed
+
+- `ConfigValues` now reads **both** providers before resolving a value; previously the remote
+  provider was skipped when the local provider returned a value. Resolved values are unchanged
+  under the default strategy, but `onProviderError` may now be invoked for remote failures that
+  were previously masked by a local override. (#276)
+- Gradle plugin: the generated `ConfigValues` extensions are now split into two files —
+  `GeneratedLocalFlagExtensions<Suffix>.kt` and `GeneratedRemoteFlagExtensions<Suffix>.kt`
+  (previously a single `GeneratedFlagExtensions<Suffix>.kt`) — because each section can now have its
+  own package and visibility. The ProGuard `-assumevalues` class name changed accordingly; both the
+  sources and the rules are regenerated together by the plugin, so no consumer action is required.
+
 ## [1.1.1] - 2026-06-04
 
 ### Fixed
