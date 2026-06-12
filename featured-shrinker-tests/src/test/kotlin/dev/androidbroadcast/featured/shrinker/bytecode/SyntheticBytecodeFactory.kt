@@ -34,11 +34,11 @@ internal const val IF_BRANCH_CODE_INTERNAL = "IfBranchCode"
 internal const val ELSE_BRANCH_CODE_INTERNAL = "ElseBranchCode"
 internal const val BIFURCATED_CALLER_INTERNAL = "BifurcatedCaller"
 
-// Derived from ExtensionFunctionGenerator.fileName(":test"):
-// modulePathToFileSuffix(":test") = "Test" → "GeneratedFlagExtensionsTest.kt"
-// → JVM class (Kotlin file-to-class convention): "GeneratedFlagExtensionsTestKt"
+// Derived from ExtensionFunctionGenerator.localFileName(":test"):
+// modulePathToFileSuffix(":test") = "Test" → "GeneratedLocalFlagExtensionsTest.kt"
+// → JVM class (Kotlin file-to-class convention): "GeneratedLocalFlagExtensionsTestKt"
 internal const val BOOL_EXTENSIONS_INTERNAL =
-    "dev/androidbroadcast/featured/generated/GeneratedFlagExtensionsTestKt"
+    "dev/androidbroadcast/featured/generated/GeneratedLocalFlagExtensionsTestKt"
 
 internal const val IS_DARK_MODE_ENABLED = "isDarkModeEnabled"
 
@@ -47,11 +47,11 @@ internal const val INT_CONFIG_VALUES_INTERNAL = "dev/androidbroadcast/featured/I
 internal const val POSITIVE_COUNT_CODE_INTERNAL = "PositiveCountCode"
 internal const val INT_CALLER_INTERNAL = "IntCaller"
 
-// Derived from ExtensionFunctionGenerator.fileName(":int-test"):
+// Derived from ExtensionFunctionGenerator.localFileName(":int-test"):
 // modulePathToFileSuffix(":int-test") splits on "-" → "Int" + "Test" = "IntTest"
-// → "GeneratedFlagExtensionsIntTest.kt" → JVM class: "GeneratedFlagExtensionsIntTestKt"
+// → "GeneratedLocalFlagExtensionsIntTest.kt" → JVM class: "GeneratedLocalFlagExtensionsIntTestKt"
 internal const val INT_EXTENSIONS_INTERNAL =
-    "dev/androidbroadcast/featured/generated/GeneratedFlagExtensionsIntTestKt"
+    "dev/androidbroadcast/featured/generated/GeneratedLocalFlagExtensionsIntTestKt"
 
 internal const val GET_MAX_RETRIES = "getMaxRetries"
 

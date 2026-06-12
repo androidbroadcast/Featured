@@ -1,5 +1,6 @@
 package dev.androidbroadcast.featured.gradle.aggregation
 
+import dev.androidbroadcast.featured.gradle.PACKAGE_NAME_REGEX
 import dev.androidbroadcast.featured.gradle.manifest.FeaturedManifest
 import dev.androidbroadcast.featured.gradle.manifest.FeaturedManifestJson
 import dev.androidbroadcast.featured.gradle.manifest.ValueType
@@ -15,8 +16,6 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-
-private val PACKAGE_NAME_REGEX = Regex("[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z][a-zA-Z0-9_]*)*")
 
 // Accepted grammar for ENUM descriptor fields interpolated verbatim into generated Kotlin source.
 // Untrusted manifest content from a malicious project dependency can inject Kotlin source via

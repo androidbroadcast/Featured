@@ -46,9 +46,9 @@ public class FeaturedPlugin : Plugin<Project> {
         val resolveTask = registerResolveFlagsTask(target, extension)
 
         val verifyTask = registerVerifyExpiredFlagsTask(target, resolveTask)
-        registerConfigParamTask(target, resolveTask, verifyTask)
-        val proguardTask = registerProguardTask(target, resolveTask, verifyTask)
-        registerIosConstValTask(target, resolveTask, verifyTask)
+        registerConfigParamTask(target, extension, resolveTask, verifyTask)
+        val proguardTask = registerProguardTask(target, extension, resolveTask, verifyTask)
+        registerIosConstValTask(target, extension, resolveTask, verifyTask)
         registerXcconfigTask(target, resolveTask, verifyTask)
         val manifestTask = registerManifestTask(target, resolveTask)
         registerFeaturedManifestConfiguration(target, manifestTask)
@@ -93,6 +93,7 @@ public class FeaturedPlugin : Plugin<Project> {
 
     private fun registerConfigParamTask(
         target: Project,
+        extension: FeaturedExtension,
         resolveTask: TaskProvider<ResolveFlagsTask>,
         verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
     ) {
@@ -102,6 +103,15 @@ public class FeaturedPlugin : Plugin<Project> {
                 "Generates ConfigParam objects and ConfigValues extension functions for '${target.path}'."
             task.flagsFile.set(resolveTask.flatMap { it.outputFile })
             task.modulePath.set(target.path)
+            // Use lazy providers so the generation { } settings are read after the build
+            // script's featured { } block has run and participate in the @Input fingerprint.
+            // A provider returning null leaves the @Optional class-name property absent.
+            task.localPackageName.set(target.provider { extension.localPackageName() })
+            task.localClassName.set(target.provider { extension.localClassName() })
+            task.localVisibility.set(target.provider { extension.localVisibility() })
+            task.remotePackageName.set(target.provider { extension.remotePackageName() })
+            task.remoteClassName.set(target.provider { extension.remoteClassName() })
+            task.remoteVisibility.set(target.provider { extension.remoteVisibility() })
             task.outputDir.set(target.layout.buildDirectory.dir("generated/featured/commonMain"))
             task.dependsOn(resolveTask)
             task.dependsOn(verifyTask)
@@ -110,6 +120,7 @@ public class FeaturedPlugin : Plugin<Project> {
 
     private fun registerProguardTask(
         target: Project,
+        extension: FeaturedExtension,
         resolveTask: TaskProvider<ResolveFlagsTask>,
         verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
     ): TaskProvider<GenerateProguardRulesTask> =
@@ -118,6 +129,8 @@ public class FeaturedPlugin : Plugin<Project> {
             task.description = "Generates ProGuard/R8 -assumevalues rules for local flags in '${target.path}'."
             task.scanResultFile.set(resolveTask.flatMap { it.outputFile })
             task.modulePath.set(target.path)
+            // Rules target the local extensions file, so the local section's package applies.
+            task.packageName.set(target.provider { extension.localPackageName() })
             task.outputFile.set(target.layout.buildDirectory.file("featured/proguard-featured.pro"))
             task.dependsOn(resolveTask)
             task.dependsOn(verifyTask)
@@ -125,6 +138,7 @@ public class FeaturedPlugin : Plugin<Project> {
 
     private fun registerIosConstValTask(
         target: Project,
+        extension: FeaturedExtension,
         resolveTask: TaskProvider<ResolveFlagsTask>,
         verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
     ) {
@@ -132,6 +146,7 @@ public class FeaturedPlugin : Plugin<Project> {
             task.group = "featured"
             task.description = "Generates iOS const val declarations for local flags in '${target.path}'."
             task.scanResultFile.set(resolveTask.flatMap { it.outputFile })
+            task.packageName.set(target.provider { extension.localPackageName() })
             task.iosMainOutputFile.set(
                 target.layout.buildDirectory.file("generated/featured/iosMain/FeatureFlagOverrides.kt"),
             )
@@ -142,6 +157,22 @@ public class FeaturedPlugin : Plugin<Project> {
             task.dependsOn(verifyTask)
         }
     }
+
+    // Effective generation { } settings: section override → featured { generation { } }
+    // default → built-in default. Validation happens at resolution so error messages name
+    // the exact DSL property.
+
+    private fun FeaturedExtension.localPackageName() = resolvePackageName(localFlags.generation, generation, "localFlags")
+
+    private fun FeaturedExtension.localClassName() = resolveClassName(localFlags.generation, generation, "localFlags")
+
+    private fun FeaturedExtension.localVisibility() = resolveVisibility(localFlags.generation, generation)
+
+    private fun FeaturedExtension.remotePackageName() = resolvePackageName(remoteFlags.generation, generation, "remoteFlags")
+
+    private fun FeaturedExtension.remoteClassName() = resolveClassName(remoteFlags.generation, generation, "remoteFlags")
+
+    private fun FeaturedExtension.remoteVisibility() = resolveVisibility(remoteFlags.generation, generation)
 
     private fun registerXcconfigTask(
         target: Project,
