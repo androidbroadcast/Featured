@@ -29,6 +29,11 @@ import kotlin.test.assertTrue
  * g. Multiple flags: two expired + one future in one module → exactly the two expired warnings emitted.
  * h. Expired-flag warning contains the module name (prefixed with "in :").
  * i. When the flags file does not exist the task warns and returns early (unit-test path via ProjectBuilder).
+ * j. Requesting [GENERATE_PROGUARD_TASK_NAME] with an expired flag gates on the verify task and the warning appears.
+ * k. `expiredFlagsMode = ERROR` + expired flag → BUILD FAILED; message contains flag key and date.
+ * l. `expiredFlagsMode = ERROR` + no expired flags → SUCCESS.
+ * m. No explicit `expiredFlagsMode` (default WARN) + expired flag → SUCCESS + warning (pins default).
+ * n. `expiredFlagsMode = ERROR` + only invalid-date flag → SUCCESS + format warning (format errors never escalated).
  *
  * All fixtures use a minimal JVM project (no AGP / ANDROID_HOME required) and a local
  * build-cache directory scoped to [TemporaryFolder] so the cache lifecycle is fully controlled.
@@ -75,6 +80,15 @@ class VerifyExpiredFlagsTaskTest {
         assertTrue(
             result.output.contains("in :"),
             "Expected module name (prefixed with 'in :') in the warning.\n${result.output}",
+        )
+        // Pin WARN line format: key follows "Featured: flag " directly, no "  - " prefix.
+        assertTrue(
+            result.output.contains("Featured: flag 'my_flag' in :"),
+            "WARN line must not contain '  - ' between 'flag' and the key.\n${result.output}",
+        )
+        assertFalse(
+            result.output.contains("Featured: flag   - "),
+            "WARN line must not contain garbled '  - ' prefix.\n${result.output}",
         )
     }
 
@@ -350,6 +364,116 @@ class VerifyExpiredFlagsTaskTest {
         )
     }
 
+    // ── expiredFlagsMode = ERROR cases ─────────────────────────────────────────
+
+    /**
+     * Case (k): `expiredFlagsMode = ERROR` + an expired flag → BUILD FAILED; the error message
+     * contains both the flag key and the expiry date.
+     */
+    @Test
+    fun `ERROR mode with expired flag fails the build and includes key and date in message`() {
+        writeSettingsFile(projectDir, cacheDir)
+        writeBuildFile(projectDir, expiresAt = "2000-01-01", mode = "ERROR")
+
+        val result =
+            gradleRunner(projectDir)
+                .withArguments(VERIFY_EXPIRED_FLAGS_TASK_NAME, "--build-cache")
+                .buildAndFail()
+
+        assertEquals(
+            TaskOutcome.FAILED,
+            result.task(":$VERIFY_EXPIRED_FLAGS_TASK_NAME")?.outcome,
+            "Expected FAILED outcome in ERROR mode.\n${result.output}",
+        )
+        assertTrue(
+            result.output.contains("my_flag"),
+            "Error message should contain the flag key.\n${result.output}",
+        )
+        assertTrue(
+            result.output.contains("2000-01-01"),
+            "Error message should contain the expiry date.\n${result.output}",
+        )
+        assertTrue(
+            result.output.contains("in :"),
+            "Error message should contain the module name prefixed with 'in :'.\n${result.output}",
+        )
+    }
+
+    /**
+     * Case (l): `expiredFlagsMode = ERROR` + no expired flags (future date) → build succeeds.
+     */
+    @Test
+    fun `ERROR mode without expired flags succeeds`() {
+        writeSettingsFile(projectDir, cacheDir)
+        writeBuildFile(projectDir, expiresAt = "2099-12-31", mode = "ERROR")
+
+        val result =
+            gradleRunner(projectDir)
+                .withArguments(VERIFY_EXPIRED_FLAGS_TASK_NAME, "--build-cache")
+                .build()
+
+        assertEquals(
+            TaskOutcome.SUCCESS,
+            result.task(":$VERIFY_EXPIRED_FLAGS_TASK_NAME")?.outcome,
+            "Expected SUCCESS when no flags are expired in ERROR mode.\n${result.output}",
+        )
+        assertFalse(
+            result.output.contains("expired on"),
+            "Expected no expired-flag output.\n${result.output}",
+        )
+    }
+
+    /**
+     * Case (m): no explicit `expiredFlagsMode` (default WARN) + expired flag →
+     * build succeeds and the expired warning is present in output. Pins the WARN default.
+     */
+    @Test
+    fun `default mode with expired flag succeeds with warning`() {
+        writeSettingsFile(projectDir, cacheDir)
+        // No mode= argument — uses the default WARN
+        writeBuildFile(projectDir, expiresAt = "2000-01-01")
+
+        val result =
+            gradleRunner(projectDir)
+                .withArguments(VERIFY_EXPIRED_FLAGS_TASK_NAME, "--build-cache")
+                .build()
+
+        assertEquals(
+            TaskOutcome.SUCCESS,
+            result.task(":$VERIFY_EXPIRED_FLAGS_TASK_NAME")?.outcome,
+            "Expected SUCCESS with default WARN mode.\n${result.output}",
+        )
+        assertTrue(
+            result.output.contains("expired on 2000-01-01"),
+            "Expected expired warning with default WARN mode.\n${result.output}",
+        )
+    }
+
+    /**
+     * Case (n): `expiredFlagsMode = ERROR` + only an invalid-date flag (no valid expired date) →
+     * build succeeds because format errors are never escalated; format warning is present.
+     */
+    @Test
+    fun `ERROR mode with only invalid-date flag succeeds with format warning`() {
+        writeSettingsFile(projectDir, cacheDir)
+        writeBuildFile(projectDir, expiresAt = "not-a-date", mode = "ERROR")
+
+        val result =
+            gradleRunner(projectDir)
+                .withArguments(VERIFY_EXPIRED_FLAGS_TASK_NAME, "--build-cache")
+                .build()
+
+        assertEquals(
+            TaskOutcome.SUCCESS,
+            result.task(":$VERIFY_EXPIRED_FLAGS_TASK_NAME")?.outcome,
+            "Expected SUCCESS when only format errors exist in ERROR mode.\n${result.output}",
+        )
+        assertTrue(
+            result.output.contains("invalid expiresAt"),
+            "Expected format-warning message in output.\n${result.output}",
+        )
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     private fun writeSettingsFile(
@@ -378,14 +502,21 @@ class VerifyExpiredFlagsTaskTest {
     private fun writeBuildFile(
         projectDir: File,
         expiresAt: String,
+        mode: String? = null,
     ) {
+        val modeBlock =
+            if (mode != null) {
+                "\n    expiredFlagsMode = dev.androidbroadcast.featured.gradle.ExpiredFlagsMode.$mode"
+            } else {
+                ""
+            }
         projectDir.resolve("build.gradle.kts").writeText(
             """
             plugins {
                 id("java-library")
                 id("dev.androidbroadcast.featured")
             }
-            featured {
+            featured {$modeBlock
                 localFlags {
                     boolean("my_flag", default = false) {
                         this.expiresAt = "$expiresAt"
