@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `ValueResolutionStrategy` — a pluggable policy that selects the final value from the resolved
+  local, remote, and default candidates. Pass it via the new optional `resolutionStrategy`
+  parameter of `ConfigValues`; the built-in `ValueResolutionStrategy.Default` preserves the
+  classic `local ?: remote ?: default` chain, so existing consumers are unaffected. Enables
+  policies such as "kill-switch AND" (local and remote must both be `true`) and remote-only
+  resolution. (#276)
+
+### Changed
+
+- `ConfigValues` now reads **both** providers before resolving a value; previously the remote
+  provider was skipped when the local provider returned a value. Resolved values are unchanged
+  under the default strategy, but `onProviderError` may now be invoked for remote failures that
+  were previously masked by a local override. (#276)
+
 ## [1.1.1] - 2026-06-04
 
 ### Fixed
