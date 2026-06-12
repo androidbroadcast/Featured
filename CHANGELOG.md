@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `ConfigValues.warmUp(params)` — new suspend function that resolves the given params in parallel
+  through the full priority chain and batch-writes the sync snapshot atomically, so
+  `getValueCached` returns fresh values at startup without requiring active subscribers. Call
+  `configValues.warmUp(GeneratedFeaturedRegistry.all)` once at app startup. `fetch()` and
+  `initialize()` now automatically refresh all warmed params after their provider completes,
+  keeping the snapshot current on every remote refresh cycle. (#261)
+- `FeatureFlagsDebugScreen` now includes a search field and filters. A collapsible search bar
+  filters flags by key and category; an «Overridden only» chip narrows the list to flags with
+  active local overrides. Empty-result states provide contextual messages with a «Clear filters»
+  action. State (query, search expanded, filter) survives configuration changes. (#263)
+- Gradle plugin: `VerifyExpiredFlagsTask` — on every build that runs flag code generation, the
+  plugin now emits a build warning for each feature flag whose `expiresAt` date is in the past.
+  The check always runs even when upstream tasks are restored from cache, and is wired into all
+  codegen paths so it cannot be bypassed by invoking a single generation task. (#265)
+- Gradle plugin: new `expiredFlagsMode` DSL property (`featured { expiredFlagsMode = ExpiredFlagsMode.ERROR }`).
+  Default is `WARN` (behavior unchanged); `ERROR` fails the build with a `GradleException` listing
+  every expired flag (module, key, expiry date) instead of emitting warnings. Invalid `expiresAt`
+  format values are never escalated regardless of the mode. (#266)
+- `FeatureFlagsDebugScreen` gains a «Reset all overrides» action in the top bar. A confirmation
+  dialog shows the number of overrides to be cleared; after reset, a snackbar with an **Undo**
+  action restores the previous values. Partial failures (reset or undo) are reported
+  individually. (#269)
 - `ValueResolutionStrategy` — a pluggable policy that selects the final value from the resolved
   local, remote, and default candidates. Pass it via the new optional `resolutionStrategy`
   parameter of `ConfigValues`; the built-in `ValueResolutionStrategy.Default` preserves the
@@ -21,7 +43,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   applied to the objects and their `ConfigValues` extensions). Settings can be declared module-wide in
   `featured { generation { } }` and overridden per section in `localFlags { }` / `remoteFlags { }`.
   ProGuard `-assumevalues` rules and iOS const-val files follow the local section's effective package,
-  keeping release-build DCE intact with custom packages.
+  keeping release-build DCE intact with custom packages. (#278)
+- `NSUserDefaultsConfigValueProvider` now supports `TypeConverter` — call
+  `registerConverter(KClass, TypeConverter)` or the inline reified overload (API mirrors
+  `DataStoreConfigValueProvider` 1:1). Non-primitive values are serialized to String; enum flags
+  declared in the shared DSL now work on iOS, restoring cross-platform parity. (#271)
+- `FeatureFlagsDebugScreen` gains an optional `onError: (Throwable) -> Unit` parameter that
+  receives all internal diagnostic errors (provider failures, override write errors, reset/undo
+  failures). The default behavior (print to stdout with full stack trace) is preserved; pass `{}`
+  to silence. Mirrors the `ConfigValues.onProviderError` contract. (#273)
 
 ### Fixed
 
@@ -33,6 +63,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `ConfigValues` default `onProviderError` handler changed from a silent no-op to platform
+  logging: Android uses `Log.w("Featured", …)`, iOS uses `NSLog`, JVM writes to `System.err`.
+  Pass `onProviderError = {}` to silence. Exceptions thrown by a custom handler are swallowed;
+  `CancellationException` is rethrown instead of being reported as a provider error. (#260)
+- `LocalConfigValueProvider.observe()` contract is now normative: the flow always emits
+  immediately on collection (the stored value, or `ConfigValue(defaultValue, Source.DEFAULT)`
+  when the key was never written), then on every change. `SharedPreferencesConfigValueProvider`,
+  `JavaPrefsConfigValueProvider`, `NSUserDefaultsConfigValueProvider`, and
+  `InMemoryConfigValueProvider` are updated to this contract. `ConfigValues.observe()` now uses
+  a trigger model — local emissions are change signals that drive a full `getValue()` re-resolve
+  through the priority chain, eliminating the DEFAULT-clobbers-REMOTE flicker. (#267)
+- `NSUserDefaultsConfigValueProvider.clear()` now limits deletion to keys written by this
+  provider instance (tracked in a persistent index); previously `clear()` wiped the entire
+  UserDefaults suite, which was destructive for `standardUserDefaults`. Foreign keys in the same
+  suite are preserved. `clear()` now also notifies active `observe()` flows, emitting the
+  DEFAULT-sourced value for every previously stored key. (#270)
 - `ConfigValues` now reads **both** providers before resolving a value; previously the remote
   provider was skipped when the local provider returned a value. Resolved values are unchanged
   under the default strategy, but `onProviderError` may now be invoked for remote failures that
@@ -42,6 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (previously a single `GeneratedFlagExtensions<Suffix>.kt`) — because each section can now have its
   own package and visibility. The ProGuard `-assumevalues` class name changed accordingly; both the
   sources and the rules are regenerated together by the plugin, so no consumer action is required.
+  (#278)
 
 ## [1.1.1] - 2026-06-04
 
