@@ -89,6 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   own package and visibility. The ProGuard `-assumevalues` class name changed accordingly; both the
   sources and the rules are regenerated together by the plugin, so no consumer action is required.
   (#278)
+- Dependency updates raised `androidx.core` to 1.19.0, which requires Android consumers to build
+  with `compileSdk 37` or higher; the library itself now compiles with `compileSdk 37`. (#282)
 
 ## [1.1.1] - 2026-06-04
 
