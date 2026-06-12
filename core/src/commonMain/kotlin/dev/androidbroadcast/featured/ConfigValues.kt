@@ -23,7 +23,9 @@ import kotlin.concurrent.atomics.update
  * Central access point for reading, overriding, and observing configuration values.
  *
  * [ConfigValues] composes an optional [LocalConfigValueProvider] and an optional
- * [RemoteConfigValueProvider] using a well-defined priority order:
+ * [RemoteConfigValueProvider]. The final value is selected by a pluggable
+ * [ValueResolutionStrategy]; the built-in [ValueResolutionStrategy.Default] applies the classic
+ * priority order:
  * 1. **Local provider** — highest priority; used for user-specific overrides.
  * 2. **Remote provider** — values fetched from a remote configuration service.
  * 3. **Default** — [ConfigParam.defaultValue] is used when no provider returns a value.
@@ -31,8 +33,9 @@ import kotlin.concurrent.atomics.update
  * At least one provider must be supplied; passing `null` for both throws [IllegalArgumentException].
  *
  * Provider calls inside [getValue] and [observe] are wrapped in try/catch. If a provider throws,
- * the error is logged to the platform log by default via [onProviderError] and the next provider
- * in the chain is tried. [getValue] and [observe] never propagate provider exceptions to callers.
+ * the error is logged to the platform log by default via [onProviderError] and the strategy
+ * receives `null` in place of that provider's value. [getValue] and [observe] never propagate
+ * provider exceptions to callers.
  *
  * [fetch] is **not** guarded — the caller explicitly triggers a network operation and is
  * responsible for handling any exceptions it throws.
@@ -96,12 +99,16 @@ import kotlin.concurrent.atomics.update
  *   to route them to your own observability system. The callback should not throw; any
  *   exception thrown by it is silently ignored to preserve the "errors never propagate
  *   to callers" guarantee.
+ * @param resolutionStrategy Policy that selects the final value from the resolved local, remote,
+ *   and default candidates. Defaults to [ValueResolutionStrategy.Default]
+ *   (`local ?: remote ?: default`). Exceptions thrown by the strategy itself are not caught.
  * @throws IllegalArgumentException if both [localProvider] and [remoteProvider] are `null`.
  */
 public class ConfigValues(
     private val localProvider: LocalConfigValueProvider? = null,
     private val remoteProvider: RemoteConfigValueProvider? = null,
     private val onProviderError: (Throwable) -> Unit = ::logProviderError,
+    private val resolutionStrategy: ValueResolutionStrategy = ValueResolutionStrategy.Default,
 ) {
     init {
         require(localProvider != null || remoteProvider != null) {
@@ -196,18 +203,47 @@ public class ConfigValues(
         return if (cached != null) {
             cached as ConfigValue<T>
         } else {
-            @Suppress("HardcodedFlagValue") // intentional: cold-read before cache is warm returns DEFAULT
-            ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+            // cold-read before cache is warm returns DEFAULT
+            defaultConfigValue(param)
         }
     }
 
     /**
-     * Returns the current value for [param], applying provider priority.
+     * Reads [param] from the local provider, mapping provider failure to `null`.
      *
-     * Priority order: local provider → remote provider → [ConfigParam.defaultValue].
+     * runCatching captures CancellationException — it is re-thrown so coroutine cancellation
+     * is not silently swallowed as a provider error.
+     */
+    private suspend fun <T : Any> readLocal(param: ConfigParam<T>): ConfigValue<T>? =
+        localProvider?.runCatching { get(param) }?.getOrElse { error ->
+            if (error is CancellationException) throw error
+            reportProviderError(error)
+            null
+        }
+
+    /** Reads [param] from the remote provider, mapping provider failure to `null`. */
+    private suspend fun <T : Any> readRemote(param: ConfigParam<T>): ConfigValue<T>? =
+        remoteProvider?.runCatching { get(param) }?.getOrElse { error ->
+            if (error is CancellationException) throw error
+            reportProviderError(error)
+            null
+        }
+
+    /** [ConfigParam.defaultValue] wrapped as the resolution fallback. */
+    @Suppress("HardcodedFlagValue") // intentional: this IS the provider fallback path
+    private fun <T : Any> defaultConfigValue(param: ConfigParam<T>): ConfigValue<T> =
+        ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+
+    /**
+     * Returns the current value for [param] as selected by the [ValueResolutionStrategy].
      *
-     * Provider exceptions are caught and forwarded to [onProviderError]; this function
-     * never throws due to provider failure.
+     * Both providers are read first; the strategy then picks the final value from the resolved
+     * local, remote, and default candidates. With [ValueResolutionStrategy.Default] this yields
+     * the priority order: local provider → remote provider → [ConfigParam.defaultValue].
+     *
+     * Provider exceptions are caught and forwarded to [onProviderError], and the strategy
+     * receives `null` in place of the failed provider's value; this function never throws due
+     * to provider failure.
      *
      * The resolved value is written through to the sync snapshot so subsequent calls to
      * [getValueCached] for the same parameter reflect this result without further I/O.
@@ -216,43 +252,29 @@ public class ConfigValues(
      * @return The resolved [ConfigValue], never `null`.
      */
     public suspend fun <T : Any> getValue(param: ConfigParam<T>): ConfigValue<T> {
-        val localValue =
-            localProvider?.runCatching { get(param) }?.getOrElse { error ->
-                // runCatching captures CancellationException — propagate it so coroutine
-                // cancellation is not silently swallowed as a provider error.
-                if (error is CancellationException) throw error
-                reportProviderError(error)
-                null
-            }
-        if (localValue != null) {
-            writeSnapshot(param, localValue)
-            return localValue
-        }
-
-        val remoteValue =
-            remoteProvider?.runCatching { get(param) }?.getOrElse { error ->
-                if (error is CancellationException) throw error
-                reportProviderError(error)
-                null
-            }
-        if (remoteValue != null) {
-            writeSnapshot(param, remoteValue)
-            return remoteValue
-        }
-
-        @Suppress("HardcodedFlagValue") // intentional: this IS the provider fallback path
-        val defaultValue = ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+        val resolved =
+            resolutionStrategy.resolve(
+                param = param,
+                localValue = readLocal(param),
+                remoteValue = readRemote(param),
+                defaultValue = defaultConfigValue(param),
+            )
         // Do not write DEFAULT into the snapshot: a later override / fetch should still win.
-        return defaultValue
+        if (resolved.source != ConfigValue.Source.DEFAULT) {
+            writeSnapshot(param, resolved)
+        }
+        return resolved
     }
 
     /**
      * Overrides the configuration value for the given parameter with a local value.
-     * This method is used to set a user-specific value that will take precedence over
-     * any remote value for the specified parameter.
+     * This method is used to set a user-specific value that, under
+     * [ValueResolutionStrategy.Default], takes precedence over any remote value for the
+     * specified parameter. A custom strategy may combine or ignore the override.
      *
-     * After the provider write succeeds, the new value is written through to the sync
-     * snapshot so [getValueCached] reflects the override immediately.
+     * After the provider write succeeds, the value selected by the [ValueResolutionStrategy]
+     * (given the new local value) is written through to the sync snapshot so [getValueCached]
+     * reflects the override immediately.
      *
      * Usually used for testing purposes or to allow users to customize.
      *
@@ -262,10 +284,18 @@ public class ConfigValues(
         param: ConfigParam<T>,
         value: T,
     ) {
-        localProvider?.set(param, value)
-        if (localProvider != null) {
-            writeSnapshot(param, ConfigValue(value, ConfigValue.Source.LOCAL))
-        }
+        if (localProvider == null) return
+        localProvider.set(param, value)
+        val resolved =
+            resolutionStrategy.resolve(
+                param = param,
+                localValue = ConfigValue(value, ConfigValue.Source.LOCAL),
+                remoteValue = readRemote(param),
+                defaultValue = defaultConfigValue(param),
+            )
+        // Unconditional write (unlike getValue): the override must converge the snapshot even
+        // when the strategy resolves to the default — same rule as resetOverride.
+        writeSnapshot(param, resolved)
     }
 
     /**
@@ -419,7 +449,8 @@ public class ConfigValues(
      * Observes changes to the configuration value for the given parameter.
      *
      * Every emission is a **fully resolved value** obtained by calling [getValue], which applies
-     * the full priority chain: local provider → remote provider → [ConfigParam.defaultValue].
+     * the configured [ValueResolutionStrategy] (by default: local provider → remote provider →
+     * [ConfigParam.defaultValue]).
      * Local-provider emissions are used **only as change signals** — their payloads are discarded
      * and never re-emitted directly. This prevents a stale [ConfigValue.Source.DEFAULT] from
      * the local provider (for an absent key) from clobbering a remote value already known to
