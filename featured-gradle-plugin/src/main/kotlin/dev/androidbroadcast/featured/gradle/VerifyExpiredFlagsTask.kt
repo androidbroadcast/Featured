@@ -1,21 +1,31 @@
 package dev.androidbroadcast.featured.gradle
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
 
 /**
- * Gradle task that reads the [ResolveFlagsTask] output and emits a build-time warning for
- * every feature flag whose [LocalFlagEntry.expiresAt] date is in the past.
+ * Gradle task that reads the [ResolveFlagsTask] output and reports feature flags whose
+ * [LocalFlagEntry.expiresAt] date is in the past.
  *
- * Expired flags indicate dead code that should be cleaned up — the warning surfaces the
- * information at build time so engineers do not need a separate audit tool.
+ * Expired flags indicate dead code that should be cleaned up. The reporting behaviour is
+ * controlled by [mode]:
+ * - [ExpiredFlagsMode.WARN] (default) — a Gradle warning is emitted per expired flag; the build
+ *   continues normally.
+ * - [ExpiredFlagsMode.ERROR] — the build fails with a [GradleException] that lists every expired
+ *   flag (module · key · date) in a single message.
+ *
+ * Invalid `expiresAt` format strings are always reported as warnings and are **never** escalated
+ * to an error, regardless of [mode]. They indicate a format problem, not an expiry event.
  *
  * The task is intentionally NOT annotated with [@CacheableTask].
- * [outputsUpToDateWhen] is set to `{ false }` so the check always runs even when
+ * [outputs.upToDateWhen] is set to `{ false }` so the check always runs even when
  * [ResolveFlagsTask] is restored FROM_CACHE.
  *
  * [flagsFile] declares the task-graph dependency on [ResolveFlagsTask] output. Caching is
@@ -34,8 +44,20 @@ public abstract class VerifyExpiredFlagsTask : DefaultTask() {
     @get:Internal
     public abstract val flagsFile: RegularFileProperty
 
+    /**
+     * Controls whether expired flags produce a warning ([ExpiredFlagsMode.WARN]) or fail
+     * the build ([ExpiredFlagsMode.ERROR]). Wired from [FeaturedExtension.expiredFlagsMode]
+     * at task registration time.
+     *
+     * Annotated `@Input` so that changing the mode from WARN to ERROR (or vice versa)
+     * invalidates configuration-cache entries and the task re-runs on the next build.
+     */
+    @get:Input
+    public abstract val mode: Property<ExpiredFlagsMode>
+
     init {
         outputs.upToDateWhen { false }
+        mode.convention(ExpiredFlagsMode.WARN)
     }
 
     @TaskAction
@@ -63,17 +85,40 @@ public abstract class VerifyExpiredFlagsTask : DefaultTask() {
         }
 
         val today = LocalDate.now()
+        val expiredMessages = mutableListOf<String>()
+
         for (entry in entries) {
             val raw = entry.expiresAt ?: continue
             try {
                 val date = LocalDate.parse(raw)
                 if (date < today) {
-                    logger.warn("Featured: flag '${entry.key}' in ${entry.moduleName} expired on ${entry.expiresAt}")
+                    expiredMessages += "'${entry.key}' in ${entry.moduleName} expired on $raw"
                 }
             } catch (_: DateTimeParseException) {
+                // Invalid date format is a format diagnostic, not an expiry event — always warn,
+                // never escalate to an error regardless of the configured mode.
                 logger.warn(
                     "Featured: flag '${entry.key}' in ${entry.moduleName} has invalid expiresAt" +
                         " format '$raw' (expected YYYY-MM-DD)",
+                )
+            }
+        }
+
+        if (expiredMessages.isEmpty()) return
+
+        when (mode.get()) {
+            ExpiredFlagsMode.WARN -> {
+                expiredMessages.forEach { message ->
+                    logger.warn("Featured: flag $message")
+                }
+            }
+
+            ExpiredFlagsMode.ERROR -> {
+                throw GradleException(
+                    buildString {
+                        appendLine("Featured: the following flags have expired and must be cleaned up:")
+                        expiredMessages.forEach { appendLine("  - $it") }
+                    }.trimEnd(),
                 )
             }
         }
