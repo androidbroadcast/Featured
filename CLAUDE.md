@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Core Concepts
 
-- **`ConfigParam<T>`** — declared name + typed default. The Gradle plugin emits these as `object GeneratedLocalFlagsX` / `GeneratedRemoteFlagsX` per-module (since PR #202: **`internal`**, not public).
+- **`ConfigParam<T>`** — declared name + typed default. The Gradle plugin emits these as `object GeneratedLocalFlagsX` / `GeneratedRemoteFlagsX` per-module (since PR #202: **`internal`** by default; name, package, and visibility are configurable via the `featured { generation { } }` DSL).
 - **`ConfigValue<T>`** — observable value (`Flow<T>`) for a single `ConfigParam`.
 - **`ConfigValues`** — container; constructed with optional `LocalConfigValueProvider` and `RemoteConfigValueProvider`. **Remote overrides local.** Apps normally construct **one `ConfigValues` per feature module**, all sharing the same provider.
 - **Aggregator plugin (`dev.androidbroadcast.featured.application`)** — consumes `featured-manifest.json` from every `featuredAggregation(project(...))` dependency and generates `GeneratedFeaturedRegistry.all: List<ConfigParam<*>>`. This is the *only* cross-module flag listing surface; the per-module generated objects stay `internal`.
@@ -97,13 +97,13 @@ Real apps with N feature modules wire **N production `ConfigValues`** (one per f
 2. Exposes public `*FlagObservers.kt` extensions on `ConfigValues` (the only sanctioned cross-module API surface).
 3. Owns its own `*FlagsViewModel` taking only its own `ConfigValues`.
 
-`GeneratedLocalFlagsX` / `GeneratedRemoteFlagsX` are `internal` to their module — never reference them across module boundaries. Use `GeneratedFeaturedRegistry.all` for cross-module flag listing.
+`GeneratedLocalFlagsX` / `GeneratedRemoteFlagsX` are `internal` to their module by default (configurable via `featured { generation { visibility = FeaturedVisibility.PUBLIC } }`) — never reference them across module boundaries. Use `GeneratedFeaturedRegistry.all` for cross-module flag listing.
 
 For non-reactive reads (logging, eager-conditional paths) use `configValues.getValueCached(param)` — the generated `isFooEnabled()` / `getFoo()` extensions are non-suspend and delegate to it (PR #201 restored this synchronous path; R8 DCE depends on it).
 
 ## Project Conventions
 
-- **Explicit API mode** is on for every KMP module — all public declarations need explicit visibility. Generated flag objects are deliberately `internal`.
+- **Explicit API mode** is on for every KMP module — all public declarations need explicit visibility. Generated flag objects are `internal` by default (PUBLIC output emits explicit modifiers and property types to stay explicit-API-clean).
 - **Version catalog** (`gradle/libs.versions.toml`) is the single source of truth for dependency versions.
 - **Spotless / ktlint** runs over `**/*.kt` and `**/*.kts` excluding `build/`. CI fails on `spotlessCheck`.
 - **Public-API stability is reviewed manually in PRs** — there is no automated Binary Compatibility Validator gate (BCV was removed in #150). Reviewers check public-surface changes by hand. Featured has **no migration window** for breaking changes; breaking changes go in directly, the version number reflects it.

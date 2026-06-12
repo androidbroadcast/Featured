@@ -2,7 +2,9 @@ package dev.androidbroadcast.featured.gradle
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
@@ -46,16 +48,24 @@ public abstract class GenerateIosConstValTask : DefaultTask() {
     @get:OutputFile
     public abstract val commonMainOutputFile: RegularFileProperty
 
+    /** Effective package of the local-flags section (from the `generation { }` DSL). */
+    @get:Input
+    public abstract val packageName: Property<String>
+
+    init {
+        packageName.convention(ConfigParamGenerator.DEFAULT_PACKAGE)
+    }
+
     @TaskAction
     public fun generate() {
         val entries = scanResultFile.parseLocalFlagEntries()
 
-        val iosContent = IosConstValGenerator.generate(entries)
+        val iosContent = IosConstValGenerator.generate(entries, packageName.get())
         val iosOut = iosMainOutputFile.get().asFile
         iosOut.parentFile?.mkdirs()
         iosOut.writeText(iosContent)
 
-        val commonContent = IosConstValGenerator.generateExpect(entries)
+        val commonContent = IosConstValGenerator.generateExpect(entries, packageName.get())
         val commonOut = commonMainOutputFile.get().asFile
         commonOut.parentFile?.mkdirs()
         commonOut.writeText(commonContent)

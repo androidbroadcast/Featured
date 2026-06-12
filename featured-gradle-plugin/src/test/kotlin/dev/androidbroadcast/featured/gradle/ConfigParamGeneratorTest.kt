@@ -173,6 +173,77 @@ class ConfigParamGeneratorTest {
         assertEquals("GeneratedRemoteFlagsSampleFeaturePromotions.kt", ConfigParamGenerator.remoteFileName(":sample:feature-promotions"))
     }
 
+    // ── generation settings ───────────────────────────────────────────────────
+
+    @Test
+    fun `custom name replaces the default object name entirely`() {
+        assertEquals("MyFlags", ConfigParamGenerator.localObjectName(":app", "MyFlags"))
+        assertEquals("MyFlags", ConfigParamGenerator.remoteObjectName(":app", "MyFlags"))
+    }
+
+    @Test
+    fun `file name follows the custom object name`() {
+        assertEquals("MyFlags.kt", ConfigParamGenerator.localFileName(":app", "MyFlags"))
+        assertEquals("MyFlags.kt", ConfigParamGenerator.remoteFileName(":app", "MyFlags"))
+    }
+
+    @Test
+    fun `custom package is used for package declaration`() {
+        val entries = listOf(localEntry("dark_mode", "false", "Boolean"))
+        val (local, _) =
+            ConfigParamGenerator.generate(entries, modulePath, local = ObjectCodegen(packageName = "com.example.flags"))
+        assertContains(local, "package com.example.flags")
+        assertTrue(!local.contains("dev.androidbroadcast.featured.generated"), "Default package must not appear")
+    }
+
+    @Test
+    fun `custom object names are emitted in declarations`() {
+        val entries =
+            listOf(
+                localEntry("dark_mode", "false", "Boolean"),
+                remoteEntry("promo", "false", "Boolean"),
+            )
+        val (local, remote) =
+            ConfigParamGenerator.generate(
+                entries,
+                modulePath,
+                local = ObjectCodegen(objectName = "CheckoutLocalFlags"),
+                remote = ObjectCodegen(objectName = "CheckoutRemoteFlags"),
+            )
+        assertContains(local, "internal object CheckoutLocalFlags {")
+        assertContains(remote, "internal object CheckoutRemoteFlags {")
+    }
+
+    @Test
+    fun `public visibility emits public object with explicit property modifiers and types`() {
+        val entries = listOf(localEntry("dark_mode", "false", "Boolean"))
+        val (local, _) =
+            ConfigParamGenerator.generate(entries, modulePath, local = ObjectCodegen(visibility = FeaturedVisibility.PUBLIC))
+        assertContains(local, "public object GeneratedLocalFlagsApp {")
+        // Explicit modifier and type are required by consumers with strict explicit-API mode.
+        assertContains(local, "public val darkMode: ConfigParam<Boolean> = ConfigParam<Boolean>")
+    }
+
+    @Test
+    fun `local and remote sections apply independent settings`() {
+        val entries =
+            listOf(
+                localEntry("dark_mode", "false", "Boolean"),
+                remoteEntry("promo", "false", "Boolean"),
+            )
+        val (local, remote) =
+            ConfigParamGenerator.generate(
+                entries,
+                modulePath,
+                local = ObjectCodegen(packageName = "com.example.local", visibility = FeaturedVisibility.PUBLIC),
+                remote = ObjectCodegen(packageName = "com.example.remote"),
+            )
+        assertContains(local, "package com.example.local")
+        assertContains(local, "public object GeneratedLocalFlagsApp")
+        assertContains(remote, "package com.example.remote")
+        assertContains(remote, "internal object GeneratedRemoteFlagsApp")
+    }
+
     // ── enum flags ────────────────────────────────────────────────────────────
 
     @Test

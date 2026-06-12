@@ -191,14 +191,14 @@ class FeaturedPluginIntegrationTest {
      *
      * Expected output (from [ProguardRulesGenerator]):
      * ```proguard
-     * -assumevalues class dev.androidbroadcast.featured.generated.GeneratedFlagExtensionsRootKt {
+     * -assumevalues class dev.androidbroadcast.featured.generated.GeneratedLocalFlagExtensionsRootKt {
      *     boolean isDarkModeEnabled(dev.androidbroadcast.featured.ConfigValues) return false;
      * }
      * ```
      *
      * The root module path `:` produces the file suffix `Root` via [String.modulePathToFileSuffix],
-     * so the Kotlin file is `GeneratedFlagExtensionsRoot.kt` and the JVM class name
-     * (Kotlin's file-to-class convention) is `GeneratedFlagExtensionsRootKt`.
+     * so the Kotlin file is `GeneratedLocalFlagExtensionsRoot.kt` and the JVM class name
+     * (Kotlin's file-to-class convention) is `GeneratedLocalFlagExtensionsRootKt`.
      *
      * Enum flags (`checkout_variant`) must not appear in `-assumevalues` rules — their values
      * are resolved at runtime from providers and cannot be assumed at build time (issue #162).
@@ -240,10 +240,10 @@ class FeaturedPluginIntegrationTest {
 
     private companion object {
         // The fixture is a single-project (root) build.
-        // modulePathToFileSuffix(":") → "Root" → fileName → "GeneratedFlagExtensionsRoot.kt"
-        // → JVM class: "GeneratedFlagExtensionsRootKt"
+        // modulePathToFileSuffix(":") → "Root" → localFileName → "GeneratedLocalFlagExtensionsRoot.kt"
+        // → JVM class: "GeneratedLocalFlagExtensionsRootKt"
         const val EXTENSIONS_FQN =
-            "dev.androidbroadcast.featured.generated.GeneratedFlagExtensionsRootKt"
+            "dev.androidbroadcast.featured.generated.GeneratedLocalFlagExtensionsRootKt"
         const val CONFIG_VALUES_FQN = "dev.androidbroadcast.featured.ConfigValues"
         const val IS_DARK_MODE_ENABLED = "isDarkModeEnabled"
     }

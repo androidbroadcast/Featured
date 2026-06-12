@@ -1,8 +1,8 @@
 package dev.androidbroadcast.featured.gradle
 
 /**
- * Generates `GeneratedLocalFlags<Suffix>.kt` and `GeneratedRemoteFlags<Suffix>.kt` — internal
- * objects containing one typed `ConfigParam` property per declared flag.
+ * Generates `GeneratedLocalFlags<Suffix>.kt` and `GeneratedRemoteFlags<Suffix>.kt` — objects
+ * containing one typed `ConfigParam` property per declared flag.
  *
  * Generated example for a local Boolean flag `dark_mode` in module `:sample:feature-checkout`:
  * ```kotlin
@@ -11,59 +11,75 @@ package dev.androidbroadcast.featured.gradle
  * }
  * ```
  *
- * The object name and file name include a module-derived suffix (e.g. `SampleFeatureCheckout`)
- * so that each module's generated class has a unique JVM name, avoiding duplicate-class errors
- * when multiple modules are assembled into the same DEX or JAR.
+ * By default the object name and file name include a module-derived suffix (e.g.
+ * `SampleFeatureCheckout`) so that each module's generated class has a unique JVM name,
+ * avoiding duplicate-class errors when multiple modules are assembled into the same DEX or
+ * JAR. The name, package, and visibility can be overridden via the `generation { }` DSL
+ * blocks (see [GenerationSettings]); a custom name replaces the default entirely — no suffix
+ * is appended — making JVM-name uniqueness the user's responsibility.
  *
- * These objects are `internal` to their declaring Gradle module — a module's flag declarations
- * are an implementation detail that other modules must not reference directly. Cross-module
- * flag introspection goes exclusively through [GeneratedFeaturedRegistry.all], which constructs
- * `ConfigParam` instances inline from manifest data without referencing these objects.
+ * These objects are `internal` to their declaring Gradle module by default — a module's flag
+ * declarations are an implementation detail that other modules must not reference directly.
+ * Cross-module flag introspection goes exclusively through [GeneratedFeaturedRegistry.all],
+ * which constructs `ConfigParam` instances inline from manifest data without referencing
+ * these objects. With [FeaturedVisibility.PUBLIC] every property carries an explicit
+ * `public` modifier and an explicit type, satisfying consumers with strict explicit-API mode.
  */
 public object ConfigParamGenerator {
-    private const val PACKAGE = "dev.androidbroadcast.featured.generated"
+    /** Default package for all generated sources, used when the DSL does not override it. */
+    public const val DEFAULT_PACKAGE: String = "dev.androidbroadcast.featured.generated"
+
     private const val CONFIG_PARAM_IMPORT = "dev.androidbroadcast.featured.ConfigParam"
     private const val LOCAL_OBJECT_PREFIX = "GeneratedLocalFlags"
     private const val REMOTE_OBJECT_PREFIX = "GeneratedRemoteFlags"
 
     /**
-     * Returns the generated object name for local flags in the given module.
+     * Returns the generated object name for local flags in the given module. A non-null
+     * [customName] replaces the default entirely.
      *
      * Examples:
      * - `":app"` → `"GeneratedLocalFlagsApp"`
      * - `":sample:feature-checkout"` → `"GeneratedLocalFlagsSampleFeatureCheckout"`
      */
-    public fun localObjectName(modulePath: String): String = "$LOCAL_OBJECT_PREFIX${modulePath.modulePathToFileSuffix()}"
+    public fun localObjectName(
+        modulePath: String,
+        customName: String? = null,
+    ): String = customName ?: "$LOCAL_OBJECT_PREFIX${modulePath.modulePathToFileSuffix()}"
 
     /**
-     * Returns the generated object name for remote flags in the given module.
+     * Returns the generated object name for remote flags in the given module. A non-null
+     * [customName] replaces the default entirely.
      *
      * Examples:
      * - `":app"` → `"GeneratedRemoteFlagsApp"`
      * - `":sample:feature-promotions"` → `"GeneratedRemoteFlagsSampleFeaturePromotions"`
      */
-    public fun remoteObjectName(modulePath: String): String = "$REMOTE_OBJECT_PREFIX${modulePath.modulePathToFileSuffix()}"
+    public fun remoteObjectName(
+        modulePath: String,
+        customName: String? = null,
+    ): String = customName ?: "$REMOTE_OBJECT_PREFIX${modulePath.modulePathToFileSuffix()}"
 
     /**
      * Returns the emitted `.kt` file name for the local-flags object of the given module.
-     *
-     * The object name is derived from the module path, making the JVM class name unique per module.
+     * The file is named after the object, so a custom name carries over to the file.
      */
-    public fun localFileName(modulePath: String): String = "${localObjectName(modulePath)}.kt"
+    public fun localFileName(
+        modulePath: String,
+        customName: String? = null,
+    ): String = "${localObjectName(modulePath, customName)}.kt"
 
     /**
      * Returns the emitted `.kt` file name for the remote-flags object of the given module.
-     *
-     * The object name is derived from the module path, making the JVM class name unique per module.
+     * The file is named after the object, so a custom name carries over to the file.
      */
-    public fun remoteFileName(modulePath: String): String = "${remoteObjectName(modulePath)}.kt"
+    public fun remoteFileName(
+        modulePath: String,
+        customName: String? = null,
+    ): String = "${remoteObjectName(modulePath, customName)}.kt"
 
     /**
      * Generates the Kotlin source for the module-specific local-flags and remote-flags objects
-     * as a pair.
-     *
-     * The object names and file names include a module-derived suffix (see [localObjectName] /
-     * [remoteObjectName]) so that each module's classes are unique at the JVM level.
+     * as a pair, applying the effective per-section [local] / [remote] settings.
      *
      * Returns a pair of `(localSource, remoteSource)`. Either may be an empty string
      * if there are no flags of that type.
@@ -71,30 +87,41 @@ public object ConfigParamGenerator {
     public fun generate(
         entries: List<LocalFlagEntry>,
         modulePath: String,
+        local: ObjectCodegen = ObjectCodegen(),
+        remote: ObjectCodegen = ObjectCodegen(),
     ): Pair<String, String> {
-        val (local, remote) = entries.partition { it.isLocal }
-        return generateObject(local, localObjectName(modulePath)) to
-            generateObject(remote, remoteObjectName(modulePath))
+        val (localEntries, remoteEntries) = entries.partition { it.isLocal }
+        return generateObject(localEntries, localObjectName(modulePath, local.objectName), local) to
+            generateObject(remoteEntries, remoteObjectName(modulePath, remote.objectName), remote)
     }
 
     private fun generateObject(
         entries: List<LocalFlagEntry>,
         objectName: String,
+        codegen: ObjectCodegen,
     ): String {
         if (entries.isEmpty()) return ""
         return buildString {
             appendLine("// Auto-generated by Featured Gradle Plugin — do not edit manually.")
-            appendLine("package $PACKAGE")
+            appendLine("package ${codegen.packageName}")
             appendLine()
             appendLine("import $CONFIG_PARAM_IMPORT")
             appendLine()
-            appendLine("internal object $objectName {")
+            appendLine("${codegen.visibility.keyword} object $objectName {")
             entries.forEach { entry ->
-                appendLine("    val ${entry.propertyName} = ${entry.toConfigParamExpression()}")
+                appendLine("    ${entry.toPropertyDeclaration(codegen.visibility)}")
             }
             append("}")
         }
     }
+
+    private fun LocalFlagEntry.toPropertyDeclaration(visibility: FeaturedVisibility): String =
+        when (visibility) {
+            // Explicit modifier and type satisfy consumers with strict explicit-API mode.
+            FeaturedVisibility.PUBLIC -> "public val $propertyName: ConfigParam<$type> = ${toConfigParamExpression()}"
+
+            FeaturedVisibility.INTERNAL -> "val $propertyName = ${toConfigParamExpression()}"
+        }
 
     private fun LocalFlagEntry.toConfigParamExpression(): String {
         val typeArg = type
