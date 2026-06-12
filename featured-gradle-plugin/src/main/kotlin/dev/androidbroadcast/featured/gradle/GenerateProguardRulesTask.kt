@@ -36,14 +36,26 @@ public abstract class GenerateProguardRulesTask : DefaultTask() {
     @get:Input
     public abstract val modulePath: Property<String>
 
+    /**
+     * Effective package of the local-flags section (from the `generation { }` DSL). Must
+     * match the package the extensions file is generated into — the `-assumevalues` rules
+     * target its fully-qualified JVM class name.
+     */
+    @get:Input
+    public abstract val packageName: Property<String>
+
     /** Generated ProGuard rules file. Written to `build/featured/proguard-featured.pro`. */
     @get:OutputFile
     public abstract val outputFile: RegularFileProperty
 
+    init {
+        packageName.convention(ConfigParamGenerator.DEFAULT_PACKAGE)
+    }
+
     @TaskAction
     public fun generate() {
         val entries = scanResultFile.parseLocalFlagEntries()
-        val rules = ProguardRulesGenerator.generate(entries, modulePath.get())
+        val rules = ProguardRulesGenerator.generate(entries, modulePath.get(), packageName.get())
 
         val out = outputFile.get().asFile
         out.parentFile?.mkdirs()

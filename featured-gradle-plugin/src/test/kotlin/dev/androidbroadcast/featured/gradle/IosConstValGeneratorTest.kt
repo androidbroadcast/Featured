@@ -165,6 +165,30 @@ class IosConstValGeneratorTest {
         assertTrue(result.isBlank(), "Expected blank output for empty entries, got: '$result'")
     }
 
+    // ── custom package ────────────────────────────────────────────────────────
+
+    @Test
+    fun `generate uses custom package when provided`() {
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+            )
+        val result = IosConstValGenerator.generate(entries, packageName = "com.example.flags")
+        assertContains(result, "package com.example.flags")
+        assertFalse(result.contains("dev.androidbroadcast.featured.generated"), "Default package must not appear")
+    }
+
+    @Test
+    fun `generateExpect uses custom package when provided`() {
+        val entries =
+            listOf(
+                LocalFlagEntry(key = "flag", defaultValue = "false", type = "Boolean", moduleName = ":app"),
+            )
+        val result = IosConstValGenerator.generateExpect(entries, packageName = "com.example.flags")
+        assertContains(result, "package com.example.flags")
+        assertFalse(result.contains("dev.androidbroadcast.featured.generated"), "Default package must not appear")
+    }
+
     // ── enum flag exclusion ───────────────────────────────────────────────────
 
     @Test
