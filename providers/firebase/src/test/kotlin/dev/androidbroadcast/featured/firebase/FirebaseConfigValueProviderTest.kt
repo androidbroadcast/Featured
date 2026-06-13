@@ -8,12 +8,14 @@ import dev.androidbroadcast.featured.ConfigValue
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertFailsWith
+import kotlin.test.assertSame
 
 class FirebaseConfigValueProviderTest {
     private lateinit var remoteConfig: FirebaseRemoteConfig
@@ -232,6 +234,47 @@ class FirebaseConfigValueProviderTest {
             every { remoteConfig.getValue("custom_key") } returns mockValue
 
             assertFailsWith<IllegalStateException> { provider.get(param) }
+        }
+
+    // --- initialize() behaviour ---
+
+    @Test
+    fun `initialize calls ensureInitialized exactly once`() =
+        runTest {
+            every { remoteConfig.ensureInitialized() } returns Tasks.forResult(mockk(relaxed = true))
+
+            provider.initialize()
+
+            verify(exactly = 1) { remoteConfig.ensureInitialized() }
+        }
+
+    @Test
+    fun `initialize does not call fetch or fetchAndActivate`() =
+        runTest {
+            every { remoteConfig.ensureInitialized() } returns Tasks.forResult(mockk(relaxed = true))
+
+            provider.initialize()
+
+            verify(exactly = 0) { remoteConfig.fetch() }
+            verify(exactly = 0) { remoteConfig.fetchAndActivate() }
+        }
+
+    @Test
+    fun `initialize wraps task failure in FetchException`() =
+        runTest {
+            val cause = RuntimeException("disk read error")
+            every { remoteConfig.ensureInitialized() } returns Tasks.forException(cause)
+
+            val ex = assertFailsWith<FetchException> { provider.initialize() }
+            assertSame(cause, ex.cause)
+        }
+
+    @Test
+    fun `initialize rethrows CancellationException without wrapping in FetchException`() =
+        runTest {
+            every { remoteConfig.ensureInitialized() } returns Tasks.forException(CancellationException("cancelled"))
+
+            assertFailsWith<CancellationException> { provider.initialize() }
         }
 
     // --- fetch() behaviour ---
