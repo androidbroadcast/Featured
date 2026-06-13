@@ -13,7 +13,6 @@ import org.gradle.api.tasks.TaskProvider
 
 internal const val RESOLVE_FLAGS_TASK_NAME = "resolveFeatureFlags"
 internal const val VERIFY_EXPIRED_FLAGS_TASK_NAME = "verifyExpiredFlags"
-internal const val SCAN_ALL_TASK_NAME = "scanAllLocalFlags"
 internal const val GENERATE_PROGUARD_TASK_NAME = "generateFeaturedProguardRules"
 internal const val GENERATE_IOS_CONST_VAL_TASK_NAME = "generateIosConstVal"
 internal const val GENERATE_XCCONFIG_TASK_NAME = "generateXcconfig"
@@ -52,7 +51,6 @@ public class FeaturedPlugin : Plugin<Project> {
         registerXcconfigTask(target, resolveTask, verifyTask)
         val manifestTask = registerManifestTask(target, resolveTask)
         registerFeaturedManifestConfiguration(target, manifestTask)
-        wireToRootAggregator(target, resolveTask)
         target.plugins.withId("com.android.application") {
             wireProguardToApplicationVariants(target, proguardTask)
         }
@@ -261,24 +259,5 @@ public class FeaturedPlugin : Plugin<Project> {
         // The KMP smoke fixture (`kmp-publish-project`) and `FeaturedKmpPublicationTest` verify
         // this invariant: a KMP module that applies both `dev.androidbroadcast.featured` and
         // `maven-publish` produces module metadata with no `featured-manifest` Usage variant.
-    }
-
-    /**
-     * Ensures the root project has a `scanAllLocalFlags` aggregation task and wires
-     * [resolveTask] into it. `./gradlew scanAllLocalFlags` triggers flag resolution
-     * across every module that applies the plugin.
-     */
-    private fun wireToRootAggregator(
-        target: Project,
-        resolveTask: TaskProvider<ResolveFlagsTask>,
-    ) {
-        val root = target.rootProject
-        if (root.tasks.findByName(SCAN_ALL_TASK_NAME) == null) {
-            root.tasks.register(SCAN_ALL_TASK_NAME) { task ->
-                task.group = "featured"
-                task.description = "Resolves feature flags across all modules applying the Featured plugin."
-            }
-        }
-        root.tasks.named(SCAN_ALL_TASK_NAME) { it.dependsOn(resolveTask) }
     }
 }

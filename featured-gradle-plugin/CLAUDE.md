@@ -49,7 +49,9 @@ featured {
 | `generateIosConstVal` | iOS constant value files |
 | `generateXcconfig` | `build/featured/FeatureFlags.generated.xcconfig` |
 
-`scanAllLocalFlags` aggregates `resolveFeatureFlags` across all modules.
+To resolve flags across all modules at once, use Gradle's name-matched task invocation:
+`./gradlew resolveFeatureFlags` — Gradle runs the task in every module that applies the plugin.
+The plugin holds no `rootProject` access and is compatible with Gradle Project Isolation.
 
 ## Tests
 
