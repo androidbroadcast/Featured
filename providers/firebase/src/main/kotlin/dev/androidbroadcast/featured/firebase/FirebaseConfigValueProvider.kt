@@ -93,7 +93,7 @@ public class FirebaseConfigValueProvider(
      * This does NOT activate fetched-but-unactivated config — use [fetch] with `activate = true`
      * or call `FirebaseRemoteConfig.activate()` directly when activation is desired.
      *
-     * @throws FetchException if [FirebaseRemoteConfig.ensureInitialized] fails.
+     * @throws FirebaseConfigException if [FirebaseRemoteConfig.ensureInitialized] fails.
      * @throws kotlinx.coroutines.CancellationException if the coroutine is cancelled; propagated
      *   without wrapping.
      */
@@ -103,7 +103,7 @@ public class FirebaseConfigValueProvider(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            throw FetchException("Firebase Remote Config initialize failed", e)
+            throw FirebaseConfigException("Firebase Remote Config initialize failed", e)
         }
     }
 
@@ -112,11 +112,11 @@ public class FirebaseConfigValueProvider(
      *
      * @param activate When `true`, calls `fetchAndActivate()` so values become available
      *   immediately after this call. When `false`, only fetches without activating.
-     * @throws FetchException if the Firebase fetch operation fails for any reason, including
+     * @throws FirebaseConfigException if the Firebase fetch operation fails for any reason, including
      *   network errors, timeouts, or service unavailability. This wraps all non-cancellation
      *   exceptions — including [RuntimeException] thrown by [kotlinx.coroutines.tasks.await]
-     *   on Firebase task failure. The [FetchException.cause] holds the original exception for
-     *   diagnostics. See [FetchException] for retry recommendations.
+     *   on Firebase task failure. The [FirebaseConfigException.cause] holds the original exception for
+     *   diagnostics. See [FirebaseConfigException] for retry recommendations.
      * @throws kotlinx.coroutines.CancellationException if the coroutine is cancelled while
      *   the fetch is in progress; propagated without wrapping.
      */
@@ -132,7 +132,7 @@ public class FirebaseConfigValueProvider(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            throw FetchException("Firebase Remote Config fetch failed", e)
+            throw FirebaseConfigException("Firebase Remote Config fetch failed", e)
         }
     }
 }
