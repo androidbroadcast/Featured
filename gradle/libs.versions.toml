@@ -1,5 +1,5 @@
 [versions]
-agp = "9.1.0"
+agp = "9.2.1"
 android-compileSdk = "37"
 android-minSdk = "24"
 android-targetSdk = "36"
@@ -33,7 +33,7 @@ pluginPublish = "2.1.1"
 dokka = "2.2.0"
 detekt = "1.23.8"
 configcat = "5.1.0"
-lint = "32.1.0" # Must equal AGP version + 23.0.0 (e.g., AGP 9.1.0 → Lint 32.1.0)
+lint = "32.2.1" # Must equal AGP version + 23.0.0 (e.g., AGP 9.2.1 → Lint 32.2.1)
 r8 = "9.1.31"
 asm = "9.10.1"
 
