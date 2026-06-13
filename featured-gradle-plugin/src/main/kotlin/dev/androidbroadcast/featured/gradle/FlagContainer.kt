@@ -27,6 +27,16 @@ public class FlagContainer {
     /** All flags declared in this container. */
     public val flags: List<FlagSpec> get() = _flags.toList()
 
+    /**
+     * Code-generation overrides for this container's flags (class name, package,
+     * visibility). Values not set here fall back to the module-wide defaults in
+     * `featured { generation { } }`.
+     */
+    public val generation: GenerationSettings = GenerationSettings()
+
+    /** Configures code-generation overrides for this container's flags. */
+    public fun generation(configure: GenerationSettings.() -> Unit): Unit = generation.configure()
+
     /** Declares a [Boolean] feature flag. */
     public fun boolean(
         key: String,
@@ -88,7 +98,7 @@ public class FlagContainer {
      * intentionally excluded from R8 `-assumevalues` DCE rules — the value cannot be assumed at
      * build time (it is resolved at runtime from providers).
      *
-     * ## Runtime converter requirement (Android / JVM)
+     * ## Runtime converter requirement
      *
      * Storage-backed local providers serialize values as strings and require an explicit
      * [enumConverter] registration before the first read or write of this flag. Without it the
@@ -96,14 +106,11 @@ public class FlagContainer {
      *
      * - `DataStoreConfigValueProvider`
      * - `JavaPreferencesConfigValueProvider`
+     * - `NSUserDefaultsConfigValueProvider`
      * - `SharedPreferencesProviderConfig`
      *
      * Firebase Remote Config (`FirebaseConfigValueProvider`) handles enums automatically via
      * reflection — no `registerConverter` call is needed there.
-     *
-     * **iOS caveat:** `NSUserDefaultsConfigValueProvider` does not support enums at this time —
-     * it has no converter API. Use a `String` flag as a workaround on iOS and convert the raw
-     * value to your enum manually at the call site.
      *
      * ## Example
      *

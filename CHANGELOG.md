@@ -5,6 +5,111 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.2.0] - 2026-06-13
+
+### Added
+
+- `ConfigValues.warmUp(params)` — new suspend function that resolves the given params in parallel
+  through the full priority chain and batch-writes the sync snapshot atomically, so
+  `getValueCached` returns fresh values at startup without requiring active subscribers. Call
+  `configValues.warmUp(GeneratedFeaturedRegistry.all)` once at app startup. `fetch()` and
+  `initialize()` now automatically refresh all warmed params after their provider completes,
+  keeping the snapshot current on every remote refresh cycle. (#261)
+- `FeatureFlagsDebugScreen` now includes a search field and filters. A collapsible search bar
+  filters flags by key and category; an «Overridden only» chip narrows the list to flags with
+  active local overrides. Empty-result states provide contextual messages with a «Clear filters»
+  action. State (query, search expanded, filter) survives configuration changes. (#263)
+- Gradle plugin: `VerifyExpiredFlagsTask` — on every build that runs flag code generation, the
+  plugin now emits a build warning for each feature flag whose `expiresAt` date is in the past.
+  The check always runs even when upstream tasks are restored from cache, and is wired into all
+  codegen paths so it cannot be bypassed by invoking a single generation task. (#265)
+- Gradle plugin: new `expiredFlagsMode` DSL property (`featured { expiredFlagsMode = ExpiredFlagsMode.ERROR }`).
+  Default is `WARN` (behavior unchanged); `ERROR` fails the build with a `GradleException` listing
+  every expired flag (module, key, expiry date) instead of emitting warnings. Invalid `expiresAt`
+  format values are never escalated regardless of the mode. (#266)
+- `FeatureFlagsDebugScreen` gains a «Reset all overrides» action in the top bar. A confirmation
+  dialog shows the number of overrides to be cleared; after reset, a snackbar with an **Undo**
+  action restores the previous values. Partial failures (reset or undo) are reported
+  individually. (#269)
+- `ValueResolutionStrategy` — a pluggable policy that selects the final value from the resolved
+  local, remote, and default candidates. Pass it via the new optional `resolutionStrategy`
+  parameter of `ConfigValues`; the built-in `ValueResolutionStrategy.Default` preserves the
+  classic `local ?: remote ?: default` chain, so existing consumers are unaffected. Enables
+  policies such as "kill-switch AND" (local and remote must both be `true`) and remote-only
+  resolution. (#276)
+- Gradle plugin: new `generation { }` DSL block for customizing the generated code — package
+  (`packageName`), object names (`className`, replaces the default `Generated{Local,Remote}Flags<Suffix>`
+  name entirely), and visibility (`visibility = FeaturedVisibility.PUBLIC/INTERNAL`, default INTERNAL,
+  applied to the objects and their `ConfigValues` extensions). Settings can be declared module-wide in
+  `featured { generation { } }` and overridden per section in `localFlags { }` / `remoteFlags { }`.
+  ProGuard `-assumevalues` rules and iOS const-val files follow the local section's effective package,
+  keeping release-build DCE intact with custom packages. (#278)
+- `NSUserDefaultsConfigValueProvider` now supports `TypeConverter` — call
+  `registerConverter(KClass, TypeConverter)` or the inline reified overload (API mirrors
+  `DataStoreConfigValueProvider` 1:1). Non-primitive values are serialized to String; enum flags
+  declared in the shared DSL now work on iOS, restoring cross-platform parity. (#271)
+- `FeatureFlagsDebugScreen` gains an optional `onError: (Throwable) -> Unit` parameter that
+  receives all internal diagnostic errors (provider failures, override write errors, reset/undo
+  failures). The default behavior (print to stdout with full stack trace) is preserved; pass `{}`
+  to silence. Mirrors the `ConfigValues.onProviderError` contract. (#273)
+- `FirebaseConfigValueProvider` now implements `InitializableConfigValueProvider`: `initialize()`
+  calls `FirebaseRemoteConfig.ensureInitialized()` to warm the on-disk cache (activated, fetched,
+  and defaults) into memory without a network fetch. As a result `ConfigValues.initialize()` makes
+  previously persisted Remote Config values readable via `get()` immediately at app start, before
+  the first `fetch()`. It does not activate fetched-but-unactivated config. (#163)
+
+### Changed
+
+- `ConfigValues` default `onProviderError` handler changed from a silent no-op to platform
+  logging: Android uses `Log.w("Featured", …)`, iOS uses `NSLog`, JVM writes to `System.err`.
+  Pass `onProviderError = {}` to silence. Exceptions thrown by a custom handler are swallowed;
+  `CancellationException` is rethrown instead of being reported as a provider error. (#260)
+- `LocalConfigValueProvider.observe()` contract is now normative: the flow always emits
+  immediately on collection (the stored value, or `ConfigValue(defaultValue, Source.DEFAULT)`
+  when the key was never written), then on every change. `SharedPreferencesConfigValueProvider`,
+  `JavaPrefsConfigValueProvider`, `NSUserDefaultsConfigValueProvider`, and
+  `InMemoryConfigValueProvider` are updated to this contract. `ConfigValues.observe()` now uses
+  a trigger model — local emissions are change signals that drive a full `getValue()` re-resolve
+  through the priority chain, eliminating the DEFAULT-clobbers-REMOTE flicker. (#267)
+- `NSUserDefaultsConfigValueProvider.clear()` now limits deletion to keys written by this
+  provider instance (tracked in a persistent index); previously `clear()` wiped the entire
+  UserDefaults suite, which was destructive for `standardUserDefaults`. Foreign keys in the same
+  suite are preserved. `clear()` now also notifies active `observe()` flows, emitting the
+  DEFAULT-sourced value for every previously stored key. (#270)
+- `ConfigValues` now reads **both** providers before resolving a value; previously the remote
+  provider was skipped when the local provider returned a value. Resolved values are unchanged
+  under the default strategy, but `onProviderError` may now be invoked for remote failures that
+  were previously masked by a local override. (#276)
+- Gradle plugin: the generated `ConfigValues` extensions are now split into two files —
+  `GeneratedLocalFlagExtensions<Suffix>.kt` and `GeneratedRemoteFlagExtensions<Suffix>.kt`
+  (previously a single `GeneratedFlagExtensions<Suffix>.kt`) — because each section can now have its
+  own package and visibility. The ProGuard `-assumevalues` class name changed accordingly; both the
+  sources and the rules are regenerated together by the plugin, so no consumer action is required.
+  (#278)
+- Dependency updates raised `androidx.core` to 1.19.0, which requires Android consumers to build
+  with `compileSdk 37` or higher; the library itself now compiles with `compileSdk 37`. (#282)
+- The firebase provider's `FetchException` is renamed to `FirebaseConfigException`. Since the type
+  now wraps failures from both `fetch()` and `initialize()` — not only fetches — the
+  operation-neutral name reflects its actual scope. **Breaking:** update any `catch`/references to
+  use the new name. (#289)
+
+### Removed
+
+- Gradle plugin: the `scanAllLocalFlags` root-project aggregation task has been removed. The
+  plugin no longer accesses `rootProject` and is now compatible with Gradle Project Isolation.
+  Use `./gradlew resolveFeatureFlags` (Gradle name-matched task invocation) to resolve flags
+  across all modules that apply the plugin. (#186)
+
+### Fixed
+
+- Gradle plugin: `toCamelCase` conversion now fully lowercases each word before capitalising
+  the first letter, so ALL_CAPS flag keys produce correct camelCase names.
+  `DARK_MODE` → `darkMode` (was `darkMODE`), `NEW_CHECKOUT_FLOW` → `newCheckoutFlow`
+  (was `newCHECKOUTFLOW`). **Generated function/property names change for any multi-word
+  ALL_CAPS flag key** (e.g. `isDarkMODEEnabled` → `isDarkModeEnabled`). (#248)
+
 ## [1.1.1] - 2026-06-04
 
 ### Fixed
@@ -150,7 +255,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - License mismatch: use MIT in all POM declarations (#174)
 - Stale artifact IDs in quick-start docs (#179)
 
-[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/androidbroadcast/Featured/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/androidbroadcast/Featured/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/androidbroadcast/Featured/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/androidbroadcast/Featured/compare/v1.0.0-Beta1...v1.0.0

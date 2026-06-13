@@ -35,12 +35,45 @@ public interface LocalConfigValueProvider : ConfigValueProvider {
 
     /**
      * Observes changes to the configuration value for the given parameter.
-     * It emits the latest value immediately and then continues to emit updates
-     * whenever the value changes locally.
+     *
+     * **Emission contract:** the flow ALWAYS emits exactly one value immediately upon collection:
+     * - the locally stored [ConfigValue] with [ConfigValue.Source.LOCAL] if a value has been set, or
+     * - [ConfigValue] wrapping [ConfigParam.defaultValue] with [ConfigValue.Source.DEFAULT] if
+     *   no value is stored for [param].
+     *
+     * After the initial emission the flow continues to emit whenever the stored value changes
+     * (i.e. after [set] or [resetOverride]). Consecutive identical emissions MAY be deduplicated
+     * by the implementation via `distinctUntilChanged`, but the initial emission is always
+     * guaranteed regardless of the current value.
+     *
+     * **Lifetime contract:** the flow MUST never complete normally. It terminates only when the
+     * collector's coroutine scope is cancelled.
+     *
+     * **Error contract:** storage or converter errors MUST NOT terminate the flow. Emit a
+     * [ConfigValue] wrapping [ConfigParam.defaultValue] with [ConfigValue.Source.DEFAULT] as a
+     * fallback instead. The error is surfaced separately through [ConfigValues.observe] when it
+     * re-resolves via [ConfigValues.getValue] and calls [onProviderError][ConfigValues.onProviderError].
+     *
+     * **After [clear]:** both reference implementations ([InMemoryConfigValueProvider] and
+     * [dev.androidbroadcast.featured.nsuserdefaults.NSUserDefaultsConfigValueProvider]) emit a
+     * [ConfigValue] with [ConfigValue.Source.DEFAULT] for every key that was removed. Custom
+     * implementations are strongly encouraged to follow the same contract so that callers do not
+     * need to call [resetOverride] per parameter after a bulk clear.
+     *
+     * **Payload:** the flow emits [ConfigValue]`<T>` rather than [Unit] so that consumers other
+     * than [ConfigValues] — such as custom observers that bypass the priority chain — can use the
+     * emitted value directly without an additional [get] call.
+     *
+     * This contract enables [ConfigValues.observe] to use local emissions purely as change
+     * signals and always perform a full priority-chain re-resolve via [ConfigValues.getValue],
+     * which prevents stale DEFAULT values from clobbering a remote value that is already known.
+     *
+     * [DataStoreConfigValueProvider][dev.androidbroadcast.featured.datastore.DataStoreConfigValueProvider]
+     * is the reference implementation that already conforms to this contract.
      *
      * @param param The configuration parameter to observe.
-     *
-     * @return A [kotlinx.coroutines.flow.Flow] of configuration values for the specified parameter.
+     * @return A [kotlinx.coroutines.flow.Flow] of [ConfigValue] snapshots that always emits
+     *   immediately on collection and then on every subsequent change.
      */
     public fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>>
 }

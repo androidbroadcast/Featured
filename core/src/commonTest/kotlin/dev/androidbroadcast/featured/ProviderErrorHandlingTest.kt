@@ -1,11 +1,14 @@
 package dev.androidbroadcast.featured
 
 import app.cash.turbine.test
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 
 class ProviderErrorHandlingTest {
     private val testParam = ConfigParam("test_key", "default_value")
@@ -120,6 +123,22 @@ class ProviderErrorHandlingTest {
             assertEquals(false, errorCallbackInvoked)
         }
 
+    // --- default handler (logProviderError) does not throw ---
+
+    @Test
+    fun defaultHandlerDoesNotThrowWhenRemoteProviderFailsDuringObserve() =
+        runTest {
+            // ConfigValues constructed without an explicit onProviderError — the default
+            // platform-log handler must not propagate the exception to the caller.
+            val configValues = ConfigValues(remoteProvider = ThrowingRemoteProvider())
+            configValues.observe(testParam).test {
+                val emission = awaitItem()
+                assertEquals("default_value", emission.value)
+                assertEquals(ConfigValue.Source.DEFAULT, emission.source)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
     // --- RED: observe() does not terminate on provider error ---
 
     @Test
@@ -170,6 +189,89 @@ class ProviderErrorHandlingTest {
                 assertEquals(1, capturedErrors.size)
 
                 cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    // --- default handler (logProviderError) does not throw on getValue ---
+
+    @Test
+    fun defaultHandlerDoesNotThrowWhenRemoteProviderFailsDuringGetValue() =
+        runTest {
+            // ConfigValues without explicit onProviderError — the default platform-log handler
+            // must not propagate the exception out of getValue.
+            val configValues = ConfigValues(remoteProvider = ThrowingRemoteProvider())
+            val result = configValues.getValue(testParam)
+            assertEquals("default_value", result.value)
+            assertEquals(ConfigValue.Source.DEFAULT, result.source)
+        }
+
+    // --- throwing custom handler does not propagate through getValue or observe ---
+
+    @Test
+    fun throwingHandlerDoesNotPropagateOutOfGetValue() =
+        runTest {
+            val configValues =
+                ConfigValues(
+                    remoteProvider = ThrowingRemoteProvider(),
+                    onProviderError = { throw IllegalStateException("handler bug") },
+                )
+            // The handler throws but getValue must still return the default and not propagate.
+            val result = configValues.getValue(testParam)
+            assertEquals("default_value", result.value)
+            assertEquals(ConfigValue.Source.DEFAULT, result.source)
+        }
+
+    @Test
+    fun throwingHandlerDoesNotTerminateObserveFlow() =
+        runTest {
+            val configValues =
+                ConfigValues(
+                    remoteProvider = ThrowingRemoteProvider(),
+                    onProviderError = { throw IllegalStateException("handler bug") },
+                )
+            configValues.observe(testParam).test {
+                val emission = awaitItem()
+                // Flow emits default and does not crash despite the handler throwing.
+                assertEquals("default_value", emission.value)
+                assertEquals(ConfigValue.Source.DEFAULT, emission.source)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    // --- CancellationException propagates and is not reported as a provider error ---
+
+    @Test
+    fun cancellationExceptionPropagatesOutOfGetValue() =
+        runTest {
+            val errorInvoked = mutableListOf<Throwable>()
+            val configValues =
+                ConfigValues(
+                    remoteProvider = ThrowingRemoteProvider(error = CancellationException("cancelled")),
+                    onProviderError = { errorInvoked.add(it) },
+                )
+            assertFailsWith<CancellationException> {
+                configValues.getValue(testParam)
+            }
+            // The handler must NOT have been called — CancellationException is not a provider error.
+            assertFalse(errorInvoked.isNotEmpty(), "onProviderError must not be invoked for CancellationException")
+        }
+
+    // --- CancellationException thrown by the handler itself is re-thrown ---
+
+    @Test
+    fun cancellationExceptionThrownByHandlerPropagatesOutOfGetValue() =
+        runTest {
+            // The provider fails with a regular RuntimeException, but the handler itself
+            // throws CancellationException (simulates a handler that internally hits a
+            // cancelled scope). reportProviderError must re-throw it to preserve structured
+            // concurrency — it must not be silently swallowed by the catch-all.
+            val configValues =
+                ConfigValues(
+                    remoteProvider = ThrowingRemoteProvider(),
+                    onProviderError = { throw CancellationException("handler cancelled") },
+                )
+            assertFailsWith<CancellationException> {
+                configValues.getValue(testParam)
             }
         }
 }

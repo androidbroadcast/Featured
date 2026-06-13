@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class ProguardRulesGeneratorTest {
     private val modulePath = ":feature:ui"
     private val expectedClass =
-        "dev.androidbroadcast.featured.generated.${ExtensionFunctionGenerator.fileName(modulePath).removeSuffix(".kt")}Kt"
+        "dev.androidbroadcast.featured.generated.${ExtensionFunctionGenerator.localFileName(modulePath).removeSuffix(".kt")}Kt"
 
     // ── empty / no-op cases ──────────────────────────────────────────────────
 
@@ -153,6 +153,29 @@ class ProguardRulesGeneratorTest {
         assertFalse(
             rulesApp == rulesFeature,
             "Different module paths must produce different class names",
+        )
+    }
+
+    @Test
+    fun `targets the local extensions facade class`() {
+        val entries = listOf(entry("dark_mode", "false", "Boolean"))
+        val rules = ProguardRulesGenerator.generate(entries, ":app")
+        assertContains(
+            rules,
+            "-assumevalues class dev.androidbroadcast.featured.generated.GeneratedLocalFlagExtensionsAppKt {",
+        )
+    }
+
+    // ── custom package ───────────────────────────────────────────────────────
+
+    @Test
+    fun `custom package is used in the assumevalues class name`() {
+        val entries = listOf(entry("dark_mode", "false", "Boolean"))
+        val rules = ProguardRulesGenerator.generate(entries, ":app", packageName = "com.example.flags")
+        assertContains(rules, "-assumevalues class com.example.flags.GeneratedLocalFlagExtensionsAppKt {")
+        assertFalse(
+            rules.contains("dev.androidbroadcast.featured.generated.GeneratedLocalFlagExtensionsAppKt"),
+            "Default package must not appear when a custom one is supplied",
         )
     }
 

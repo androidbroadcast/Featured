@@ -12,7 +12,7 @@ import org.gradle.api.attributes.Usage
 import org.gradle.api.tasks.TaskProvider
 
 internal const val RESOLVE_FLAGS_TASK_NAME = "resolveFeatureFlags"
-internal const val SCAN_ALL_TASK_NAME = "scanAllLocalFlags"
+internal const val VERIFY_EXPIRED_FLAGS_TASK_NAME = "verifyExpiredFlags"
 internal const val GENERATE_PROGUARD_TASK_NAME = "generateFeaturedProguardRules"
 internal const val GENERATE_IOS_CONST_VAL_TASK_NAME = "generateIosConstVal"
 internal const val GENERATE_XCCONFIG_TASK_NAME = "generateXcconfig"
@@ -44,13 +44,13 @@ public class FeaturedPlugin : Plugin<Project> {
         val extension = target.extensions.create("featured", FeaturedExtension::class.java)
         val resolveTask = registerResolveFlagsTask(target, extension)
 
-        registerConfigParamTask(target, resolveTask)
-        val proguardTask = registerProguardTask(target, resolveTask)
-        registerIosConstValTask(target, resolveTask)
-        registerXcconfigTask(target, resolveTask)
+        val verifyTask = registerVerifyExpiredFlagsTask(target, extension, resolveTask)
+        registerConfigParamTask(target, extension, resolveTask, verifyTask)
+        val proguardTask = registerProguardTask(target, extension, resolveTask, verifyTask)
+        registerIosConstValTask(target, extension, resolveTask, verifyTask)
+        registerXcconfigTask(target, resolveTask, verifyTask)
         val manifestTask = registerManifestTask(target, resolveTask)
         registerFeaturedManifestConfiguration(target, manifestTask)
-        wireToRootAggregator(target, resolveTask)
         target.plugins.withId("com.android.application") {
             wireProguardToApplicationVariants(target, proguardTask)
         }
@@ -78,9 +78,24 @@ public class FeaturedPlugin : Plugin<Project> {
             task.remoteFlagDescriptors.set(target.provider { extension.remoteFlags.toDescriptors() })
         }
 
+    private fun registerVerifyExpiredFlagsTask(
+        target: Project,
+        extension: FeaturedExtension,
+        resolveTask: TaskProvider<ResolveFlagsTask>,
+    ): TaskProvider<VerifyExpiredFlagsTask> =
+        target.tasks.register(VERIFY_EXPIRED_FLAGS_TASK_NAME, VerifyExpiredFlagsTask::class.java) { task ->
+            task.group = "featured"
+            task.description = "Verifies feature flags whose expiresAt date is in the past for '${target.path}'."
+            task.flagsFile.set(resolveTask.flatMap { it.outputFile })
+            task.mode.set(target.provider { extension.expiredFlagsMode })
+            task.dependsOn(resolveTask)
+        }
+
     private fun registerConfigParamTask(
         target: Project,
+        extension: FeaturedExtension,
         resolveTask: TaskProvider<ResolveFlagsTask>,
+        verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
     ) {
         target.tasks.register(GENERATE_CONFIG_PARAM_TASK_NAME, GenerateConfigParamTask::class.java) { task ->
             task.group = "featured"
@@ -88,32 +103,50 @@ public class FeaturedPlugin : Plugin<Project> {
                 "Generates ConfigParam objects and ConfigValues extension functions for '${target.path}'."
             task.flagsFile.set(resolveTask.flatMap { it.outputFile })
             task.modulePath.set(target.path)
+            // Use lazy providers so the generation { } settings are read after the build
+            // script's featured { } block has run and participate in the @Input fingerprint.
+            // A provider returning null leaves the @Optional class-name property absent.
+            task.localPackageName.set(target.provider { extension.localPackageName() })
+            task.localClassName.set(target.provider { extension.localClassName() })
+            task.localVisibility.set(target.provider { extension.localVisibility() })
+            task.remotePackageName.set(target.provider { extension.remotePackageName() })
+            task.remoteClassName.set(target.provider { extension.remoteClassName() })
+            task.remoteVisibility.set(target.provider { extension.remoteVisibility() })
             task.outputDir.set(target.layout.buildDirectory.dir("generated/featured/commonMain"))
             task.dependsOn(resolveTask)
+            task.dependsOn(verifyTask)
         }
     }
 
     private fun registerProguardTask(
         target: Project,
+        extension: FeaturedExtension,
         resolveTask: TaskProvider<ResolveFlagsTask>,
+        verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
     ): TaskProvider<GenerateProguardRulesTask> =
         target.tasks.register(GENERATE_PROGUARD_TASK_NAME, GenerateProguardRulesTask::class.java) { task ->
             task.group = "featured"
             task.description = "Generates ProGuard/R8 -assumevalues rules for local flags in '${target.path}'."
             task.scanResultFile.set(resolveTask.flatMap { it.outputFile })
             task.modulePath.set(target.path)
+            // Rules target the local extensions file, so the local section's package applies.
+            task.packageName.set(target.provider { extension.localPackageName() })
             task.outputFile.set(target.layout.buildDirectory.file("featured/proguard-featured.pro"))
             task.dependsOn(resolveTask)
+            task.dependsOn(verifyTask)
         }
 
     private fun registerIosConstValTask(
         target: Project,
+        extension: FeaturedExtension,
         resolveTask: TaskProvider<ResolveFlagsTask>,
+        verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
     ) {
         target.tasks.register(GENERATE_IOS_CONST_VAL_TASK_NAME, GenerateIosConstValTask::class.java) { task ->
             task.group = "featured"
             task.description = "Generates iOS const val declarations for local flags in '${target.path}'."
             task.scanResultFile.set(resolveTask.flatMap { it.outputFile })
+            task.packageName.set(target.provider { extension.localPackageName() })
             task.iosMainOutputFile.set(
                 target.layout.buildDirectory.file("generated/featured/iosMain/FeatureFlagOverrides.kt"),
             )
@@ -121,12 +154,30 @@ public class FeaturedPlugin : Plugin<Project> {
                 target.layout.buildDirectory.file("generated/featured/commonMain/FeatureFlagExpect.kt"),
             )
             task.dependsOn(resolveTask)
+            task.dependsOn(verifyTask)
         }
     }
+
+    // Effective generation { } settings: section override → featured { generation { } }
+    // default → built-in default. Validation happens at resolution so error messages name
+    // the exact DSL property.
+
+    private fun FeaturedExtension.localPackageName() = resolvePackageName(localFlags.generation, generation, "localFlags")
+
+    private fun FeaturedExtension.localClassName() = resolveClassName(localFlags.generation, generation, "localFlags")
+
+    private fun FeaturedExtension.localVisibility() = resolveVisibility(localFlags.generation, generation)
+
+    private fun FeaturedExtension.remotePackageName() = resolvePackageName(remoteFlags.generation, generation, "remoteFlags")
+
+    private fun FeaturedExtension.remoteClassName() = resolveClassName(remoteFlags.generation, generation, "remoteFlags")
+
+    private fun FeaturedExtension.remoteVisibility() = resolveVisibility(remoteFlags.generation, generation)
 
     private fun registerXcconfigTask(
         target: Project,
         resolveTask: TaskProvider<ResolveFlagsTask>,
+        verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
     ) {
         target.tasks.register(GENERATE_XCCONFIG_TASK_NAME, GenerateXcconfigTask::class.java) { task ->
             task.group = "featured"
@@ -134,6 +185,7 @@ public class FeaturedPlugin : Plugin<Project> {
             task.scanResultFile.set(resolveTask.flatMap { it.outputFile })
             task.outputFile.set(target.layout.buildDirectory.file("featured/FeatureFlags.generated.xcconfig"))
             task.dependsOn(resolveTask)
+            task.dependsOn(verifyTask)
         }
     }
 
@@ -207,24 +259,5 @@ public class FeaturedPlugin : Plugin<Project> {
         // The KMP smoke fixture (`kmp-publish-project`) and `FeaturedKmpPublicationTest` verify
         // this invariant: a KMP module that applies both `dev.androidbroadcast.featured` and
         // `maven-publish` produces module metadata with no `featured-manifest` Usage variant.
-    }
-
-    /**
-     * Ensures the root project has a `scanAllLocalFlags` aggregation task and wires
-     * [resolveTask] into it. `./gradlew scanAllLocalFlags` triggers flag resolution
-     * across every module that applies the plugin.
-     */
-    private fun wireToRootAggregator(
-        target: Project,
-        resolveTask: TaskProvider<ResolveFlagsTask>,
-    ) {
-        val root = target.rootProject
-        if (root.tasks.findByName(SCAN_ALL_TASK_NAME) == null) {
-            root.tasks.register(SCAN_ALL_TASK_NAME) { task ->
-                task.group = "featured"
-                task.description = "Resolves feature flags across all modules applying the Featured plugin."
-            }
-        }
-        root.tasks.named(SCAN_ALL_TASK_NAME) { it.dependsOn(resolveTask) }
     }
 }

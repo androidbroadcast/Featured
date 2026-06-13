@@ -61,6 +61,37 @@ val configValues = ConfigValues(
 val isEnabled: Boolean = configValues.isNewCheckoutEnabled()
 ```
 
+## Customizing generated code
+
+By default the plugin generates `internal` objects named `GeneratedLocalFlags<ModuleSuffix>` /
+`GeneratedRemoteFlags<ModuleSuffix>` in the `dev.androidbroadcast.featured.generated` package.
+The `generation { }` block overrides the package, class names, and visibility — module-wide in
+`featured { }` and per section inside `localFlags { }` / `remoteFlags { }` (section values win):
+
+```kotlin
+import dev.androidbroadcast.featured.gradle.FeaturedVisibility
+
+featured {
+    generation {                                  // module-wide defaults
+        packageName = "com.example.checkout.flags"
+        visibility = FeaturedVisibility.INTERNAL
+    }
+    localFlags {
+        generation {                              // overrides for local flags only
+            className = "CheckoutLocalFlags"      // exact name, no module suffix appended
+            visibility = FeaturedVisibility.PUBLIC
+        }
+        boolean("new_checkout", default = false)
+    }
+}
+```
+
+The generated `.kt` file is named after the custom class name. With a custom name the
+module-suffix-based JVM-name uniqueness no longer applies — make sure two modules don't
+generate the same package + class name. ProGuard/R8 `-assumevalues` rules and the iOS
+const-val files automatically follow the local section's effective package, so release-build
+dead-code elimination keeps working with custom packages.
+
 ## Multi-module pattern
 
 In a multi-module app, construct one `ConfigValues` per feature module plus one debug aggregator,

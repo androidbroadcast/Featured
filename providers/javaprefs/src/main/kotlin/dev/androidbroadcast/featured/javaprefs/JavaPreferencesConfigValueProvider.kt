@@ -6,13 +6,13 @@ import dev.androidbroadcast.featured.LocalConfigValueProvider
 import dev.androidbroadcast.featured.TypeConverter
 import dev.androidbroadcast.featured.TypeConverters
 import dev.androidbroadcast.featured.put
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -152,16 +152,30 @@ public class JavaPreferencesConfigValueProvider(
             node.flush()
         }
 
+    /**
+     * Conforms to [LocalConfigValueProvider.observe] contract: always emits immediately on
+     * collection — [ConfigValue.Source.LOCAL] when a value is stored,
+     * [ConfigValue.Source.DEFAULT] wrapping [ConfigParam.defaultValue] otherwise.
+     */
     override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> =
-        flow<ConfigValue<T>?> {
-            emit(get(param))
+        flow {
+            emit(get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT))
             emitAll(
                 changedKeysFlow
                     .filter { it == param.key }
-                    .map { get(param) },
+                    .map {
+                        // Keep the observe stream alive on storage/converter errors; the error is
+                        // reported by the consumer's re-resolve via ConfigValues.getValue.
+                        try {
+                            get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+                        } catch (ce: CancellationException) {
+                            throw ce
+                        } catch (_: Throwable) {
+                            ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT)
+                        }
+                    },
             )
-        }.filterNotNull()
-            .distinctUntilChanged()
+        }.distinctUntilChanged()
 }
 
 /**

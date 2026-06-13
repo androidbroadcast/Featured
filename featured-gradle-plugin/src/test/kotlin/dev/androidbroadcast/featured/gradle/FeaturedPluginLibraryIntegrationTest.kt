@@ -72,10 +72,10 @@ class FeaturedPluginLibraryIntegrationTest {
     }
 
     @Test
-    fun `bundleRelease wires consumer proguard rules and completes successfully`() {
+    fun `bundleReleaseAar wires consumer proguard rules and completes successfully`() {
         val result =
             gradleRunner(projectDir)
-                .withArguments("bundleRelease", "--stacktrace")
+                .withArguments("bundleReleaseAar", "--stacktrace")
                 .build()
 
         // generateFeaturedProguardRules must have run as part of the library release build.
@@ -84,31 +84,33 @@ class FeaturedPluginLibraryIntegrationTest {
             proguardOutcome == TaskOutcome.SUCCESS ||
                 proguardOutcome == TaskOutcome.UP_TO_DATE ||
                 proguardOutcome == TaskOutcome.FROM_CACHE,
-            "Expected :generateFeaturedProguardRules to participate in bundleRelease, got $proguardOutcome\n${result.output}",
+            "Expected :generateFeaturedProguardRules to participate in bundleReleaseAar, got $proguardOutcome\n${result.output}",
         )
 
-        val bundleOutcome = result.task(":bundleRelease")?.outcome
+        val bundleOutcome = result.task(":bundleReleaseAar")?.outcome
         assertTrue(
             bundleOutcome == TaskOutcome.SUCCESS || bundleOutcome == TaskOutcome.UP_TO_DATE,
-            "Expected :bundleRelease to succeed or be up-to-date, got $bundleOutcome\n${result.output}",
+            "Expected :bundleReleaseAar to succeed or be up-to-date, got $bundleOutcome\n${result.output}",
         )
 
         // Verify the generated rules appear in the AAR's consumer proguard intermediates.
-        // AGP writes consumer ProGuard rules to this path before packaging them in the AAR.
-        val consumerProguardDir = projectDir.resolve("build/intermediates/consumer_proguard_dir/release")
-        assertTrue(
-            consumerProguardDir.exists(),
-            "Expected consumer proguard intermediate dir to exist at ${consumerProguardDir.path}",
-        )
+        // AGP 9.x merges consumer ProGuard rules into a single file via MergeConsumerProguardFilesTask.
+        // The output lands at: build/intermediates/merged_consumer_proguard_file/release/<taskName>/proguard.txt
+        // Older AGP used consumer_proguard_dir/release/ (directory with per-lib subdirs).
+        // We search both roots so the test survives across AGP versions.
+        val mergedRoot = projectDir.resolve("build/intermediates/merged_consumer_proguard_file/release")
+        val legacyDir = projectDir.resolve("build/intermediates/consumer_proguard_dir/release")
 
-        val consumerProguardFiles =
-            consumerProguardDir
-                .walkTopDown()
+        val consumerProguardFiles: List<File> =
+            sequenceOf(mergedRoot, legacyDir)
+                .filter { it.isDirectory }
+                .flatMap { it.walkTopDown() }
                 .filter { it.isFile && (it.name.endsWith(".pro") || it.name == "proguard.txt") }
                 .toList()
         assertTrue(
             consumerProguardFiles.isNotEmpty(),
-            "Expected at least one consumer proguard file (.pro or proguard.txt) under ${consumerProguardDir.path}",
+            "Expected consumer ProGuard files under ${mergedRoot.path} or ${legacyDir.path}, " +
+                "but neither location was populated.\n${result.output}",
         )
 
         val combinedContent = consumerProguardFiles.joinToString("\n") { it.readText() }
@@ -123,7 +125,7 @@ class FeaturedPluginLibraryIntegrationTest {
      *
      * Expected output (from [ProguardRulesGenerator]):
      * ```proguard
-     * -assumevalues class dev.androidbroadcast.featured.generated.GeneratedFlagExtensionsRootKt {
+     * -assumevalues class dev.androidbroadcast.featured.generated.GeneratedLocalFlagExtensionsRootKt {
      *     boolean isDarkModeEnabled(dev.androidbroadcast.featured.ConfigValues) return false;
      * }
      * ```
@@ -152,10 +154,10 @@ class FeaturedPluginLibraryIntegrationTest {
 
     private companion object {
         // The fixture is a single-project (root) build.
-        // modulePathToFileSuffix(":") → "Root" → fileName → "GeneratedFlagExtensionsRoot.kt"
-        // → JVM class: "GeneratedFlagExtensionsRootKt"
+        // modulePathToFileSuffix(":") → "Root" → localFileName → "GeneratedLocalFlagExtensionsRoot.kt"
+        // → JVM class: "GeneratedLocalFlagExtensionsRootKt"
         const val EXTENSIONS_FQN =
-            "dev.androidbroadcast.featured.generated.GeneratedFlagExtensionsRootKt"
+            "dev.androidbroadcast.featured.generated.GeneratedLocalFlagExtensionsRootKt"
         const val CONFIG_VALUES_FQN = "dev.androidbroadcast.featured.ConfigValues"
         const val IS_DARK_MODE_ENABLED = "isDarkModeEnabled"
     }

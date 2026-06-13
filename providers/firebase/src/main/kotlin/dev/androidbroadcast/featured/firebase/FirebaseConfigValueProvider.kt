@@ -4,6 +4,7 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
+import dev.androidbroadcast.featured.InitializableConfigValueProvider
 import dev.androidbroadcast.featured.RemoteConfigValueProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
@@ -28,7 +29,8 @@ import kotlin.reflect.KClass
  */
 public class FirebaseConfigValueProvider(
     private val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance(),
-) : RemoteConfigValueProvider {
+) : RemoteConfigValueProvider,
+    InitializableConfigValueProvider {
     /**
      * Mutable registry of type converters used to extract typed values from Firebase.
      *
@@ -82,15 +84,39 @@ public class FirebaseConfigValueProvider(
     }
 
     /**
+     * Loads the persisted Remote Config data into memory so that values are immediately
+     * readable via [get] without a network round-trip.
+     *
+     * Internally calls [FirebaseRemoteConfig.ensureInitialized], which warms Firebase's
+     * on-disk caches (activated, fetched, and defaults) into the in-process cache.
+     * This does NOT perform a network fetch — call [fetch] for that.
+     * This does NOT activate fetched-but-unactivated config — use [fetch] with `activate = true`
+     * or call `FirebaseRemoteConfig.activate()` directly when activation is desired.
+     *
+     * @throws FirebaseConfigException if [FirebaseRemoteConfig.ensureInitialized] fails.
+     * @throws kotlinx.coroutines.CancellationException if the coroutine is cancelled; propagated
+     *   without wrapping.
+     */
+    override suspend fun initialize() {
+        try {
+            remoteConfig.ensureInitialized().await()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            throw FirebaseConfigException("Firebase Remote Config initialize failed", e)
+        }
+    }
+
+    /**
      * Fetches the latest values from Firebase Remote Config and optionally activates them.
      *
      * @param activate When `true`, calls `fetchAndActivate()` so values become available
      *   immediately after this call. When `false`, only fetches without activating.
-     * @throws FetchException if the Firebase fetch operation fails for any reason, including
+     * @throws FirebaseConfigException if the Firebase fetch operation fails for any reason, including
      *   network errors, timeouts, or service unavailability. This wraps all non-cancellation
      *   exceptions — including [RuntimeException] thrown by [kotlinx.coroutines.tasks.await]
-     *   on Firebase task failure. The [FetchException.cause] holds the original exception for
-     *   diagnostics. See [FetchException] for retry recommendations.
+     *   on Firebase task failure. The [FirebaseConfigException.cause] holds the original exception for
+     *   diagnostics. See [FirebaseConfigException] for retry recommendations.
      * @throws kotlinx.coroutines.CancellationException if the coroutine is cancelled while
      *   the fetch is in progress; propagated without wrapping.
      */
@@ -106,7 +132,7 @@ public class FirebaseConfigValueProvider(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            throw FetchException("Firebase Remote Config fetch failed", e)
+            throw FirebaseConfigException("Firebase Remote Config fetch failed", e)
         }
     }
 }

@@ -18,7 +18,7 @@ import kotlin.test.Test
  * ```java
  * class IntConfigValues { int count; IntConfigValues(int) }
  *
- * class GeneratedFlagExtensionsIntTestKt {
+ * class GeneratedLocalFlagExtensionsIntTestKt {
  *     static int getMaxRetries(IntConfigValues cv) { return cv.count; }
  * }
  *
@@ -27,7 +27,7 @@ import kotlin.test.Test
  * class IntCaller {
  *     static void execute(int count) {
  *         IntConfigValues cv = new IntConfigValues(count);
- *         if (GeneratedFlagExtensionsIntTestKt.getMaxRetries(cv) > 0) {
+ *         if (GeneratedLocalFlagExtensionsIntTestKt.getMaxRetries(cv) > 0) {
  *             new PositiveCountCode().doWork();
  *         }
  *     }
