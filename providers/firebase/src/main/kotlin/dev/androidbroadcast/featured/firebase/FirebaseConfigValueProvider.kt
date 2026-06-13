@@ -4,6 +4,7 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
+import dev.androidbroadcast.featured.InitializableConfigValueProvider
 import dev.androidbroadcast.featured.RemoteConfigValueProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
@@ -28,7 +29,8 @@ import kotlin.reflect.KClass
  */
 public class FirebaseConfigValueProvider(
     private val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance(),
-) : RemoteConfigValueProvider {
+) : RemoteConfigValueProvider,
+    InitializableConfigValueProvider {
     /**
      * Mutable registry of type converters used to extract typed values from Firebase.
      *
@@ -79,6 +81,30 @@ public class FirebaseConfigValueProvider(
         }
 
         throw IllegalStateException("No converter registered for type: $type")
+    }
+
+    /**
+     * Loads the persisted Remote Config data into memory so that values are immediately
+     * readable via [get] without a network round-trip.
+     *
+     * Internally calls [FirebaseRemoteConfig.ensureInitialized], which warms Firebase's
+     * on-disk caches (activated, fetched, and defaults) into the in-process cache.
+     * This does NOT perform a network fetch — call [fetch] for that.
+     * This does NOT activate fetched-but-unactivated config — use [fetch] with `activate = true`
+     * or call `FirebaseRemoteConfig.activate()` directly when activation is desired.
+     *
+     * @throws FetchException if [FirebaseRemoteConfig.ensureInitialized] fails.
+     * @throws kotlinx.coroutines.CancellationException if the coroutine is cancelled; propagated
+     *   without wrapping.
+     */
+    override suspend fun initialize() {
+        try {
+            remoteConfig.ensureInitialized().await()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            throw FetchException("Firebase Remote Config initialize failed", e)
+        }
     }
 
     /**
