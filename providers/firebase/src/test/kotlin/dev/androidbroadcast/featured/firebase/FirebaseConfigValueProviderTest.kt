@@ -260,17 +260,17 @@ class FirebaseConfigValueProviderTest {
         }
 
     @Test
-    fun `initialize wraps task failure in FetchException`() =
+    fun `initialize wraps task failure in FirebaseConfigException`() =
         runTest {
             val cause = RuntimeException("disk read error")
             every { remoteConfig.ensureInitialized() } returns Tasks.forException(cause)
 
-            val ex = assertFailsWith<FetchException> { provider.initialize() }
+            val ex = assertFailsWith<FirebaseConfigException> { provider.initialize() }
             assertSame(cause, ex.cause)
         }
 
     @Test
-    fun `initialize rethrows CancellationException without wrapping in FetchException`() =
+    fun `initialize rethrows CancellationException without wrapping in FirebaseConfigException`() =
         runTest {
             every { remoteConfig.ensureInitialized() } returns Tasks.forException(CancellationException("cancelled"))
 
@@ -319,7 +319,7 @@ class FirebaseConfigValueProviderTest {
             val networkError = RuntimeException("Network unavailable")
             every { remoteConfig.fetchAndActivate() } returns Tasks.forException(networkError)
 
-            assertFailsWith<FetchException> { provider.fetch(activate = true) }
+            assertFailsWith<FirebaseConfigException> { provider.fetch(activate = true) }
         }
 
     @Test
@@ -328,7 +328,7 @@ class FirebaseConfigValueProviderTest {
             val networkError = RuntimeException("Network unavailable")
             every { remoteConfig.fetch() } returns Tasks.forException(networkError)
 
-            assertFailsWith<FetchException> { provider.fetch(activate = false) }
+            assertFailsWith<FirebaseConfigException> { provider.fetch(activate = false) }
         }
 
     // --- Converters registry ---
