@@ -52,6 +52,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   receives all internal diagnostic errors (provider failures, override write errors, reset/undo
   failures). The default behavior (print to stdout with full stack trace) is preserved; pass `{}`
   to silence. Mirrors the `ConfigValues.onProviderError` contract. (#273)
+- `FirebaseConfigValueProvider` now implements `InitializableConfigValueProvider`: `initialize()`
+  calls `FirebaseRemoteConfig.ensureInitialized()` to warm the on-disk cache (activated, fetched,
+  and defaults) into memory without a network fetch. As a result `ConfigValues.initialize()` makes
+  previously persisted Remote Config values readable via `get()` immediately at app start, before
+  the first `fetch()`. It does not activate fetched-but-unactivated config. (#163)
 
 ### Fixed
 
@@ -91,6 +96,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (#278)
 - Dependency updates raised `androidx.core` to 1.19.0, which requires Android consumers to build
   with `compileSdk 37` or higher; the library itself now compiles with `compileSdk 37`. (#282)
+- The firebase provider's `FetchException` is renamed to `FirebaseConfigException`. Since the type
+  now wraps failures from both `fetch()` and `initialize()` — not only fetches — the operation-neutral
+  name reflects its actual scope. **Breaking:** update any `catch`/references to use the new name. (#289)
 
 ### Removed
 
