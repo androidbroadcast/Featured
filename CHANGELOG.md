@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-13
+
 ### Added
 
 - `ConfigValues.warmUp(params)` — new suspend function that resolves the given params in parallel
@@ -52,14 +54,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   receives all internal diagnostic errors (provider failures, override write errors, reset/undo
   failures). The default behavior (print to stdout with full stack trace) is preserved; pass `{}`
   to silence. Mirrors the `ConfigValues.onProviderError` contract. (#273)
-
-### Fixed
-
-- Gradle plugin: `toCamelCase` conversion now fully lowercases each word before capitalising
-  the first letter, so ALL_CAPS flag keys produce correct camelCase names.
-  `DARK_MODE` → `darkMode` (was `darkMODE`), `NEW_CHECKOUT_FLOW` → `newCheckoutFlow`
-  (was `newCHECKOUTFLOW`). **Generated function/property names change for any multi-word
-  ALL_CAPS flag key** (e.g. `isDarkMODEEnabled` → `isDarkModeEnabled`). (#248)
+- `FirebaseConfigValueProvider` now implements `InitializableConfigValueProvider`: `initialize()`
+  calls `FirebaseRemoteConfig.ensureInitialized()` to warm the on-disk cache (activated, fetched,
+  and defaults) into memory without a network fetch. As a result `ConfigValues.initialize()` makes
+  previously persisted Remote Config values readable via `get()` immediately at app start, before
+  the first `fetch()`. It does not activate fetched-but-unactivated config. (#163)
 
 ### Changed
 
@@ -91,6 +90,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (#278)
 - Dependency updates raised `androidx.core` to 1.19.0, which requires Android consumers to build
   with `compileSdk 37` or higher; the library itself now compiles with `compileSdk 37`. (#282)
+- The firebase provider's `FetchException` is renamed to `FirebaseConfigException`. Since the type
+  now wraps failures from both `fetch()` and `initialize()` — not only fetches — the
+  operation-neutral name reflects its actual scope. **Breaking:** update any `catch`/references to
+  use the new name. (#289)
 
 ### Removed
 
@@ -98,6 +101,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   plugin no longer accesses `rootProject` and is now compatible with Gradle Project Isolation.
   Use `./gradlew resolveFeatureFlags` (Gradle name-matched task invocation) to resolve flags
   across all modules that apply the plugin. (#186)
+
+### Fixed
+
+- Gradle plugin: `toCamelCase` conversion now fully lowercases each word before capitalising
+  the first letter, so ALL_CAPS flag keys produce correct camelCase names.
+  `DARK_MODE` → `darkMode` (was `darkMODE`), `NEW_CHECKOUT_FLOW` → `newCheckoutFlow`
+  (was `newCHECKOUTFLOW`). **Generated function/property names change for any multi-word
+  ALL_CAPS flag key** (e.g. `isDarkMODEEnabled` → `isDarkModeEnabled`). (#248)
 
 ## [1.1.1] - 2026-06-04
 
@@ -244,7 +255,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - License mismatch: use MIT in all POM declarations (#174)
 - Stale artifact IDs in quick-start docs (#179)
 
-[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/androidbroadcast/Featured/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/androidbroadcast/Featured/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/androidbroadcast/Featured/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/androidbroadcast/Featured/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/androidbroadcast/Featured/compare/v1.0.0-Beta1...v1.0.0
