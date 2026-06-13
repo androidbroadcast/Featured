@@ -28,8 +28,11 @@ import kotlin.test.assertTrue
  * strictly stronger than reading a source-set directory list, which could list a directory that is
  * never actually compiled.
  *
- * The generated directory is `build/generated/featured/commonMain` for every plugin shape
- * (see [GenerateConfigParamTask] / GenerateFeaturedRegistryTask output convention).
+ * The generated directory depends on the plugin: `build/generated/featured/commonMain` for
+ * `generateConfigParam` (per-module, see [GenerateConfigParamTask]) and
+ * `build/generated/featured/registry` for `generateFeaturedRegistry` (the aggregator, see
+ * GenerateFeaturedRegistryTask) — distinct directories so the two outputs never overlap when a
+ * module applies both plugins.
  *
  * AGP-based cases skip when `ANDROID_HOME` / `ANDROID_SDK_ROOT` is unset, matching the rest of the
  * integration suite.
@@ -46,7 +49,7 @@ class GeneratedSourceWiringTest {
 
         val result =
             gradleRunner(projectDir)
-                .withArguments("compileKotlin", "--stacktrace")
+                .withArguments("compileKotlin", "--stacktrace", "--no-build-cache")
                 .build()
 
         assertGeneratedSourceTaskRan(result, ":$GENERATE_CONFIG_PARAM_TASK_NAME")
@@ -61,7 +64,7 @@ class GeneratedSourceWiringTest {
 
         val result =
             gradleRunner(projectDir)
-                .withArguments("compileKotlinJvm", "--stacktrace")
+                .withArguments("compileKotlinJvm", "--stacktrace", "--no-build-cache")
                 .build()
 
         assertGeneratedSourceTaskRan(result, ":$GENERATE_CONFIG_PARAM_TASK_NAME")
@@ -77,7 +80,7 @@ class GeneratedSourceWiringTest {
 
         val result =
             gradleRunner(projectDir)
-                .withArguments("compileDebugKotlin", "--stacktrace")
+                .withArguments("compileDebugKotlin", "--stacktrace", "--no-build-cache")
                 .build()
 
         assertGeneratedSourceTaskRan(result, ":$GENERATE_CONFIG_PARAM_TASK_NAME")
@@ -93,7 +96,7 @@ class GeneratedSourceWiringTest {
 
         val result =
             gradleRunner(projectDir)
-                .withArguments("compileDebugKotlin", "--stacktrace")
+                .withArguments("compileDebugKotlin", "--stacktrace", "--no-build-cache")
                 .build()
 
         assertGeneratedSourceTaskRan(result, ":$GENERATE_CONFIG_PARAM_TASK_NAME")
@@ -109,7 +112,7 @@ class GeneratedSourceWiringTest {
 
         val result =
             gradleRunner(projectDir)
-                .withArguments(":app:compileDebugKotlin", "--stacktrace")
+                .withArguments(":app:compileDebugKotlin", "--stacktrace", "--no-build-cache")
                 .build()
 
         // The aggregator plugin must auto-wire generateFeaturedRegistry; compiling the app must

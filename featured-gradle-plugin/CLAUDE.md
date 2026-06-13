@@ -56,8 +56,11 @@ The plugin holds no `rootProject` access and is compatible with Gradle Project I
 ## Auto-wiring generated sources
 
 `generateConfigParam` (this plugin) and `generateFeaturedRegistry` (the
-`dev.androidbroadcast.featured.application` aggregator) auto-wire their `build/generated/featured/commonMain`
-output into the consumer module's compilation — consumers write **zero** manual `srcDir` / `dependsOn`.
+`dev.androidbroadcast.featured.application` aggregator) auto-wire their generated output into the
+consumer module's compilation — consumers write **zero** manual `srcDir` / `dependsOn`. They write to
+**distinct** directories so the two outputs never overlap when a module applies both plugins:
+`generateConfigParam` → `build/generated/featured/commonMain`, `generateFeaturedRegistry` →
+`build/generated/featured/registry`.
 The plugin reacts to the applied Kotlin/Android plugin and picks the right source set
 (`GeneratedSourceWiring.kt`):
 

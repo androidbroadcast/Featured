@@ -3,6 +3,7 @@ package dev.androidbroadcast.featured.gradle
 import com.android.build.api.dsl.CommonExtension
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.file.Directory
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
@@ -16,11 +17,11 @@ import java.io.File
  * `com.android.application` / `com.android.library` + `org.jetbrains.kotlin.multiplatform` a hard
  * error, and Android Kotlin uses `org.jetbrains.kotlin.android`, never `.jvm`).
  *
- * KMP / Kotlin-JVM receive the producer task's native @OutputDirectory provider
- * (`generateConfigParam.outputDir`, a `Provider<Directory>` obtained via `flatMap`). Passing it to
- * `SourceDirectorySet.srcDir(Provider)` records the producer as the directory's builder, so Gradle
- * auto-infers the task dependency for EVERY consumer (compile*, sourcesJar, metadata, lint, …) with
- * no name-matched `dependsOn`. AGP cannot take a provider (its source set rejects one at
+ * KMP / Kotlin-JVM receive the producer task's native @OutputDirectory provider — a
+ * `Provider<Directory>` obtained via `task.flatMap { it.outputDir }`. Passing it to
+ * `SourceDirectorySet.srcDir(Provider)` records the producer task as the directory's builder, so
+ * Gradle auto-infers the task dependency for EVERY consumer (compile*, sourcesJar, metadata, lint, …)
+ * with no name-matched `dependsOn`. AGP cannot take a provider (its source set rejects one at
  * configuration time), so it gets a resolved [File] plus the explicit [dependOnProducer] ordering.
  */
 
@@ -32,57 +33,45 @@ import java.io.File
  * co-requires `org.jetbrains.kotlin.multiplatform` (`commonMain` exists), so this branch covers it
  * too.
  *
- * Two wiring shapes share this helper:
- * - **Task-carrying provider (per-module `FeaturedPlugin`, [producer] omitted).** [generatedDir] is
- *   the producer task's @OutputDirectory provider (`generateConfigParam.outputDir`, obtained via
- *   `flatMap`). `srcDir(Provider)` records the producer as the directory's builder, so Gradle
- *   auto-infers the task dependency for every consumer — no explicit `dependsOn` needed.
- * - **Pure layout provider (aggregator, [producer] passed).** The registry task is @OutputFile-based;
- *   a derived `.map { it.parentFile }` provider eager-errors inside
- *   `com.android.kotlin.multiplatform.library`. The aggregator therefore passes a plain layout
- *   provider (no task attached) for [generatedDir] and supplies [producer] so ordering is carried by
- *   an explicit `dependsOn` via [dependOnProducer].
+ * [generatedDir] is the producer task's @OutputDirectory provider (`task.flatMap { it.outputDir }`).
+ * `srcDir(Provider)` records the producer task as the directory's builder, so Gradle auto-infers the
+ * task dependency for every consumer — no explicit `dependsOn` needed.
  */
 internal fun wireGeneratedSourcesToKmp(
     project: Project,
-    generatedDir: Provider<out Any>,
-    producer: TaskProvider<*>? = null,
+    generatedDir: Provider<out Directory>,
 ) {
     val kotlin = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
     kotlin.sourceSets
         .getByName("commonMain")
         .kotlin
         .srcDir(generatedDir)
-    if (producer != null) dependOnProducer(project, producer)
 }
 
 /**
  * Wires [generatedDir] into the Kotlin/JVM `main` source set.
  *
  * As with [wireGeneratedSourcesToKmp], `KotlinSourceSet.kotlin` is Gradle's
- * [org.gradle.api.file.SourceDirectorySet]. When [generatedDir] is the producer task's
- * @OutputDirectory provider (per-module `FeaturedPlugin`, [producer] omitted) the task dependency is
- * auto-inferred for every consumer. When [generatedDir] is a pure layout provider (aggregator,
- * because the registry task is @OutputFile-based and a derived provider eager-errors), [producer] is
- * passed so ordering is carried by an explicit `dependsOn` via [dependOnProducer].
+ * [org.gradle.api.file.SourceDirectorySet]. [generatedDir] is the producer task's @OutputDirectory
+ * provider (`task.flatMap { it.outputDir }`); `srcDir(Provider)` records the producer task as the
+ * directory's builder, so Gradle auto-infers the task dependency for every consumer — no explicit
+ * `dependsOn` needed.
  */
 internal fun wireGeneratedSourcesToKotlinJvm(
     project: Project,
-    generatedDir: Provider<out Any>,
-    producer: TaskProvider<*>? = null,
+    generatedDir: Provider<out Directory>,
 ) {
     val kotlin = project.extensions.getByType(KotlinJvmProjectExtension::class.java)
     kotlin.sourceSets
         .getByName("main")
         .kotlin
         .srcDir(generatedDir)
-    if (producer != null) dependOnProducer(project, producer)
 }
 
 /**
  * Adds an explicit `dependsOn([producer])` to every Kotlin-compile, `ksp*`, and AGP
  * annotation-extraction (`extract*Annotations`) task so the generated sources are produced before
- * any task that consumes the generated source dir. Used by the AGP branch only — its
+ * any task that consumes the generated source dir. This is AGP-only — its
  * `AndroidSourceDirectorySet` takes a resolved [File] that carries no task dependency. The KMP and
  * Kotlin/JVM branches do not call this: their `srcDir(Provider)` auto-infers the dependency.
  * AGP's `extractDebugAnnotations` / `extractReleaseAnnotations` read the generated source directory
@@ -123,8 +112,9 @@ private fun dependOnProducer(
  * reusing one global [producer] task across `debug` + `release` would share a single dir and bypass
  * AGP path generation.
  *
- * No-ops on an Android module with no Kotlin source set (a pure-Java AGP module never references the
- * generated objects).
+ * Warns and no-ops on an Android module with no Kotlin `main` source set — typically
+ * `com.android.library` applied without `org.jetbrains.kotlin.android`, so the generated objects
+ * would never compile anyway.
  */
 internal fun wireGeneratedSourcesToAndroid(
     project: Project,
@@ -132,7 +122,15 @@ internal fun wireGeneratedSourcesToAndroid(
     producer: TaskProvider<*>,
 ) {
     val android = project.extensions.getByType(CommonExtension::class.java)
-    val mainSourceSet = android.sourceSets.findByName("main") ?: return
+    val mainSourceSet =
+        android.sourceSets.findByName("main") ?: run {
+            project.logger.warn(
+                "Featured: ${project.path} has no Android 'main' Kotlin source set — generated " +
+                    "sources will NOT be wired into compilation. Apply the Kotlin Android plugin " +
+                    "(org.jetbrains.kotlin.android) to this module.",
+            )
+            return
+        }
     // Resolved absolute path, not a Provider — the Android source set rejects providers at
     // configuration time. directories is a MutableSet<String> (srcDir(Any) is @Deprecated).
     mainSourceSet.kotlin.directories.add(generatedDirFile.absolutePath)
