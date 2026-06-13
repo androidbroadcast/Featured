@@ -92,6 +92,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependency updates raised `androidx.core` to 1.19.0, which requires Android consumers to build
   with `compileSdk 37` or higher; the library itself now compiles with `compileSdk 37`. (#282)
 
+### Removed
+
+- Gradle plugin: the `scanAllLocalFlags` root-project aggregation task has been removed. The
+  plugin no longer accesses `rootProject` and is now compatible with Gradle Project Isolation.
+  Use `./gradlew resolveFeatureFlags` (Gradle name-matched task invocation) to resolve flags
+  across all modules that apply the plugin. (#186)
+
 ## [1.1.1] - 2026-06-04
 
 ### Fixed
