@@ -7,12 +7,12 @@ import dev.androidbroadcast.featured.gradle.manifest.ValueType
 import kotlinx.serialization.decodeFromString
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
@@ -62,11 +62,19 @@ internal abstract class GenerateFeaturedRegistryTask : DefaultTask() {
     abstract val outputPackage: Property<String>
 
     /**
-     * Destination for the generated `GeneratedFeaturedRegistry.kt` source file.
-     * Convention: `build/generated/featured/commonMain/GeneratedFeaturedRegistry.kt`.
+     * Output directory receiving the generated `GeneratedFeaturedRegistry.kt` source file.
+     * Convention (set by [FeaturedApplicationPlugin]): `build/generated/featured/registry/`.
+     *
+     * A dedicated `registry/` directory — not the per-module `commonMain/` dir used by
+     * `generateConfigParam` — avoids an overlapping-output conflict when a module applies both
+     * `dev.androidbroadcast.featured` and `dev.androidbroadcast.featured.application`.
+     *
+     * This is a [DirectoryProperty] (not a single-file output) so [FeaturedApplicationPlugin] can
+     * pass the task-carrying provider straight to `srcDir(Provider)`; Gradle then auto-infers the
+     * task dependency for every KMP/Kotlin-JVM consumer (compile*, sourcesJar, metadata, …).
      */
-    @get:OutputFile
-    abstract val outputFile: RegularFileProperty
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
 
     @TaskAction
     fun generate() {
@@ -97,7 +105,7 @@ internal abstract class GenerateFeaturedRegistryTask : DefaultTask() {
                 packageName = pkg,
             )
 
-        val outFile = outputFile.get().asFile
+        val outFile = outputDir.get().asFile.resolve("$FEATURED_REGISTRY_OBJECT.kt")
         outFile.parentFile.mkdirs()
         outFile.writeText(source)
 

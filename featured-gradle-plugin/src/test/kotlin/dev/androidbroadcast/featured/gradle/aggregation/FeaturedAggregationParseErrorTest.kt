@@ -23,7 +23,7 @@ class FeaturedAggregationParseErrorTest {
                 File(tempDir, "featured-manifest.json").also {
                     it.writeText("""{ "broken": json""")
                 }
-            val outputFile = File(tempDir, "GeneratedFeaturedRegistry.kt")
+            val outputDir = File(tempDir, "registry")
 
             val project = ProjectBuilder.builder().build()
             project.plugins.apply("dev.androidbroadcast.featured.application")
@@ -31,7 +31,7 @@ class FeaturedAggregationParseErrorTest {
             val task = project.tasks.findByName(GENERATE_FEATURED_REGISTRY_TASK_NAME) as GenerateFeaturedRegistryTask
             task.manifestFiles.from(badManifest)
             task.outputPackage.set(FEATURED_REGISTRY_PACKAGE)
-            task.outputFile.set(outputFile)
+            task.outputDir.set(outputDir)
 
             val ex = assertFailsWith<IllegalStateException> { task.generate() }
             assertContains(

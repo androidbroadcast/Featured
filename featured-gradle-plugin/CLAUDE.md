@@ -53,6 +53,23 @@ To resolve flags across all modules at once, use Gradle's name-matched task invo
 `./gradlew resolveFeatureFlags` — Gradle runs the task in every module that applies the plugin.
 The plugin holds no `rootProject` access and is compatible with Gradle Project Isolation.
 
+## Auto-wiring generated sources
+
+`generateConfigParam` (this plugin) and `generateFeaturedRegistry` (the
+`dev.androidbroadcast.featured.application` aggregator) auto-wire their `build/generated/featured/commonMain`
+output into the consumer module's compilation — consumers write **zero** manual `srcDir` / `dependsOn`.
+The plugin reacts to the applied Kotlin/Android plugin and picks the right source set
+(`GeneratedSourceWiring.kt`):
+
+- KMP `org.jetbrains.kotlin.multiplatform` → `commonMain` via `srcDir(Provider)`; Gradle auto-infers the
+  task dependency. Covers `com.android.kotlin.multiplatform.library` (it co-requires the KMP plugin).
+- Kotlin/JVM `org.jetbrains.kotlin.jvm` → `main` via `srcDir(Provider)`.
+- Plain AGP `com.android.application` / `com.android.library` → `sourceSets["main"].kotlin.directories.add(<resolved File path>)`
+  plus an explicit `dependsOn` on every `compile*Kotlin` / `ksp*` task. AGP's `AndroidSourceDirectorySet`
+  rejects a `Provider` at configuration time, so a resolved path is used and ordering is wired by hand.
+
+The three branches are mutually exclusive in AGP 9, so exactly one fires per module.
+
 ## Tests
 
 Tests use Gradle TestKit.

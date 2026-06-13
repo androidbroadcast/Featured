@@ -2,7 +2,6 @@ package dev.androidbroadcast.featured.gradle
 
 import dev.androidbroadcast.featured.gradle.aggregation.FEATURED_AGGREGATION_CLASSPATH_CONFIGURATION_NAME
 import dev.androidbroadcast.featured.gradle.aggregation.FEATURED_AGGREGATION_CONFIGURATION_NAME
-import dev.androidbroadcast.featured.gradle.aggregation.FEATURED_REGISTRY_OBJECT
 import dev.androidbroadcast.featured.gradle.aggregation.FEATURED_REGISTRY_PACKAGE
 import dev.androidbroadcast.featured.gradle.aggregation.GENERATE_FEATURED_REGISTRY_TASK_NAME
 import dev.androidbroadcast.featured.gradle.aggregation.GenerateFeaturedRegistryTask
@@ -35,14 +34,11 @@ import org.gradle.api.attributes.Usage
  * ```
  *
  * The generated file is written to
- * `build/generated/featured/commonMain/GeneratedFeaturedRegistry.kt`.
- * Wire the output directory into your source set manually — the plugin does not auto-wire
- * to avoid assumptions about whether the consuming module is KMP, AGP, or plain JVM:
- * ```kotlin
- * kotlin.sourceSets.getByName("commonMain").kotlin.srcDir(
- *     tasks.named("generateFeaturedRegistry").map { it.outputs.files.singleFile.parentFile }
- * )
- * ```
+ * `build/generated/featured/registry/GeneratedFeaturedRegistry.kt` (a dedicated directory, distinct
+ * from the per-module `generated/featured/commonMain` used by `generateConfigParam`, so the two
+ * tasks never overlap when a module applies both plugins). The plugin auto-wires that directory into
+ * the consuming module's compilation (KMP `commonMain`, Kotlin/JVM `main`, or the AGP `main` Kotlin
+ * source set) — no manual `srcDir` / `dependsOn` is required.
  *
  * **Enum flag classpath requirement.** A `featuredAggregation(project(":feature:foo"))` dependency
  * resolves only the `featured-manifest` Gradle variant — it does NOT put the producer's enum types
@@ -97,23 +93,52 @@ internal class FeaturedApplicationPlugin : Plugin<Project> {
                 }
             }
 
-        target.tasks.register(
-            GENERATE_FEATURED_REGISTRY_TASK_NAME,
-            GenerateFeaturedRegistryTask::class.java,
-        ) { task ->
-            task.group = "featured"
-            task.description =
-                "Aggregates featured-manifest.json artifacts and generates GeneratedFeaturedRegistry.kt."
-            // Lazy artifact view — resolved at execution time, CC-compatible.
-            task.manifestFiles.from(
-                classpath.map { it.incoming.artifactView { view -> view.isLenient = false }.files },
-            )
-            task.outputPackage.set(FEATURED_REGISTRY_PACKAGE)
-            task.outputFile.convention(
-                target.layout.buildDirectory.file(
-                    "generated/featured/commonMain/${FEATURED_REGISTRY_OBJECT}.kt",
-                ),
-            )
+        val registryTask =
+            target.tasks.register(
+                GENERATE_FEATURED_REGISTRY_TASK_NAME,
+                GenerateFeaturedRegistryTask::class.java,
+            ) { task ->
+                task.group = "featured"
+                task.description =
+                    "Aggregates featured-manifest.json artifacts and generates GeneratedFeaturedRegistry.kt."
+                // Lazy artifact view — resolved at execution time, CC-compatible.
+                task.manifestFiles.from(
+                    classpath.map { it.incoming.artifactView { view -> view.isLenient = false }.files },
+                )
+                task.outputPackage.set(FEATURED_REGISTRY_PACKAGE)
+                // Own dedicated directory — NOT the per-module `generated/featured/commonMain` that
+                // `generateConfigParam` uses. A module that applies both `dev.androidbroadcast.featured`
+                // and this aggregator would otherwise have two tasks declaring the same @OutputDirectory,
+                // which Gradle rejects as overlapping outputs.
+                task.outputDir.convention(
+                    target.layout.buildDirectory.dir("generated/featured/registry"),
+                )
+            }
+
+        // Auto-wire the generated registry source into compilation. KMP / Kotlin-JVM receive the
+        // task-carrying @OutputDirectory provider `registryTask.flatMap { it.outputDir }`; passing it
+        // to `srcDir(Provider)` records the registry task as the dir's builder, so Gradle auto-infers
+        // the dependency for EVERY consumer (compileAndroidMain, compileKotlinJvm, sourcesJar,
+        // metadata, …) with no name-matched dependsOn. AGP cannot take a provider (its source set
+        // rejects one at configuration time), so it gets a resolved File from the pure layout path
+        // plus the explicit [registryTask] ordering. Only the matching branch fires.
+        val registryDir = registryTask.flatMap { it.outputDir }
+        val registryDirFile =
+            target.layout.buildDirectory
+                .dir("generated/featured/registry")
+                .get()
+                .asFile
+        target.plugins.withId("org.jetbrains.kotlin.multiplatform") {
+            wireGeneratedSourcesToKmp(target, registryDir)
+        }
+        target.plugins.withId("org.jetbrains.kotlin.jvm") {
+            wireGeneratedSourcesToKotlinJvm(target, registryDir)
+        }
+        target.plugins.withId("com.android.application") {
+            wireGeneratedSourcesToAndroid(target, registryDirFile, registryTask)
+        }
+        target.plugins.withId("com.android.library") {
+            wireGeneratedSourcesToAndroid(target, registryDirFile, registryTask)
         }
     }
 }
