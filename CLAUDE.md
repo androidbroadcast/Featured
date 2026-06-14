@@ -81,13 +81,7 @@ Two plugins, two roles:
 
 **Enum-flag classpath gotcha.** `featuredAggregation(project(":foo"))` only pulls the manifest variant — not `:foo`'s compile classpath. If `:foo` declares an `enum` flag whose enum type lives in `:foo`, the aggregator module must also declare `implementation(project(":foo"))` so the enum class is visible at compile time. Primitive-only modules need no extra dependency.
 
-**Auto-wiring policy.** The aggregator does **not** auto-wire its output into a source set — the consumer module wires it manually because the plugin can't safely assume KMP vs. AGP vs. plain JVM:
-
-```kotlin
-kotlin.sourceSets.getByName("commonMain").kotlin.srcDir(
-    tasks.named("generateFeaturedRegistry").map { it.outputs.files.singleFile.parentFile }
-)
-```
+**Auto-wiring policy.** Both `generateConfigParam` (from `dev.androidbroadcast.featured`) and `generateFeaturedRegistry` (from the aggregator plugin) auto-wire their generated output directory into the consumer module's compilation — consumers need **zero** manual `srcDir` / `dependsOn`. They write to **distinct** directories so the two outputs never overlap when a module applies both plugins: `generateConfigParam` → `build/generated/featured/commonMain`, `generateFeaturedRegistry` → `build/generated/featured/registry`. The plugin detects the applied Kotlin/Android plugin and wires the right source set: KMP `commonMain` and Kotlin/JVM `main` via a `srcDir(Provider)` (Gradle auto-infers the task dependency); plain AGP via `sourceSets["main"].kotlin.directories.add(<resolved path>)` plus an explicit `dependsOn` on every `compile*Kotlin` / `ksp*` task (the AGP source set rejects `Provider`s at configuration time). The three branches are mutually exclusive in AGP 9, so exactly one fires per module.
 
 ## Multi-Module Pattern (canonical, demonstrated in `:sample`)
 

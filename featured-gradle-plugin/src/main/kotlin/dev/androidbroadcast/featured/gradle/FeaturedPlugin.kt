@@ -45,7 +45,7 @@ public class FeaturedPlugin : Plugin<Project> {
         val resolveTask = registerResolveFlagsTask(target, extension)
 
         val verifyTask = registerVerifyExpiredFlagsTask(target, extension, resolveTask)
-        registerConfigParamTask(target, extension, resolveTask, verifyTask)
+        val configParamTask = registerConfigParamTask(target, extension, resolveTask, verifyTask)
         val proguardTask = registerProguardTask(target, extension, resolveTask, verifyTask)
         registerIosConstValTask(target, extension, resolveTask, verifyTask)
         registerXcconfigTask(target, resolveTask, verifyTask)
@@ -59,6 +59,36 @@ public class FeaturedPlugin : Plugin<Project> {
         }
         target.plugins.withId("com.android.kotlin.multiplatform.library") {
             wireProguardToKmpLibraryVariants(target, proguardTask)
+        }
+
+        // Auto-wire the generated ConfigParam sources into compilation so consumer modules need
+        // zero manual srcDir / dependsOn boilerplate. Only the matching branch fires (the three
+        // plugin sets are mutually exclusive).
+        //
+        // KMP / Kotlin-JVM receive the TASK-CARRYING directory provider
+        // `configParamTask.flatMap { it.outputDir }` (the task's native @OutputDirectory
+        // DirectoryProperty). srcDir(Provider) records generateConfigParam as the dir's builder, so
+        // Gradle auto-infers the dependency for EVERY consumer — compileAndroidMain,
+        // compileKotlinJvm, jvmSourcesJar, sourcesJar, metadata, lint — without a name-matched
+        // dependsOn. AGP additionally needs a resolved File because its source set rejects providers
+        // at configuration time, so it keeps the explicit dependsOn path.
+        val generatedSrcDir = configParamTask.flatMap { it.outputDir }
+        val generatedDirFile =
+            target.layout.buildDirectory
+                .dir("generated/featured/commonMain")
+                .get()
+                .asFile
+        target.plugins.withId("org.jetbrains.kotlin.multiplatform") {
+            wireGeneratedSourcesToKmp(target, generatedSrcDir)
+        }
+        target.plugins.withId("org.jetbrains.kotlin.jvm") {
+            wireGeneratedSourcesToKotlinJvm(target, generatedSrcDir)
+        }
+        target.plugins.withId("com.android.application") {
+            wireGeneratedSourcesToAndroid(target, generatedDirFile, configParamTask)
+        }
+        target.plugins.withId("com.android.library") {
+            wireGeneratedSourcesToAndroid(target, generatedDirFile, configParamTask)
         }
     }
 
@@ -96,7 +126,7 @@ public class FeaturedPlugin : Plugin<Project> {
         extension: FeaturedExtension,
         resolveTask: TaskProvider<ResolveFlagsTask>,
         verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
-    ) {
+    ): TaskProvider<GenerateConfigParamTask> =
         target.tasks.register(GENERATE_CONFIG_PARAM_TASK_NAME, GenerateConfigParamTask::class.java) { task ->
             task.group = "featured"
             task.description =
@@ -116,7 +146,6 @@ public class FeaturedPlugin : Plugin<Project> {
             task.dependsOn(resolveTask)
             task.dependsOn(verifyTask)
         }
-    }
 
     private fun registerProguardTask(
         target: Project,

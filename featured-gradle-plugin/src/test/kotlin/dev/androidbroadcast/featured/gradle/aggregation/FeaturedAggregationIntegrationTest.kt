@@ -64,7 +64,7 @@ class FeaturedAggregationIntegrationTest {
 
         val generatedFile =
             projectDir.resolve(
-                "app/build/generated/featured/commonMain/${FEATURED_REGISTRY_OBJECT}.kt",
+                "app/build/generated/featured/registry/${FEATURED_REGISTRY_OBJECT}.kt",
             )
         assertTrue(generatedFile.exists(), "Expected generated file at ${generatedFile.path}")
     }
@@ -77,7 +77,7 @@ class FeaturedAggregationIntegrationTest {
 
         val source =
             projectDir
-                .resolve("app/build/generated/featured/commonMain/${FEATURED_REGISTRY_OBJECT}.kt")
+                .resolve("app/build/generated/featured/registry/${FEATURED_REGISTRY_OBJECT}.kt")
                 .readText()
 
         assertTrue(source.contains("object $FEATURED_REGISTRY_OBJECT"), "Missing object declaration")

@@ -107,6 +107,10 @@ tasks.pluginUnderTestMetadata {
 
 dependencies {
     compileOnly("com.android.tools.build:gradle:9.1.0")
+    // Kotlin Gradle plugin DSL (KotlinMultiplatformExtension / KotlinJvmProjectExtension), needed
+    // at compile time to auto-wire generated sources. compileOnly — the consuming build supplies
+    // it at runtime when it applies the Kotlin plugin, same pattern as AGP above.
+    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlin.get()}")
     implementation(libs.kotlinx.serialization.json)
     // Inject AGP into the TestKit subprocess via pluginUnderTestMetadata so that the Featured
     // plugin can access AndroidComponentsExtension when wireProguardToVariants() is called.
