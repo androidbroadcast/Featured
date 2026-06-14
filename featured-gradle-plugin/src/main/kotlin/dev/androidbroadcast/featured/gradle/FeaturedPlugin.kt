@@ -14,6 +14,7 @@ import org.gradle.api.tasks.TaskProvider
 internal const val RESOLVE_FLAGS_TASK_NAME = "resolveFeatureFlags"
 internal const val VERIFY_EXPIRED_FLAGS_TASK_NAME = "verifyExpiredFlags"
 internal const val GENERATE_PROGUARD_TASK_NAME = "generateFeaturedProguardRules"
+internal const val GENERATE_CHECK_DISCARD_TASK_NAME = "generateFeaturedCheckDiscardRules"
 internal const val GENERATE_IOS_CONST_VAL_TASK_NAME = "generateIosConstVal"
 internal const val GENERATE_XCCONFIG_TASK_NAME = "generateXcconfig"
 internal const val GENERATE_CONFIG_PARAM_TASK_NAME = "generateConfigParam"
@@ -47,18 +48,19 @@ public class FeaturedPlugin : Plugin<Project> {
         val verifyTask = registerVerifyExpiredFlagsTask(target, extension, resolveTask)
         registerConfigParamTask(target, extension, resolveTask, verifyTask)
         val proguardTask = registerProguardTask(target, extension, resolveTask, verifyTask)
+        val checkDiscardTask = registerCheckDiscardTask(target, extension, resolveTask, verifyTask)
         registerIosConstValTask(target, extension, resolveTask, verifyTask)
         registerXcconfigTask(target, resolveTask, verifyTask)
         val manifestTask = registerManifestTask(target, resolveTask)
         registerFeaturedManifestConfiguration(target, manifestTask)
         target.plugins.withId("com.android.application") {
-            wireProguardToApplicationVariants(target, proguardTask)
+            wireProguardToApplicationVariants(target, proguardTask, checkDiscardTask)
         }
         target.plugins.withId("com.android.library") {
-            wireProguardToLibraryVariants(target, proguardTask)
+            wireProguardToLibraryVariants(target, proguardTask, checkDiscardTask)
         }
         target.plugins.withId("com.android.kotlin.multiplatform.library") {
-            wireProguardToKmpLibraryVariants(target, proguardTask)
+            wireProguardToKmpLibraryVariants(target, proguardTask, checkDiscardTask)
         }
     }
 
@@ -132,6 +134,30 @@ public class FeaturedPlugin : Plugin<Project> {
             // Rules target the local extensions file, so the local section's package applies.
             task.packageName.set(target.provider { extension.localPackageName() })
             task.outputFile.set(target.layout.buildDirectory.file("featured/proguard-featured.pro"))
+            task.dependsOn(resolveTask)
+            task.dependsOn(verifyTask)
+        }
+
+    private fun registerCheckDiscardTask(
+        target: Project,
+        extension: FeaturedExtension,
+        resolveTask: TaskProvider<ResolveFlagsTask>,
+        verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
+    ): TaskProvider<GenerateCheckDiscardRulesTask> =
+        target.tasks.register(GENERATE_CHECK_DISCARD_TASK_NAME, GenerateCheckDiscardRulesTask::class.java) { task ->
+            task.group = "featured"
+            task.description = "Generates R8 -checkdiscard rules for local flag discard(...) targets in '${target.path}'."
+            // Read straight from the DSL (not the resolved-flags report) so discard targets and
+            // the remote-flag guard participate in the @Input fingerprint and invalidate caching.
+            task.discardDescriptors.set(target.provider { extension.localFlags.discardDescriptors() })
+            task.remoteFlagsWithDiscards.set(
+                target.provider {
+                    extension.remoteFlags.flags
+                        .filter { it.discards.isNotEmpty() }
+                        .map { it.key }
+                },
+            )
+            task.outputFile.set(target.layout.buildDirectory.file("featured/proguard-featured-checkdiscard.pro"))
             task.dependsOn(resolveTask)
             task.dependsOn(verifyTask)
         }

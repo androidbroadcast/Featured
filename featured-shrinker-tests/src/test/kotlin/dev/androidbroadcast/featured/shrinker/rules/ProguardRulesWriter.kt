@@ -92,6 +92,37 @@ internal fun writeNoBooleanAssumeRules(dest: File) {
 }
 
 /**
+ * Combines a Boolean `-assumevalues` rule with a `-checkdiscard` assertion on the
+ * if-branch class, mirroring what `ProguardRulesGenerator` + `CheckDiscardRulesGenerator`
+ * emit together for a `boolean(..., default = false) { discard(...) }` flag.
+ *
+ * - [assume] `= false` pins `isDarkModeEnabled` to `false`, so the if-branch (`IfBranchCode`)
+ *   becomes dead and is eliminated; the `-checkdiscard` on it then **passes** and R8 succeeds.
+ * - [assume] `= true` keeps the if-branch reachable, so `IfBranchCode` survives and the
+ *   `-checkdiscard` on it **fails**, making R8 abort with `Discard checks failed`.
+ *
+ * The surviving branch's `sideEffect` field is pinned so R8 cannot eliminate it as a no-op,
+ * keeping the scenario deterministic.
+ */
+internal fun writeBooleanRulesWithCheckDiscard(
+    dest: File,
+    assume: Boolean,
+) {
+    val survivingClass = if (assume) IF_BRANCH_CODE_FQN else ELSE_BRANCH_CODE_FQN
+    dest.writeText(
+        """
+        -assumevalues class $BOOL_EXTENSIONS_FQN {
+            boolean $IS_DARK_MODE_ENABLED($CONFIG_VALUES_FQN) return $assume;
+        }
+        -keep class $BIFURCATED_CALLER_FQN { *; }
+        -keepclassmembers class $survivingClass { public static int sideEffect; }
+        -checkdiscard class $IF_BRANCH_CODE_FQN { *; }
+        -dontwarn **
+        """.trimIndent(),
+    )
+}
+
+/**
  * Approximates `ProguardRulesGenerator` output for an Int flag `"max_retries"` in
  * module `":int-test"` with the given [returnValue].
  */
