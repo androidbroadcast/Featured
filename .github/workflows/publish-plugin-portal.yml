@@ -29,7 +29,7 @@ jobs:
     environment: Main
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # On tag push: check out the triggering tag.
           # On workflow_dispatch: check out the explicit ref input so develop-HEAD
