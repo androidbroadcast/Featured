@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Gradle plugin: `dev.androidbroadcast.featured` and `dev.androidbroadcast.featured.application`
+  add generated Kotlin to compilation automatically (KMP `commonMain`, Kotlin/JVM `main`, or the
+  AGP `main` source set). Manual `srcDir` / `dependsOn` wiring is no longer required.
+  `generateFeaturedRegistry` writes to `build/generated/featured/registry`, separate from
+  `generateConfigParam`'s `build/generated/featured/commonMain`. (#249)
+
 ## [1.2.0] - 2026-06-13
 
 ### Added

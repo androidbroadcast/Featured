@@ -108,21 +108,7 @@ For code navigation, follow `.claude/rules/ast-index.md`: use `ast-index` before
 - Construct a `ConfigValues` per feature and share provider instances across them. Give a cross-feature debug surface its own container over the same providers and `GeneratedFeaturedRegistry.all`.
 - Apply `dev.androidbroadcast.featured` to flag-producing modules; apply `dev.androidbroadcast.featured.application` to the aggregator. Add producers through `featuredAggregation(project(...))`.
 - Keep aggregation declarative through manifest artifacts and schema attributes. Do not inspect or mutate other projects from plugin configuration.
-- Wire generated sources explicitly using task-output providers. The plugins do not automatically add generated Kotlin directories to consumer source sets. For KMP flag producers, follow this pattern:
-
-```kotlin
-kotlin.sourceSets.commonMain.get().kotlin.srcDir(
-    tasks.named("generateConfigParam").map { it.outputs.files.singleFile },
-)
-```
-
-Wire the aggregator's generated file through its parent directory:
-
-```kotlin
-kotlin.sourceSets.commonMain.get().kotlin.srcDir(
-    tasks.named("generateFeaturedRegistry").map { it.outputs.files.singleFile.parentFile },
-)
-```
+- The producer and aggregator plugins add generated Kotlin to compilation themselves (KMP `commonMain`, Kotlin/JVM `main`, or the AGP `main` source set). Do not add a manual `srcDir` for `generateConfigParam` or `generateFeaturedRegistry`. The registry is written to `build/generated/featured/registry`, separate from `generateConfigParam`'s `build/generated/featured/commonMain`.
 
 - Add a normal `implementation`/`api` dependency as well as `featuredAggregation` when a manifest references an enum defined in the producer. The manifest dependency does not expose that enum on the compile classpath.
 - Keep plugin task state provider-backed and serializable. Snapshot project metadata during configuration; avoid execution-time `Project` access. Keep DSL descriptors lazy so default/package/visibility changes invalidate generated outputs and caches.

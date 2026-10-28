@@ -112,9 +112,8 @@ private fun dependOnProducer(
  * reusing one global [producer] task across `debug` + `release` would share a single dir and bypass
  * AGP path generation.
  *
- * Warns and no-ops on an Android module with no Kotlin `main` source set — typically
- * `com.android.library` applied without `org.jetbrains.kotlin.android`, so the generated objects
- * would never compile anyway.
+ * AGP always creates the `main` source set, so a missing `main` is a broken Android plugin
+ * setup and fails here instead of being swallowed.
  */
 internal fun wireGeneratedSourcesToAndroid(
     project: Project,
@@ -122,15 +121,7 @@ internal fun wireGeneratedSourcesToAndroid(
     producer: TaskProvider<*>,
 ) {
     val android = project.extensions.getByType(CommonExtension::class.java)
-    val mainSourceSet =
-        android.sourceSets.findByName("main") ?: run {
-            project.logger.warn(
-                "Featured: ${project.path} has no Android 'main' Kotlin source set — generated " +
-                    "sources will NOT be wired into compilation. Apply the Kotlin Android plugin " +
-                    "(org.jetbrains.kotlin.android) to this module.",
-            )
-            return
-        }
+    val mainSourceSet = android.sourceSets.getByName("main")
     // Resolved absolute path, not a Provider — the Android source set rejects providers at
     // configuration time. directories is a MutableSet<String> (srcDir(Any) is @Deprecated).
     mainSourceSet.kotlin.directories.add(generatedDirFile.absolutePath)
