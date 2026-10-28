@@ -31,7 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Kotlin/Native `iosX64` (Intel iOS Simulator) from every library module, the sample, CI framework
   linking, and the published `FeaturedCore` XCFramework. `iosArm64` (device) and
   `iosSimulatorArm64` (Apple Silicon simulator) stay. The next XCFramework release has no
-  Intel-simulator slice.
+  Intel-simulator slice. The sample Xcode project excludes simulator `x86_64`, because a generic
+  simulator build otherwise asks Compose to sync resources for the removed target.
 
 ## [1.2.0] - 2026-06-13
 
