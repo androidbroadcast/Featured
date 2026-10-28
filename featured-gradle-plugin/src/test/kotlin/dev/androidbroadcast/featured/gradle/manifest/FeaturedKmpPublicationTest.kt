@@ -17,8 +17,8 @@ import kotlin.test.assertTrue
  * component exposes only the variants it explicitly added via `addVariantsFromConfiguration`.
  * This test is the mandatory gate that confirms that invariant in practice for KMP.
  *
- * Uses the `kmp-publish-project` fixture (JVM-only KMP module) to avoid requiring the
- * Kotlin/Native toolchain download that `iosX64()` would trigger on CI.
+ * Uses the `kmp-publish-project` fixture (JVM-only KMP module) to avoid requiring a
+ * Kotlin/Native toolchain download on CI.
  */
 class FeaturedKmpPublicationTest {
     @get:Rule

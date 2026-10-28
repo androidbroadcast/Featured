@@ -94,10 +94,8 @@ jobs:
           ./gradlew \
             :core:linkDebugFrameworkIosSimulatorArm64 \
             :core:linkDebugFrameworkIosArm64 \
-            :core:linkDebugFrameworkIosX64 \
             :providers:datastore:linkDebugFrameworkIosSimulatorArm64 \
-            :providers:datastore:linkDebugFrameworkIosArm64 \
-            :providers:datastore:linkDebugFrameworkIosX64
+            :providers:datastore:linkDebugFrameworkIosArm64
 
       - name: Build Xcode project
         # generic/platform avoids "simulator not found" failures on runners

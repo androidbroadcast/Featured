@@ -46,10 +46,8 @@ For Apple-facing changes, run the applicable simulator tests and CI's framework/
 swiftlint lint --strict --config .swiftlint.yml
 ./gradlew :core:linkDebugFrameworkIosSimulatorArm64 \
   :core:linkDebugFrameworkIosArm64 \
-  :core:linkDebugFrameworkIosX64 \
   :providers:datastore:linkDebugFrameworkIosSimulatorArm64 \
-  :providers:datastore:linkDebugFrameworkIosArm64 \
-  :providers:datastore:linkDebugFrameworkIosX64
+  :providers:datastore:linkDebugFrameworkIosArm64
 xcodebuild build -project iosApp/iosApp.xcodeproj -scheme iosApp \
   -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
 ```
@@ -168,6 +166,7 @@ For local artifact testing, root `./gradlew publishToMavenLocal` also forwards t
 - Register `enumConverter<E>()` with persistent local providers before using enum flags. Generating an enum descriptor alone does not configure serialization.
 - Avoid broad `-keep`/`@Keep` rules on code expected to disappear: they can retain unreachable classes despite correctly folded flag branches.
 - Keep nested checkouts/worktrees outside the checkout used for formatting. Root Spotless targets all `**/*.kt` and `**/*.kts`, excludes build directories, and can scan ignored/untracked nested repositories.
+- Kotlin/Native targets are `iosArm64` (device) and `iosSimulatorArm64` (Apple Silicon simulator). Do not add `iosX64`; the published XCFramework has no Intel-simulator slice.
 - Preserve the out-of-process Kotlin/Native compiler configuration in `gradle.properties`; concurrent framework links otherwise share the Gradle daemon's heap.
 - Treat `iosApp/Configuration/FeatureFlags.generated.xcconfig` as a checked-in placeholder, not live generated output. Generate from the actual producer module; its embedded example paths are not the sample's Gradle paths.
 
