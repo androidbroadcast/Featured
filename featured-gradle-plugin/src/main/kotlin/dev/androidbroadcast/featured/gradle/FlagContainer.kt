@@ -154,4 +154,10 @@ public class FlagContainer {
 
     /** Serialises all flags to pipe-delimited descriptors for [ResolveFlagsTask] inputs. */
     internal fun toDescriptors(): List<String> = _flags.map { it.toDescriptor() }
+
+    /**
+     * Serialises every `discard(...)` target to a `flagKey|classSpec` descriptor for
+     * [GenerateCheckDiscardRulesTask] inputs. Flags without discard targets contribute nothing.
+     */
+    internal fun discardDescriptors(): List<String> = _flags.flatMap { flag -> flag.discards.map { spec -> "${flag.key}|$spec" } }
 }

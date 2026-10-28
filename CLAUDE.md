@@ -66,6 +66,7 @@ Sample build / install:
 
 - `generateConfigParam` — typed `ConfigParam` objects + `ConfigValues` extensions
 - `generateFeaturedProguardRules` — R8 `-assumevalues` rules for local flags
+- `generateFeaturedCheckDiscardRules` — R8 `-checkdiscard` rules that *verify* flag-guarded code was stripped (opt-in via `discard(...)` on a local boolean default-`false` flag; fails the build if a "disabled" feature survives)
 - `generateIosConstVal` / `generateXcconfig` — Swift DCE inputs
 - `generateFeaturedManifest` — emits `featured-manifest.json` consumed by the aggregator
 - `generateFeaturedRegistry` (aggregator-only) — produces `GeneratedFeaturedRegistry.kt`
@@ -110,12 +111,12 @@ For non-reactive reads (logging, eager-conditional paths) use `configValues.getV
 - **Branching:** `develop` is the integration branch; PRs go to `develop`, not `main`. `main` is updated only on releases. One logical change per PR — do not bundle.
 - **Comment language:** English (per `.github/copilot-instructions.md`).
 - **iOS:** SKIE is applied in `:core`; the XCFramework is named `FeaturedCore`. SKIE config is `skie.toml` at repo root.
-- **R8:** the project relies on `android.enableR8.fullMode=true` and `android.r8.strictInputValidation=true`. The generated ProGuard rules + `-assumevalues` are what make DCE work.
+- **R8:** the project relies on `android.enableR8.fullMode=true` and `android.r8.strictInputValidation=true`. The generated ProGuard rules + `-assumevalues` are what make DCE work; the opt-in `discard(...)` → `-checkdiscard` rules *prove* the disabled-flag code left the binary (the final DEX is otherwise checked by nothing — unit tests see the pre-R8 classpath, `androidTest` runs without minify).
 
 ## Where to Look First When…
 
 - "Find how the DSL is parsed" → `featured-gradle-plugin/src/main/kotlin/.../FeaturedExtension.kt`, `FlagSpec.kt`, `FlagContainer.kt`.
-- "Find codegen output shape" → `ConfigParamGenerator.kt`, `ExtensionFunctionGenerator.kt`, `ProguardRulesGenerator.kt`, `XcconfigGenerator.kt`, `IosConstValGenerator.kt` (all in `featured-gradle-plugin/src/main/kotlin/`).
+- "Find codegen output shape" → `ConfigParamGenerator.kt`, `ExtensionFunctionGenerator.kt`, `ProguardRulesGenerator.kt`, `CheckDiscardRulesGenerator.kt`, `XcconfigGenerator.kt`, `IosConstValGenerator.kt` (all in `featured-gradle-plugin/src/main/kotlin/`).
 - "Find aggregator wiring" → `FeaturedApplicationPlugin.kt` + `aggregation/` subpackage.
 - "Find manifest format" → `manifest/` subpackage (`GenerateFeaturedManifestTask.kt`, `SCHEMA_VERSION`).
 - "Verify R8 DCE behaviour" → `featured-shrinker-tests/` (integration tests over real `assembleRelease`).
