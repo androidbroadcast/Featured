@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Gradle plugin: `discard(classSpec)` on a local boolean flag with `default = false` emits an R8
+  `-checkdiscard` rule for that class specification. The rule runs in the same R8 pass as the
+  generated `-assumevalues` rules (application variants directly, library modules through consumer
+  rules). A release build fails if those classes are kept. Flags that do not call `discard(...)`
+  are unchanged; the generated file is empty and is a no-op. `discard(...)` on a remote flag fails
+  the build.
+
 ## [1.2.0] - 2026-06-13
 
 ### Added
