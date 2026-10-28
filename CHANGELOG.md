@@ -24,7 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Dependency updates: Firebase BOM 34.19.0 (latest 34.x; 35.x is a separate major), SKIE 0.10.15,
-  Spotless 8.10.4, and Kover 0.9.11. Kotlin and Compose are unchanged.
+  Spotless 8.10.4, and Kover 0.9.11.
+- Dependency updates: Kotlin 2.4.20, Compose Multiplatform 1.12.2, Compose Hot Reload 1.2.0,
+  kotlinx-serialization 1.12.0, AndroidX AppCompat 1.8.0, Core 1.19.1, DataStore 1.3.0,
+  Lifecycle 2.11.0, vanniktech maven-publish 0.37.0, and Gradle plugin-publish 2.2.1.
+  Kotlin stays on 2.4.20 because SKIE 0.10.15 does not support 2.4.21. AGP stays 9.2.1
+  because 9.4.1 requires Gradle 9.6.0.
 
 ### Removed
 
