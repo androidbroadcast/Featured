@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Gradle plugin: `dev.androidbroadcast.featured` and `dev.androidbroadcast.featured.application`
+  add generated Kotlin to compilation automatically (KMP `commonMain`, Kotlin/JVM `main`, or the
+  AGP `main` source set). Manual `srcDir` / `dependsOn` wiring is no longer required.
+  `generateFeaturedRegistry` writes to `build/generated/featured/registry`, separate from
+  `generateConfigParam`'s `build/generated/featured/commonMain`. (#249)
 - Gradle plugin: `discard(classSpec)` on a local boolean flag with `default = false` emits an R8
   `-checkdiscard` rule for that class specification. The rule runs in the same R8 pass as the
   generated `-assumevalues` rules (application variants directly, library modules through consumer

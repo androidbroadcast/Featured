@@ -27,15 +27,9 @@ import org.gradle.api.tasks.TaskAction
  * carried by the `local*` / `remote*` properties; [FeaturedPlugin] resolves the section /
  * module-wide fallback chain before wiring them.
  *
- * All files are written to [outputDir] (`build/generated/featured/commonMain/`).
- * Add [outputDir] to the Kotlin compilation source set:
- * ```kotlin
- * kotlin {
- *     sourceSets.commonMain.get().kotlin.srcDir(
- *         tasks.named("generateConfigParam").map { it.outputDir }
- *     )
- * }
- * ```
+ * All files are written to [outputDir] (`build/generated/featured/commonMain/`). [FeaturedPlugin]
+ * auto-wires this directory into the consumer module's compilation (KMP `commonMain`, Kotlin/JVM
+ * `main`, or the AGP `main` Kotlin source set) — no manual `srcDir` / `dependsOn` is needed.
  */
 @CacheableTask
 public abstract class GenerateConfigParamTask : DefaultTask() {

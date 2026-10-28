@@ -57,19 +57,19 @@ class GenerateFeaturedRegistryTaskRegistrationTest {
     }
 
     @Test
-    fun `generateFeaturedRegistry task outputFile path follows convention`() {
+    fun `generateFeaturedRegistry task outputDir path follows convention`() {
         val project = ProjectBuilder.builder().build()
         project.plugins.apply("dev.androidbroadcast.featured.application")
 
         val task = project.tasks.findByName(GENERATE_FEATURED_REGISTRY_TASK_NAME) as? GenerateFeaturedRegistryTask
         assertNotNull(task)
         val outputPath =
-            task.outputFile
+            task.outputDir
                 .get()
                 .asFile.path
         assertTrue(
-            outputPath.endsWith("build/generated/featured/commonMain/${FEATURED_REGISTRY_OBJECT}.kt"),
-            "Expected outputFile to end with 'build/generated/featured/commonMain/${FEATURED_REGISTRY_OBJECT}.kt', got: $outputPath",
+            outputPath.endsWith("build/generated/featured/registry"),
+            "Expected outputDir to end with 'build/generated/featured/registry', got: $outputPath",
         )
     }
 

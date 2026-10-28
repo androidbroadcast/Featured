@@ -38,10 +38,6 @@ kotlin {
             api(libs.androidx.lifecycle.viewmodel)
         }
     }
-
-    sourceSets.commonMain.get().kotlin.srcDir(
-        tasks.named("generateConfigParam").map { it.outputs.files.singleFile },
-    )
 }
 
 featured {

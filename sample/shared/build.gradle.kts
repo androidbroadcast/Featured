@@ -68,10 +68,6 @@ kotlin {
             api(project(":sample:feature-ui"))
         }
     }
-
-    sourceSets.commonMain.get().kotlin.srcDir(
-        tasks.named("generateFeaturedRegistry").map { it.outputs.files.singleFile.parentFile },
-    )
 }
 
 dependencies {

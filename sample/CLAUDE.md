@@ -30,7 +30,7 @@ under the hood.
 
 ## Aggregation
 
-`:sample:shared` declares `featuredAggregation(project(":sample:feature-*"))` for all three modules and wires the `generateFeaturedRegistry` task output into `commonMain`. The resulting `GeneratedFeaturedRegistry.all` is passed to `FeatureFlagsDebugScreen`.
+`:sample:shared` declares `featuredAggregation(project(":sample:feature-*"))` for all three modules. The `generateFeaturedRegistry` task output is auto-wired into `commonMain` by the aggregator plugin (no manual `srcDir`). The resulting `GeneratedFeaturedRegistry.all` is passed to `FeatureFlagsDebugScreen`.
 
 ## Multi-module wiring
 
