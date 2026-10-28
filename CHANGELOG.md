@@ -14,6 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   AGP `main` source set). Manual `srcDir` / `dependsOn` wiring is no longer required.
   `generateFeaturedRegistry` writes to `build/generated/featured/registry`, separate from
   `generateConfigParam`'s `build/generated/featured/commonMain`. (#249)
+- Gradle plugin: `discard(classSpec)` on a local boolean flag with `default = false` emits an R8
+  `-checkdiscard` rule for that class specification. The rule runs in the same R8 pass as the
+  generated `-assumevalues` rules (application variants directly, library modules through consumer
+  rules). A release build fails if those classes are kept. Flags that do not call `discard(...)`
+  are unchanged; the generated file is empty and is a no-op. `discard(...)` on a remote flag fails
+  the build.
+
+### Changed
+
+- Dependency updates: Firebase BOM 34.19.0 (latest 34.x; 35.x is a separate major), SKIE 0.10.15,
+  Spotless 8.10.4, and Kover 0.9.11. Kotlin and Compose are unchanged. JetBrains Lifecycle stays
+  on 2.10.0 because 2.11.0 does not publish an iosX64 variant, which the sample still targets.
 
 ## [1.2.0] - 2026-06-13
 
