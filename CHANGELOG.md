@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Dependency updates: Firebase BOM 34.19.0 (latest 34.x; 35.x is a separate major), SKIE 0.10.15,
+  Spotless 8.10.4, and Kover 0.9.11. Kotlin and Compose are unchanged. JetBrains Lifecycle stays
+  on 2.10.0 because 2.11.0 does not publish an iosX64 variant, which the sample still targets.
+
 ## [1.2.0] - 2026-06-13
 
 ### Added
