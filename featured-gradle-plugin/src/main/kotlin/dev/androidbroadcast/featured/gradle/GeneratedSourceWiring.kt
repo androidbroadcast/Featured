@@ -80,7 +80,7 @@ internal fun wireGeneratedSourcesToKotlinJvm(
  *
  * The Kotlin clause matches `name.contains("Kotlin")`, NOT `endsWith("Kotlin")`: KMP target compile
  * tasks end with the target, not "Kotlin" — `compileKotlinJvm`, `compileDebugKotlinAndroid`,
- * `compileReleaseKotlinAndroid`, `compileCommonMainKotlinMetadata`, `compileKotlinIosX64`, etc. An
+ * `compileReleaseKotlinAndroid`, `compileCommonMainKotlinMetadata`, `compileKotlinIosSimulatorArm64`, etc. An
  * `endsWith("Kotlin")` check only catches the plain Kotlin/JVM `compileKotlin` and wires nothing for
  * KMP modules, leaving the generated dir un-produced before compile.
  */

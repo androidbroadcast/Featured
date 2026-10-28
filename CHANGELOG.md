@@ -24,8 +24,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Dependency updates: Firebase BOM 34.19.0 (latest 34.x; 35.x is a separate major), SKIE 0.10.15,
-  Spotless 8.10.4, and Kover 0.9.11. Kotlin and Compose are unchanged. JetBrains Lifecycle stays
-  on 2.10.0 because 2.11.0 does not publish an iosX64 variant, which the sample still targets.
+  Spotless 8.10.4, and Kover 0.9.11. Kotlin and Compose are unchanged.
+
+### Removed
+
+- Kotlin/Native `iosX64` (Intel iOS Simulator) from every library module, the sample, CI framework
+  linking, and the published `FeaturedCore` XCFramework. `iosArm64` (device) and
+  `iosSimulatorArm64` (Apple Silicon simulator) stay. The next XCFramework release has no
+  Intel-simulator slice. The sample Xcode project excludes simulator `x86_64`, because a generic
+  simulator build otherwise asks Compose to sync resources for the removed target.
 
 ## [1.2.0] - 2026-06-13
 
