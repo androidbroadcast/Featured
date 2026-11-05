@@ -51,6 +51,9 @@ jobs:
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
         # On a version tag: uploads the deployment bundle to the Sonatype Central Portal as
         # USER_MANAGED — the deployment must be promoted to release manually in the Portal UI.
+        # The bundle includes both plugin marker POMs. plugins {} resolves those markers
+        # through the Plugin Portal's redirect to Maven Central; do not publish the impl
+        # jar without them. Portal listing is a separate workflow and is not this path.
         # On workflow_dispatch (manual): publishes a SNAPSHOT version (requires Portal SNAPSHOT support enabled).
         # --no-configuration-cache for release-pipeline debuggability (runs once per tag, CC savings are zero).
         run: ./gradlew --no-daemon publishToMavenCentral --no-configuration-cache

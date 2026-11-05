@@ -74,13 +74,15 @@ mavenPublishing {
 // `dev.androidbroadcast.featured:dev.androidbroadcast.featured.gradle.plugin` from
 // gradlePluginPortal(). The Portal does not host an unapproved plugin: it answers with
 // 303 See Other to Maven Central. Portal publication of 1.0.0+ succeeded and created
-// version records, but the plugin was never approved, so those artifacts are not served.
-// Stable markers were removed from Central in #228, which left every release after
-// 1.0.0-Beta1 uninstallable via the documented plugins DSL.
+// version records, but the plugin was never approved, so those artifacts are not served
+// (plugins.gradle.org/plugin/dev.androidbroadcast.featured is "not found", and
+// plugins-artifacts.gradle.org 404s). Stable markers were removed from Central in #228,
+// which left every release after 1.0.0-Beta1 uninstallable via the documented plugins DSL.
 //
 // The extra Central components are the resolution mechanism. `publishPlugins` stays for
 // Portal listing once Gradle approves the plugin id; it is not the install path.
-// Do not disable these tasks again.
+// Do not disable these tasks again. The main hotfix (7353e96) is this same enablement;
+// keep this block when merging develop into main, not the pre-hotfix `enabled = false`.
 val pluginMarkerMavenCentralTasks =
     listOf(
         "publishFeaturedPluginMarkerMavenPublicationToMavenCentralRepository",
