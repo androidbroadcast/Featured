@@ -81,7 +81,8 @@ mavenPublishing {
 //
 // The extra Central components are the resolution mechanism. `publishPlugins` stays for
 // Portal listing once Gradle approves the plugin id; it is not the install path.
-// Do not disable these tasks again.
+// Do not disable these tasks again. The main hotfix (7353e96) is this same enablement;
+// keep this block when merging develop into main, not the pre-hotfix `enabled = false`.
 val pluginMarkerMavenCentralTasks =
     listOf(
         "publishFeaturedPluginMarkerMavenPublicationToMavenCentralRepository",
