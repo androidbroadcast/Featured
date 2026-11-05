@@ -169,6 +169,7 @@ For local artifact testing, root `./gradlew publishToMavenLocal` also forwards t
 - Kotlin/Native targets are `iosArm64` (device) and `iosSimulatorArm64` (Apple Silicon simulator). Do not add `iosX64`; the published XCFramework has no Intel-simulator slice. The sample Xcode project excludes simulator `x86_64` so a generic simulator build does not request that slice.
 - Preserve the out-of-process Kotlin/Native compiler configuration in `gradle.properties`; concurrent framework links otherwise share the Gradle daemon's heap.
 - Treat `iosApp/Configuration/FeatureFlags.generated.xcconfig` as a checked-in placeholder, not live generated output. Generate from the actual producer module; its embedded example paths are not the sample's Gradle paths.
+- Publish both Gradle plugin marker artifacts to Maven Central. `plugins { id(...) version }` resolves through the Plugin Portal, which 303-redirects unlisted plugins to Central. Portal `publishPlugins` is only the catalog listing and can succeed while the plugin stays unresolvable until Gradle approves the id. Do not disable the marker Maven Central tasks.
 
 ## PR and Git instructions
 

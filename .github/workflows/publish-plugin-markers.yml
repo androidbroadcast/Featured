@@ -1,0 +1,88 @@
+name: Publish plugin markers for an existing release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Already published featured-gradle-plugin version, without a leading v (e.g. 1.2.0)."
+        required: true
+      confirm:
+        description: "Type publish-markers to upload only the two marker POMs for that version."
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-plugin-markers-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  publish-markers:
+    name: Publish plugin markers to Maven Central
+    runs-on: ubuntu-latest
+    environment: Main
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup-build-env
+
+      - name: Validate version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          set -euo pipefail
+          if [[ "${CONFIRM}" != "publish-markers" ]]; then
+            echo "Refusing to publish: confirm must be exactly publish-markers." >&2
+            exit 1
+          fi
+          if [[ ! "${INPUT_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Refusing to publish: version must be semver, got '${INPUT_VERSION}'." >&2
+            exit 1
+          fi
+          if [[ "${INPUT_VERSION}" == *-SNAPSHOT ]]; then
+            echo "Refusing to publish SNAPSHOT markers. Use a released version." >&2
+            exit 1
+          fi
+          echo "VERSION_NAME=${INPUT_VERSION}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Require the implementation artifact
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
+        run: |
+          set -euo pipefail
+          url="https://repo1.maven.org/maven2/dev/androidbroadcast/featured/featured-gradle-plugin/${VERSION_NAME}/featured-gradle-plugin-${VERSION_NAME}.pom"
+          echo "Checking ${url}"
+          curl --fail --silent --show-error --retry 3 --retry-delay 5 -o /dev/null "${url}"
+
+      - name: Pin VERSION_NAME
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
+        run: |
+          set -euo pipefail
+          # The included plugin build reads VERSION_NAME from this file, not from
+          # ORG_GRADLE_PROJECT_VERSION_NAME. Pin it in the runner checkout only.
+          perl -i -pe "s/^VERSION_NAME=.*/VERSION_NAME=${VERSION_NAME}/" gradle.properties
+          grep -q "^VERSION_NAME=${VERSION_NAME}$" gradle.properties
+
+      - name: Publish marker POMs only
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_KEY_PASSWORD }}
+          ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
+        # Do not run publishToMavenCentral: that would republish featured-gradle-plugin
+        # for a version that already exists. These two tasks write only the marker POMs
+        # into vanniktech's local Central staging directory; the end-of-build service
+        # uploads that directory. Automatic publishing is required here because this
+        # bundle has no impl jar sitting in a deployment the maintainer already promotes.
+        run: >
+          ./gradlew --no-daemon --no-configuration-cache
+          -PmavenCentralAutomaticPublishing=true
+          -PmavenCentralDeploymentValidation=PUBLISHED
+          :featured-gradle-plugin:publishFeaturedPluginMarkerMavenPublicationToMavenCentralRepository
+          :featured-gradle-plugin:publishFeaturedApplicationPluginMarkerMavenPublicationToMavenCentralRepository

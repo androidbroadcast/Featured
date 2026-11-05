@@ -31,6 +31,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Kotlin stays on 2.4.20 because SKIE 0.10.15 does not support 2.4.21. AGP stays 9.2.1
   because 9.4.1 requires Gradle 9.6.0.
 
+### Fixed
+
+- Gradle plugin markers are published to Maven Central again, so
+  `plugins { id("dev.androidbroadcast.featured") version "…" }` and
+  `id("dev.androidbroadcast.featured.application")` resolve. The Plugin Portal redirects
+  marker lookups to Maven Central and does not serve an unapproved plugin; markers were
+  absent from Central for every stable release after 1.0.0-Beta1. (#247)
+
 ### Removed
 
 - Kotlin/Native `iosX64` (Intel iOS Simulator) from every library module, the sample, CI framework
