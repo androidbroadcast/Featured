@@ -127,7 +127,8 @@ Pushing a `v*` tag triggers the following automated pipeline:
 
 | Step | Description |
 |------|-------------|
-| **Publish to Maven Central** | Runs on `ubuntu-latest`; signs all artifacts with GPG and uploads the deployment bundle to Sonatype Central Portal as `USER_MANAGED` — the deployment must be promoted to release manually in the Portal UI |
+| **Publish to Maven Central** | Runs on `ubuntu-latest`; signs all artifacts with GPG and uploads the deployment bundle to Sonatype Central Portal as `USER_MANAGED` — the deployment must be promoted to release manually in the Portal UI. The plugin bundle includes the two `*.gradle.plugin` marker POMs. Those markers are what make `plugins { id("dev.androidbroadcast.featured") version "…" }` resolve: the Plugin Portal redirects marker lookups to Maven Central and does not serve a plugin until Gradle approves the plugin id. |
+| **Publish plugin to the Plugin Portal** | Runs `publishPlugins` so the plugin can appear in the Portal catalog after approval. This does not replace the Maven Central markers. A green Portal job does not mean `plugins {}` resolves. |
 | **Build XCFramework** | Runs on `macos-latest`; assembles `FeaturedCore.xcframework.zip` |
 | **Create GitHub Release** | Creates a GitHub Release for the tag with auto-generated release notes and attaches the XCFramework zip |
 | **Update `Package.swift`** | Computes the XCFramework checksum and commits an updated `Package.swift` directly to `main` |

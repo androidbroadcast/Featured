@@ -1,5 +1,3 @@
-import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
-
 plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.kotlinSerialization)
@@ -70,25 +68,41 @@ mavenPublishing {
     }
 }
 
-// The java-gradle-plugin marker artifacts (one per plugin id, the second under its own
-// groupId) are resolved via the Gradle Plugin Portal, where `publishPlugins` uploads them.
-// Vanniktech binds every MavenPublication — markers included — to the Maven Central
-// repository, which would pollute the Central listing with two stub marker artifacts.
-// Disable only the marker -> Central tasks so Central carries just the clean
-// `featured-gradle-plugin` impl jar (+ sources/javadoc/pom); the Portal still receives the
-// markers via `publishPlugins`, which uploads publications directly over HTTP independently
-// of these maven-publish repository tasks.
+// Plugin markers must be published to Maven Central, not only to the Plugin Portal.
 //
-// Match on the task name (which Gradle fixes at registration time) rather than the task's
-// `repository`/`publication` properties: maven-publish wires those properties later, in an
-// afterEvaluate, so a `configureEach` action that reads them runs too early and sees them
-// unset. The name `publish<Pub>PublicationTo<Repo>Repository` is always correct here.
-// `publishPluginMavenPublication...` (the impl) ends with `PluginMavenPublication...`, not
-// `PluginMarkerMavenPublication...`, so it is intentionally left enabled.
-tasks.withType<PublishToMavenRepository>().configureEach {
-    if (name.endsWith("PluginMarkerMavenPublicationToMavenCentralRepository")) {
-        enabled = false
+// `plugins { id("dev.androidbroadcast.featured") version "..." }` resolves the marker
+// `dev.androidbroadcast.featured:dev.androidbroadcast.featured.gradle.plugin` from
+// gradlePluginPortal(). The Portal does not host an unapproved plugin: it answers with
+// 303 See Other to Maven Central. Portal publication of 1.0.0+ succeeded and created
+// version records, but the plugin was never approved, so those artifacts are not served
+// (plugins.gradle.org/plugin/dev.androidbroadcast.featured is "not found", and
+// plugins-artifacts.gradle.org 404s). Stable markers were removed from Central in #228,
+// which left every release after 1.0.0-Beta1 uninstallable via the documented plugins DSL.
+//
+// The extra Central components are the resolution mechanism. `publishPlugins` stays for
+// Portal listing once Gradle approves the plugin id; it is not the install path.
+// Do not disable these tasks again.
+val pluginMarkerMavenCentralTasks =
+    listOf(
+        "publishFeaturedPluginMarkerMavenPublicationToMavenCentralRepository",
+        "publishFeaturedApplicationPluginMarkerMavenPublicationToMavenCentralRepository",
+    )
+
+afterEvaluate {
+    val missing = pluginMarkerMavenCentralTasks.filter { tasks.findByName(it) == null }
+    val disabled =
+        pluginMarkerMavenCentralTasks.mapNotNull { tasks.findByName(it) }.filter { !it.enabled }
+    if (missing.isNotEmpty() || disabled.isNotEmpty()) {
+        throw GradleException(
+            "Plugin marker Maven Central publications must stay enabled. " +
+                "missing=$missing disabled=${disabled.map { it.name }}. " +
+                "plugins {} resolves these markers via the Plugin Portal redirect to Maven Central.",
+        )
     }
+}
+
+tasks.named("publishToMavenCentral") {
+    dependsOn(pluginMarkerMavenCentralTasks)
 }
 
 // A separate configuration whose resolved jars are appended to the pluginUnderTestMetadata
