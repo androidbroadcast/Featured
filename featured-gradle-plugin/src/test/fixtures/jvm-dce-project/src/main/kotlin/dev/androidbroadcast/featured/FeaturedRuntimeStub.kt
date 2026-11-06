@@ -8,11 +8,14 @@ import kotlin.reflect.KClass
  * TestKit project cannot resolve. Keep this surface in lockstep with the generator.
  */
 
+enum class FlagScope { LOCAL, REMOTE, ANY }
+
 class ConfigParam<T : Any>
     constructor(
         val key: String,
         val defaultValue: T,
         val valueType: KClass<T>,
+        val scope: FlagScope = FlagScope.ANY,
         val description: String? = null,
         val category: String? = null,
         val since: String? = null,
@@ -31,6 +34,26 @@ inline fun <reified T : Any> ConfigParam(
         key = key,
         defaultValue = defaultValue,
         valueType = T::class,
+        description = description,
+        category = category,
+        since = since,
+        enumConstants = enumConstants,
+    )
+
+inline fun <reified T : Any> ConfigParam(
+    key: String,
+    defaultValue: T,
+    scope: FlagScope,
+    description: String? = null,
+    category: String? = null,
+    since: String? = null,
+    enumConstants: List<T>? = null,
+): ConfigParam<T> =
+    ConfigParam(
+        key = key,
+        defaultValue = defaultValue,
+        valueType = T::class,
+        scope = scope,
         description = description,
         category = category,
         since = since,
