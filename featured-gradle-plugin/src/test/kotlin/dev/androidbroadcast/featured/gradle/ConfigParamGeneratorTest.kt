@@ -275,6 +275,37 @@ class ConfigParamGeneratorTest {
     }
 
     @Test
+    fun `local flag passes FlagScope LOCAL and keeps the public key`() {
+        val entries = listOf(localEntry("FEATURE_X", "false", "Boolean"))
+        val (local, _) = ConfigParamGenerator.generate(entries, modulePath)
+        assertContains(local, "scope = FlagScope.LOCAL")
+        assertContains(local, "key = \"FEATURE_X\"")
+        assertContains(local, "import dev.androidbroadcast.featured.FlagScope")
+    }
+
+    @Test
+    fun `remote flag passes FlagScope REMOTE and keeps the public key`() {
+        val entries = listOf(remoteEntry("FEATURE_X", "false", "Boolean"))
+        val (_, remote) = ConfigParamGenerator.generate(entries, modulePath)
+        assertContains(remote, "scope = FlagScope.REMOTE")
+        assertContains(remote, "key = \"FEATURE_X\"")
+        assertTrue(!remote.contains("scope = FlagScope.LOCAL"))
+    }
+
+    @Test
+    fun `same key in one object keeps the last declaration`() {
+        val entries =
+            listOf(
+                localEntry("FEATURE_X", "false", "Boolean"),
+                localEntry("FEATURE_X", "true", "Boolean"),
+            )
+        val (local, _) = ConfigParamGenerator.generate(entries, modulePath)
+        assertEquals(1, Regex("key = \"FEATURE_X\"").findAll(local).count())
+        assertContains(local, "defaultValue = true")
+        assertTrue(!local.contains("defaultValue = false"))
+    }
+
+    @Test
     fun `non-enum flag does not emit enumConstants`() {
         val entries = listOf(localEntry("dark_mode", "false", "Boolean"))
         val (local, _) = ConfigParamGenerator.generate(entries, modulePath)

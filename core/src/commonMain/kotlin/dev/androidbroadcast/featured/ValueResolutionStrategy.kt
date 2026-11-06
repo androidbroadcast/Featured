@@ -1,19 +1,24 @@
 package dev.androidbroadcast.featured
 
 /**
- * Pluggable policy that decides which value [ConfigValues] returns for a parameter once all
- * candidate values have been read.
+ * Pluggable policy that decides which value [ConfigValues] returns for a parameter from the
+ * candidates it was given.
  *
- * [ConfigValues] reads the local and remote providers first and only then asks the strategy to
- * pick the final value — the strategy is a pure selection function and performs no I/O of its
- * own. The built-in [Default] implementation reproduces the classic priority chain
- * `local ?: remote ?: default`.
+ * [ConfigValues] reads the providers [ConfigParam.scope] allows and only then asks the strategy
+ * to pick the final value. The strategy is a pure selection function and performs no I/O of its
+ * own. For [FlagScope.ANY], both providers are read first. For [FlagScope.LOCAL], the remote
+ * provider is not read and [remoteValue] is null. For [FlagScope.REMOTE], the local provider is
+ * not read during resolution and [localValue] is null, including the call made from
+ * [ConfigValues.override] and [ConfigValues.resetOverride]. A skipped side is not an error.
+ * The built-in [Default] implementation stays `localValue ?: remoteValue ?: defaultValue` on
+ * the candidates it receives.
  *
  * ### Contract
  *
  * - [localValue] / [remoteValue] are `null` when the corresponding provider is not configured,
- *   has no value for the parameter, or threw. Provider errors are already caught and reported
- *   to `ConfigValues.onProviderError` before the strategy is invoked.
+ *   has no value for the parameter, threw, or was not read because [ConfigParam.scope] skipped
+ *   that side. Provider errors are already caught and reported to `ConfigValues.onProviderError`
+ *   before the strategy is invoked. A provider that was not called produces no error.
  * - [defaultValue] is never `null`: it wraps [ConfigParam.defaultValue] with
  *   [ConfigValue.Source.DEFAULT] and is always a safe result.
  * - A result with [ConfigValue.Source.DEFAULT] is **not** written to the [ConfigValues] sync
@@ -27,14 +32,17 @@ package dev.androidbroadcast.featured
  *
  * A feature is enabled only when both sides are explicitly `true` by passing a strategy to the
  * existing [ConfigValues] `resolutionStrategy` parameter. The library does not AND flags itself.
- * One generated flag is enough: [ConfigValues.getValue] already reads the local provider and the
- * remote provider for that same [ConfigParam], then calls [resolve]. The local side is the value
- * that provider already stores, or the value written by [ConfigValues.override]. The remote side
- * is the remote provider's value for the same key. Declare the flag once.
+ * Both candidates are supplied only for [FlagScope.ANY]. [ConfigValues.getValue] reads the local
+ * provider and the remote provider for that param, then calls [resolve]. The local side is the
+ * value that provider already stores, or the value written by [ConfigValues.override]. The remote
+ * side is the remote provider's value for the public key. A generated local flag is
+ * [FlagScope.LOCAL] and a generated remote flag is [FlagScope.REMOTE], so the skipped side is
+ * null and this recipe stays `false`. Use a hand-written [ConfigParam] that omits scope, or pass
+ * [FlagScope.ANY], when both sides must be candidates.
  *
- * Two generated flags with the same name are not the AND. Same-name isolation is a separate task
- * (GitHub #294). Do not declare the key in both `localFlags` and `remoteFlags`:
- * the build rejects that duplicate. Do not AND two accessors. If the guarded client code must
+ * Two generated flags with the same name are not the AND. They are separate slots. Declaring the
+ * same key in both `localFlags` and `remoteFlags` is allowed; the build does not reject it. Do
+ * not AND two accessors. If the guarded client code must
  * remain in release binaries, do not declare that one flag as a `localFlags` boolean with
  * `default = false`: those flags are release-stripped.
  *
@@ -128,9 +136,9 @@ public interface ValueResolutionStrategy {
      *
      * @param param The configuration parameter being resolved.
      * @param localValue Value read from the local provider, or `null` when the provider is
-     *   absent, has no value, or failed.
+     *   absent, has no value, failed, or was not read because [ConfigParam.scope] skipped it.
      * @param remoteValue Value read from the remote provider, or `null` when the provider is
-     *   absent, has no value, or failed.
+     *   absent, has no value, failed, or was not read because [ConfigParam.scope] skipped it.
      * @param defaultValue [ConfigParam.defaultValue] wrapped with [ConfigValue.Source.DEFAULT];
      *   always non-null and safe to return.
      * @return The value [ConfigValues] hands to the caller; never `null`.

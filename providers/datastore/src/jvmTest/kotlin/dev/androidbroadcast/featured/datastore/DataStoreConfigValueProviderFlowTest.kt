@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import app.cash.turbine.test
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
+import dev.androidbroadcast.featured.FlagScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.test.TestScope
@@ -120,5 +121,28 @@ class DataStoreConfigValueProviderFlowTest {
             val writers = (1..5).map { i -> async { provider.set(param, "value_$i") } }
             (readers + writers).awaitAll()
             // No exception = pass
+        }
+
+    @Test
+    fun observe_doesNotEmitWhenOtherScopeSlotIsWritten() =
+        testScope.runTest {
+            val provider = createProvider()
+            val local = ConfigParam("FEATURE_X", "local-default", FlagScope.LOCAL)
+            val remote = ConfigParam("FEATURE_X", "remote-default", FlagScope.REMOTE)
+
+            provider.observe(local).test {
+                val initial = awaitItem()
+                assertEquals("local-default", initial.value)
+                assertEquals(ConfigValue.Source.DEFAULT, initial.source)
+
+                provider.set(remote, "remote-write")
+                expectNoEvents()
+
+                provider.set(local, "local-write")
+                val updated = awaitItem()
+                assertEquals("local-write", updated.value)
+                assertEquals(ConfigValue.Source.LOCAL, updated.source)
+                cancelAndIgnoreRemainingEvents()
+            }
         }
 }

@@ -14,6 +14,8 @@ import kotlin.reflect.KClass
  * ConfigParamGenerator / ExtensionFunctionGenerator and kept in lockstep with the real `:core` types.
  */
 
+enum class FlagScope { LOCAL, REMOTE, ANY }
+
 class ConfigParam<T : Any>
     // Public (not internal) so the inline reified factory below can call it — a public inline
     // function cannot reference a non-public-API constructor. This is a test-fixture stub, not
@@ -22,6 +24,7 @@ class ConfigParam<T : Any>
         val key: String,
         val defaultValue: T,
         val valueType: KClass<T>,
+        val scope: FlagScope = FlagScope.ANY,
         val description: String? = null,
         val category: String? = null,
         val since: String? = null,
@@ -40,6 +43,26 @@ inline fun <reified T : Any> ConfigParam(
         key = key,
         defaultValue = defaultValue,
         valueType = T::class,
+        description = description,
+        category = category,
+        since = since,
+        enumConstants = enumConstants,
+    )
+
+inline fun <reified T : Any> ConfigParam(
+    key: String,
+    defaultValue: T,
+    scope: FlagScope,
+    description: String? = null,
+    category: String? = null,
+    since: String? = null,
+    enumConstants: List<T>? = null,
+): ConfigParam<T> =
+    ConfigParam(
+        key = key,
+        defaultValue = defaultValue,
+        valueType = T::class,
+        scope = scope,
         description = description,
         category = category,
         since = since,

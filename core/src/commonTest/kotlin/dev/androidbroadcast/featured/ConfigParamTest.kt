@@ -154,4 +154,61 @@ class ConfigParamTest {
 
         assertTrue(param.toString().contains("enumConstants="))
     }
+
+    @Test
+    fun factoryWithoutScopeIsAny() {
+        val param =
+            ConfigParam(
+                key = "FEATURE_X",
+                defaultValue = "default",
+                description = "desc",
+            )
+
+        assertEquals(FlagScope.ANY, param.scope)
+        assertEquals("FEATURE_X", param.key)
+        assertEquals("ANY:FEATURE_X", param.localStorageKey())
+    }
+
+    @Test
+    fun oldConstructorParameterListIsAny() {
+        val param =
+            ConfigParam(
+                key = "FEATURE_X",
+                defaultValue = "default",
+                valueType = String::class,
+                description = "desc",
+                category = "cat",
+                since = "1.0",
+                enumConstants = null,
+            )
+
+        assertEquals(FlagScope.ANY, param.scope)
+        assertEquals("FEATURE_X", param.key)
+    }
+
+    @Test
+    fun scopedFactoryKeepsPublicKey() {
+        val local = ConfigParam("FEATURE_X", "L", FlagScope.LOCAL)
+        val remote = ConfigParam(key = "FEATURE_X", defaultValue = "R", scope = FlagScope.REMOTE)
+
+        assertEquals(FlagScope.LOCAL, local.scope)
+        assertEquals(FlagScope.REMOTE, remote.scope)
+        assertEquals("FEATURE_X", local.key)
+        assertEquals("FEATURE_X", remote.key)
+        assertEquals("LOCAL:FEATURE_X", local.localStorageKey())
+        assertEquals("REMOTE:FEATURE_X", remote.localStorageKey())
+        assertEquals("LOCAL:FEA:TURE", ConfigParam("FEA:TURE", "v", FlagScope.LOCAL).localStorageKey())
+    }
+
+    @Test
+    fun equalsIncludesScopeAndHashCodeStaysKey() {
+        val local = ConfigParam("FEATURE_X", "value", FlagScope.LOCAL)
+        val remote = ConfigParam("FEATURE_X", "value", FlagScope.REMOTE)
+        val sameLocal = ConfigParam("FEATURE_X", "value", FlagScope.LOCAL)
+
+        assertEquals(sameLocal, local)
+        assertNotEquals(local, remote)
+        assertEquals(local.hashCode(), remote.hashCode())
+        assertEquals("FEATURE_X".hashCode(), local.hashCode())
+    }
 }

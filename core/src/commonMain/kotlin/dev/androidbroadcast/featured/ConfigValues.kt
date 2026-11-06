@@ -24,11 +24,15 @@ import kotlin.concurrent.atomics.update
  *
  * [ConfigValues] composes an optional [LocalConfigValueProvider] and an optional
  * [RemoteConfigValueProvider]. The final value is selected by a pluggable
- * [ValueResolutionStrategy]; the built-in [ValueResolutionStrategy.Default] applies the classic
- * priority order:
- * 1. **Local provider** — highest priority; used for user-specific overrides.
- * 2. **Remote provider** — values fetched from a remote configuration service.
- * 3. **Default** — [ConfigParam.defaultValue] is used when no provider returns a value.
+ * [ValueResolutionStrategy]; the built-in [ValueResolutionStrategy.Default] applies
+ * `local ?: remote ?: default` to the candidates it is given.
+ *
+ * Which candidates are read depends on [ConfigParam.scope]:
+ * 1. **[FlagScope.LOCAL]** — local provider, then this param's default. Remote is not called.
+ * 2. **[FlagScope.REMOTE]** — remote provider, then this param's default. Resolution does not
+ *    read the local provider, so a stored override of that param is not a candidate.
+ * 3. **[FlagScope.ANY]** — local provider, then remote provider, then this param's default.
+ *    This is the chain of a [ConfigParam] that omits [ConfigParam.scope].
  *
  * At least one provider must be supplied; passing `null` for both throws [IllegalArgumentException].
  *
@@ -99,9 +103,10 @@ import kotlin.concurrent.atomics.update
  *   to route them to your own observability system. The callback should not throw; any
  *   exception thrown by it is silently ignored to preserve the "errors never propagate
  *   to callers" guarantee.
- * @param resolutionStrategy Policy that selects the final value from the resolved local, remote,
- *   and default candidates. Defaults to [ValueResolutionStrategy.Default]
- *   (`local ?: remote ?: default`). Exceptions thrown by the strategy itself are not caught.
+ * @param resolutionStrategy Policy that selects the final value from the candidates this
+ *   container supplies. A side skipped because of [ConfigParam.scope] is null and was not read.
+ *   Defaults to [ValueResolutionStrategy.Default] (`local ?: remote ?: default` on those
+ *   candidates). Exceptions thrown by the strategy itself are not caught.
  * @throws IllegalArgumentException if both [localProvider] and [remoteProvider] are `null`.
  */
 public class ConfigValues(
@@ -119,13 +124,14 @@ public class ConfigValues(
     private val fetchSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     /**
-     * In-memory snapshot of the most recently resolved [ConfigValue] per parameter key.
+     * In-memory snapshot of the most recently resolved [ConfigValue] per storage slot.
      *
-     * Key: [ConfigParam.key]. Value: [ConfigValue] as resolved at last write time.
+     * Key: [ConfigParam.localStorageKey] (scope name, a colon, and the public key). Value:
+     * [ConfigValue] as resolved at last write time.
      *
-     * Two [ConfigParam] instances sharing the same [ConfigParam.key] map to the same snapshot
-     * slot; the last write wins. Within a single code-generated module keys are unique;
-     * cross-module key collisions are theoretically possible and documented as last-write-wins.
+     * Two [ConfigParam] instances with the same scope and the same public key map to the same
+     * snapshot slot; the last write wins, including across aggregated modules. A local param and
+     * a remote param that share a public key do not share a slot.
      *
      * Written via copy-on-write using [AtomicReference.update]; reads via [AtomicReference.load]
      * are always consistent snapshots. Thread-safe on all KMP targets.
@@ -134,17 +140,17 @@ public class ConfigValues(
 
     /**
      * Registry of params explicitly registered for automatic snapshot refresh, keyed by
-     * [ConfigParam.key].
+     * [ConfigParam.localStorageKey].
      *
      * Populated only via [warmUp]. [fetch] and [initialize] refresh all params in this map's
      * values so the snapshot remains current after each provider round-trip. The map is
      * intentionally separate from the snapshot: [clearOverrides] KDoc guarantees that
      * [ConfigValues] does not maintain a registry of all known params — the snapshot itself stays
-     * key-only. This warm-set is an explicit opt-in registry built from caller-supplied params.
+     * slot-only. This warm-set is an explicit opt-in registry built from caller-supplied params.
      *
-     * Keyed by [ConfigParam.key]: re-registering a param with the same key replaces the previous
-     * descriptor (last registration wins). This prevents structural duplicates when two
-     * [ConfigParam] instances share the same key.
+     * Keyed by [ConfigParam.localStorageKey]: re-registering a param with the same scope and key
+     * replaces the previous descriptor (last registration wins). A different scope is a different
+     * entry, even when the public key matches.
      */
     private val warmSet = AtomicReference<Map<String, ConfigParam<*>>>(emptyMap())
 
@@ -168,12 +174,12 @@ public class ConfigValues(
         }
     }
 
-    /** Writes [configValue] into the snapshot under [param]'s key (copy-on-write). */
+    /** Writes [configValue] into the snapshot under [param]'s storage slot (copy-on-write). */
     private fun <T : Any> writeSnapshot(
         param: ConfigParam<T>,
         configValue: ConfigValue<T>,
     ) {
-        snapshot.update { current -> current + (param.key to configValue) }
+        snapshot.update { current -> current + (param.localStorageKey() to configValue) }
     }
 
     /**
@@ -187,9 +193,10 @@ public class ConfigValues(
      * - [initialize] — loads cached remote values and refreshes the warm-set,
      * - [override]  — sets a local override and writes through to the snapshot.
      *
-     * **Duplicate-key semantics:** two [ConfigParam] instances with the same [ConfigParam.key]
-     * share one snapshot slot; the last write wins. Codegen guarantees uniqueness within a
-     * module; cross-module collisions are possible and intentionally handled this way.
+     * **Duplicate-slot semantics:** two [ConfigParam] instances with the same scope and the same
+     * public key share one snapshot slot; the last write wins, including across modules. A
+     * different scope is a different slot. A cold slot returns this param's own default, not
+     * another scope's entry.
      *
      * Thread-safe. Safe to call from any thread, including the Android main thread.
      *
@@ -198,7 +205,7 @@ public class ConfigValues(
      *   has not been populated for this parameter yet.
      */
     public fun <T : Any> getValueCached(param: ConfigParam<T>): ConfigValue<T> {
-        val cached = snapshot.load()[param.key]
+        val cached = snapshot.load()[param.localStorageKey()]
         @Suppress("UNCHECKED_CAST") // safe: written by writeSnapshot<T> which enforces T at write time
         return if (cached != null) {
             cached as ConfigValue<T>
@@ -237,28 +244,26 @@ public class ConfigValues(
     /**
      * Returns the current value for [param] as selected by the [ValueResolutionStrategy].
      *
-     * Both providers are read first; the strategy then picks the final value from the resolved
-     * local, remote, and default candidates. With [ValueResolutionStrategy.Default] this yields
-     * the priority order: local provider → remote provider → [ConfigParam.defaultValue].
+     * Candidates are selected by [ConfigParam.scope] before the strategy runs. [FlagScope.ANY]
+     * reads local, then remote. [FlagScope.LOCAL] does not call the remote provider, and the
+     * strategy receives `remoteValue = null`. [FlagScope.REMOTE] does not call the local
+     * provider, and the strategy receives `localValue = null`. With
+     * [ValueResolutionStrategy.Default] the result is `local ?: remote ?: default` on those
+     * candidates, which for [FlagScope.ANY] is local, then remote, then [ConfigParam.defaultValue].
      *
      * Provider exceptions are caught and forwarded to [onProviderError], and the strategy
      * receives `null` in place of the failed provider's value; this function never throws due
-     * to provider failure.
+     * to provider failure. A provider that was not called produces no [onProviderError].
      *
-     * The resolved value is written through to the sync snapshot so subsequent calls to
-     * [getValueCached] for the same parameter reflect this result without further I/O.
+     * The resolved value is written through to the sync snapshot under [ConfigParam.localStorageKey]
+     * so subsequent calls to [getValueCached] for the same slot reflect this result without
+     * further I/O.
      *
      * @param param The configuration parameter to read.
      * @return The resolved [ConfigValue], never `null`.
      */
     public suspend fun <T : Any> getValue(param: ConfigParam<T>): ConfigValue<T> {
-        val resolved =
-            resolutionStrategy.resolve(
-                param = param,
-                localValue = readLocal(param),
-                remoteValue = readRemote(param),
-                defaultValue = defaultConfigValue(param),
-            )
+        val resolved = resolveForScope(param)
         // Do not write DEFAULT into the snapshot: a later override / fetch should still win.
         if (resolved.source != ConfigValue.Source.DEFAULT) {
             writeSnapshot(param, resolved)
@@ -267,14 +272,42 @@ public class ConfigValues(
     }
 
     /**
-     * Overrides the configuration value for the given parameter with a local value.
-     * This method is used to set a user-specific value that, under
-     * [ValueResolutionStrategy.Default], takes precedence over any remote value for the
-     * specified parameter. A custom strategy may combine or ignore the override.
+     * Supplies the candidates [param]'s scope allows, then asks [resolutionStrategy] to pick.
      *
-     * After the provider write succeeds, the value selected by the [ValueResolutionStrategy]
-     * (given the new local value) is written through to the sync snapshot so [getValueCached]
-     * reflects the override immediately.
+     * A skipped side is not called and is passed as null. [knownLocal] is the value [override]
+     * just wrote. It is a candidate only when the local side is read, so an override of a
+     * [FlagScope.REMOTE] param does not become `localValue`.
+     */
+    private suspend fun <T : Any> resolveForScope(
+        param: ConfigParam<T>,
+        knownLocal: ConfigValue<T>? = null,
+    ): ConfigValue<T> {
+        val localValue =
+            when (param.scope) {
+                FlagScope.REMOTE -> null
+                FlagScope.LOCAL, FlagScope.ANY -> knownLocal ?: readLocal(param)
+            }
+        val remoteValue =
+            when (param.scope) {
+                FlagScope.LOCAL -> null
+                FlagScope.REMOTE, FlagScope.ANY -> readRemote(param)
+            }
+        return resolutionStrategy.resolve(
+            param = param,
+            localValue = localValue,
+            remoteValue = remoteValue,
+            defaultValue = defaultConfigValue(param),
+        )
+    }
+
+    /**
+     * Writes [value] into [param]'s local slot and refreshes that slot's snapshot.
+     *
+     * The write uses [ConfigParam.localStorageKey] and does not touch another scope's slot or
+     * the bare public key. For [FlagScope.LOCAL] and [FlagScope.ANY], the written value is the
+     * local candidate. For [FlagScope.REMOTE], the strategy still receives `localValue = null`:
+     * under [ValueResolutionStrategy.Default], [getValue] of that remote flag stays
+     * `remote ?: default`. A custom strategy may combine or ignore the candidates it is given.
      *
      * Usually used for testing purposes or to allow users to customize.
      *
@@ -287,11 +320,9 @@ public class ConfigValues(
         if (localProvider == null) return
         localProvider.set(param, value)
         val resolved =
-            resolutionStrategy.resolve(
+            resolveForScope(
                 param = param,
-                localValue = ConfigValue(value, ConfigValue.Source.LOCAL),
-                remoteValue = readRemote(param),
-                defaultValue = defaultConfigValue(param),
+                knownLocal = ConfigValue(value, ConfigValue.Source.LOCAL),
             )
         // Unconditional write (unlike getValue): the override must converge the snapshot even
         // when the strategy resolves to the default — same rule as resetOverride.
@@ -299,11 +330,12 @@ public class ConfigValues(
     }
 
     /**
-     * Clears the local override for the given parameter, so subsequent reads fall back
-     * to remote or default values.
+     * Clears the local slot for [param] only. Another scope's slot, and the bare public key,
+     * are not removed.
      *
-     * After the local override is cleared, the effective value is re-resolved synchronously
-     * through the full provider priority chain and written through to the sync snapshot.
+     * After the slot is cleared, the effective value is re-resolved under [param]'s scope and
+     * written through to the sync snapshot. [FlagScope.REMOTE] still passes `localValue = null`
+     * into the strategy, including this call.
      * [getValueCached] reflects the new value as soon as this function returns.
      *
      * @param param The configuration parameter whose local override should be cleared.
@@ -343,11 +375,10 @@ public class ConfigValues(
      * "activate then read sync" pattern used by Firebase Remote Config and similar providers.
      *
      * The supplied params are also registered in an internal warm-set keyed by
-     * [ConfigParam.key]. [fetch] and [initialize] automatically refresh all registered params so
-     * the snapshot stays current after each provider round-trip. Registration is per-key
-     * idempotent — re-registering a param with the same key replaces the previous descriptor
-     * (last registration wins). This prevents silent duplication when the same key is passed in
-     * multiple [warmUp] calls and ensures only one resolve per key occurs during refresh.
+     * [ConfigParam.localStorageKey]. [fetch] and [initialize] automatically refresh all registered
+     * params so the snapshot stays current after each provider round-trip. Registration is
+     * per-slot idempotent — re-registering a param with the same scope and key replaces the
+     * previous descriptor (last registration wins). A different scope is registered separately.
      *
      * Provider errors during warm-up are forwarded to [onProviderError] and do not throw; the
      * affected param resolves to its [ConfigParam.defaultValue] for that round (same semantics
@@ -361,7 +392,7 @@ public class ConfigValues(
      *   `GeneratedFeaturedRegistry.all` for a full application warm-up.
      */
     public suspend fun warmUp(params: Collection<ConfigParam<*>>) {
-        warmSet.update { current -> current + params.associateBy { it.key } }
+        warmSet.update { current -> current + params.associateBy { it.localStorageKey() } }
         refreshWarmSet(params)
     }
 
@@ -384,7 +415,7 @@ public class ConfigValues(
                         async {
                             @Suppress("UNCHECKED_CAST")
                             val typedParam = param as ConfigParam<Any>
-                            param.key to getValue(typedParam)
+                            param.localStorageKey() to getValue(typedParam)
                         }
                     }.awaitAll()
             snapshot.update { current -> mergeWarmResults(current, resolved) }
@@ -465,9 +496,10 @@ public class ConfigValues(
      * Deduplication compares full [ConfigValue] equality — both value AND source must match for
      * a frame to be suppressed.
      *
-     * **Known cost:** each local-provider signal triggers one full [getValue] call. For
-     * whole-store providers (e.g. DataStore) any key change triggers a re-resolve for the
-     * observed parameter — reads are cheap and this is intentional and documented.
+     * **Known cost:** each local-provider signal triggers one full [getValue] call under this
+     * param's scope. A write to another scope's slot is not that signal. [fetch] still signals
+     * observers; a [FlagScope.LOCAL] resolve does not read remote, and `distinctUntilChanged`
+     * drops an unchanged result.
      *
      * Note: local-provider direct writes (bypassing [ConfigValues.override]) reach observers
      * reactively but do **not** write through to the snapshot. Use [ConfigValues.override] if

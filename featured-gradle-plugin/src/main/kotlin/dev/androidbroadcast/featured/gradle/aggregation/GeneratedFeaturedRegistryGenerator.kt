@@ -2,6 +2,7 @@ package dev.androidbroadcast.featured.gradle.aggregation
 
 import dev.androidbroadcast.featured.gradle.manifest.FeaturedManifest
 import dev.androidbroadcast.featured.gradle.manifest.FlagDescriptor
+import dev.androidbroadcast.featured.gradle.manifest.FlagKind
 import dev.androidbroadcast.featured.gradle.manifest.ValueType
 
 /**
@@ -17,6 +18,7 @@ import dev.androidbroadcast.featured.gradle.manifest.ValueType
  */
 internal object GeneratedFeaturedRegistryGenerator {
     private const val CONFIG_PARAM_IMPORT = "dev.androidbroadcast.featured.ConfigParam"
+    private const val FLAG_SCOPE_IMPORT = "dev.androidbroadcast.featured.FlagScope"
 
     /**
      * Generates the full `GeneratedFeaturedRegistry.kt` source text.
@@ -39,6 +41,9 @@ internal object GeneratedFeaturedRegistryGenerator {
             appendLine("package $packageName")
             appendLine()
             appendLine("import $CONFIG_PARAM_IMPORT")
+            if (sorted.isNotEmpty()) {
+                appendLine("import $FLAG_SCOPE_IMPORT")
+            }
             appendLine()
             appendLine("public object $FEATURED_REGISTRY_OBJECT {")
             if (sorted.isEmpty()) {
@@ -53,10 +58,16 @@ internal object GeneratedFeaturedRegistryGenerator {
                     }
                     val typeArg = descriptor.valueType.toKotlinTypeName(descriptor.enumTypeFqn)
                     val defaultLiteral = descriptor.toDefaultLiteral()
+                    val scope =
+                        when (descriptor.kind) {
+                            FlagKind.LOCAL -> "FlagScope.LOCAL"
+                            FlagKind.REMOTE -> "FlagScope.REMOTE"
+                        }
                     val args =
                         buildList {
                             add("key = \"${escapeKotlinString(descriptor.key)}\"")
                             add("defaultValue = $defaultLiteral")
+                            add("scope = $scope")
                             if (descriptor.description != null) add("description = \"${escapeKotlinString(descriptor.description)}\"")
                             if (descriptor.category != null) add("category = \"${escapeKotlinString(descriptor.category)}\"")
                             if (descriptor.valueType == ValueType.ENUM) {

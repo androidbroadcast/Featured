@@ -39,8 +39,8 @@ private val DOUBLE_LITERAL_REGEX = Regex("-?\\d+(\\.\\d+)?([eE]-?\\d+)?")
  *
  * Registered by [FeaturedApplicationPlugin] under the name `generateFeaturedRegistry`.
  *
- * Validation: duplicate flag keys across modules (including LOCAL + REMOTE of the same module)
- * are rejected with an [IllegalStateException] naming both conflicting module paths.
+ * Duplicate public names are not rejected. A local flag and a remote flag may share a name.
+ * The same scope and key remains last-write-wins at runtime.
  */
 @CacheableTask
 internal abstract class GenerateFeaturedRegistryTask : DefaultTask() {
@@ -117,48 +117,17 @@ internal abstract class GenerateFeaturedRegistryTask : DefaultTask() {
 }
 
 /**
- * Validates that no two [FlagDescriptor][dev.androidbroadcast.featured.gradle.manifest.FlagDescriptor]
- * entries across all [manifests] share the same key.
+ * Duplicate public names are not an error.
  *
- * A flag declared in both `localFlags` and `remoteFlags` of the same module is treated as a
- * duplicate because each key produces exactly one `ConfigParam` in the registry.
- *
- * All duplicate keys are collected and reported in a single [IllegalStateException] so that
- * every conflict is visible without requiring repeated build invocations. Each origin includes
- * both the module path and the [FlagKind] so same-module LOCAL/REMOTE collisions are
- * distinguishable from cross-module collisions.
- *
- * Manifests are sorted by [FeaturedManifest.modulePath] internally before processing so that
- * the duplicate error message lists origins in a deterministic order regardless of the order
- * in which Gradle resolves manifest artifacts.
- *
- * @throws IllegalStateException listing every duplicate key and all conflicting origins.
+ * A flag in `localFlags` and a flag in `remoteFlags` may share a key. The registry emits both,
+ * each with the scope of its [dev.androidbroadcast.featured.gradle.manifest.FlagKind]. The same
+ * scope and key stays last-write-wins in the snapshot and warm-set, including across modules.
+ * This function remains so the registry task's validation step has an explicit no-op rather than
+ * a silent deletion of the check.
  */
+@Suppress("UnusedParameter")
 internal fun validateUniqueKeys(manifests: List<FeaturedManifest>) {
-    val triples =
-        manifests
-            .sortedBy { it.modulePath }
-            .flatMap { manifest ->
-                manifest.flags.map { flag -> Triple(flag.key, manifest.modulePath, flag.kind) }
-            }
-
-    // Collect every key that appears more than once, together with all its origins.
-    val duplicates =
-        triples
-            .groupBy { (key, _, _) -> key }
-            .filter { (_, entries) -> entries.size > 1 }
-
-    if (duplicates.isEmpty()) return
-
-    val message =
-        buildString {
-            appendLine("Duplicate flag keys detected in aggregated Featured manifests:")
-            duplicates.forEach { (key, entries) ->
-                val origins = entries.joinToString(", ") { (_, path, kind) -> "'$path' ($kind)" }
-                appendLine("  - '$key': declared in $origins")
-            }
-        }
-    throw IllegalStateException(message.trimEnd())
+    // Names are not unique across containers. Isolation is FlagScope, not a DSL error.
 }
 
 /**

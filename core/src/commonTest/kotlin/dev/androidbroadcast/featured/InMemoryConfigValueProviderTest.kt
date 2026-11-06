@@ -374,4 +374,28 @@ class InMemoryConfigValueProviderTest {
                 cancelAndIgnoreRemainingEvents()
             }
         }
+
+    @Test
+    fun observeDoesNotEmitWhenOtherScopeSlotIsWritten() =
+        runTest {
+            val provider = InMemoryConfigValueProvider()
+            val local = ConfigParam("FEATURE_X", "local-default", FlagScope.LOCAL)
+            val remote = ConfigParam("FEATURE_X", "remote-default", FlagScope.REMOTE)
+
+            provider.observe(local).test {
+                val initial = awaitItem()
+                assertEquals("local-default", initial.value)
+                assertEquals(ConfigValue.Source.DEFAULT, initial.source)
+
+                provider.set(remote, "remote-write")
+                expectNoEvents()
+
+                provider.set(local, "local-write")
+                val updated = awaitItem()
+                assertEquals("local-write", updated.value)
+                assertEquals(ConfigValue.Source.LOCAL, updated.source)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
 }

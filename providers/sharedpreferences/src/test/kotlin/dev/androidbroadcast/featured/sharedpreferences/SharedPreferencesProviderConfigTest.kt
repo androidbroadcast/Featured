@@ -8,6 +8,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValue
+import dev.androidbroadcast.featured.ConfigValues
+import dev.androidbroadcast.featured.FlagScope
+import dev.androidbroadcast.featured.RemoteConfigValueProvider
 import dev.androidbroadcast.featured.TypeConverter
 import dev.androidbroadcast.featured.enumConverter
 import kotlinx.coroutines.CoroutineName
@@ -174,7 +177,7 @@ class SharedPreferencesProviderConfigTest {
             assertNotNull(provider.get(stringParam))
 
             // When removing the value
-            provider.remove(stringParam.key)
+            provider.remove(stringParam.localStorageKey())
 
             // Then the value should no longer exist
             assertNull(provider.get(stringParam))
@@ -439,5 +442,106 @@ class SharedPreferencesProviderConfigTest {
         val mergedContext = contextField.get(providerWithContext) as kotlin.coroutines.CoroutineContext
 
         assertEquals(coroutineName, mergedContext[CoroutineName])
+    }
+
+    @Test
+    fun `override of remote flag stores only REMOTE slot`() =
+        runTest {
+            val prefs = isolatedPrefs("remote_slot")
+            val store = SharedPreferencesProviderConfig(prefs)
+            val remote = MapRemote()
+            remote.values["FEATURE_X"] = "from-remote"
+            val configValues = ConfigValues(localProvider = store, remoteProvider = remote)
+            val localFlag = ConfigParam("FEATURE_X", "L", FlagScope.LOCAL)
+            val remoteFlag = ConfigParam("FEATURE_X", "R", FlagScope.REMOTE)
+
+            configValues.override(remoteFlag, "should-not-win")
+
+            assertTrue(prefs.contains("REMOTE:FEATURE_X"))
+            assertEquals(false, prefs.contains("LOCAL:FEATURE_X"))
+            assertEquals(false, prefs.contains("FEATURE_X"))
+            assertEquals("from-remote", configValues.getValue(remoteFlag).value)
+            assertEquals(ConfigValue.Source.REMOTE, configValues.getValue(remoteFlag).source)
+
+            configValues.resetOverride(remoteFlag)
+            assertEquals(false, prefs.contains("REMOTE:FEATURE_X"))
+            assertEquals(false, prefs.contains("LOCAL:FEATURE_X"))
+            assertEquals("from-remote", configValues.getValue(remoteFlag).value)
+            assertNull(store.get(localFlag))
+        }
+
+    @Test
+    fun `local and remote flags are two store keys and clear removes both`() =
+        runTest {
+            val prefs = isolatedPrefs("two_slots")
+            val store = SharedPreferencesProviderConfig(prefs)
+            val localFlag = ConfigParam("FEATURE_X", "L", FlagScope.LOCAL)
+            val remoteFlag = ConfigParam("FEATURE_X", "R", FlagScope.REMOTE)
+
+            store.set(localFlag, "local-value")
+            store.set(remoteFlag, "remote-slot")
+
+            assertEquals("local-value", prefs.all["LOCAL:FEATURE_X"])
+            assertEquals("remote-slot", prefs.all["REMOTE:FEATURE_X"])
+            assertEquals(2, prefs.all.size)
+
+            store.clear()
+            assertTrue(prefs.all.isEmpty())
+        }
+
+    @Test
+    fun `ANY slot is ANY prefix and remove does not prefix a raw key`() =
+        runTest {
+            val prefs = isolatedPrefs("any_slot")
+            val store = SharedPreferencesProviderConfig(prefs)
+            val remote = MapRemote()
+            val configValues = ConfigValues(localProvider = store, remoteProvider = remote)
+            val any = ConfigParam("FEATURE_X", "D")
+
+            configValues.override(any, "local-any")
+
+            assertEquals("local-any", prefs.all["ANY:FEATURE_X"])
+            assertEquals(false, prefs.contains("FEATURE_X"))
+            assertEquals(false, prefs.contains("LOCAL:FEATURE_X"))
+            assertEquals(false, prefs.contains("REMOTE:FEATURE_X"))
+            assertEquals(listOf("FEATURE_X"), remote.requestedKeys)
+
+            store.remove("FEATURE_X")
+            assertEquals("local-any", prefs.all["ANY:FEATURE_X"])
+        }
+
+    @Test
+    fun `colon in the public key is not parsed into another scope`() =
+        runTest {
+            val prefs = isolatedPrefs("colon_key")
+            val store = SharedPreferencesProviderConfig(prefs)
+            val param = ConfigParam("FEA:TURE", "default", FlagScope.LOCAL)
+
+            store.set(param, "stored")
+
+            assertEquals("stored", prefs.all["LOCAL:FEA:TURE"])
+            assertEquals("stored", store.get(param)?.value)
+            assertEquals(false, prefs.contains("FEA:TURE"))
+            assertEquals(false, prefs.contains("LOCAL:FEA"))
+        }
+
+    private fun isolatedPrefs(name: String) =
+        ApplicationProvider
+            .getApplicationContext<Application>()
+            .getSharedPreferences(name, Context.MODE_PRIVATE)
+            .apply { edit { clear() } }
+
+    private class MapRemote : RemoteConfigValueProvider {
+        val values = mutableMapOf<String, Any>()
+        val requestedKeys = mutableListOf<String>()
+
+        @Suppress("UNCHECKED_CAST")
+        override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T>? {
+            requestedKeys += param.key
+            val stored = values[param.key] ?: return null
+            return ConfigValue(stored as T, ConfigValue.Source.REMOTE)
+        }
+
+        override suspend fun fetch(activate: Boolean) = Unit
     }
 }

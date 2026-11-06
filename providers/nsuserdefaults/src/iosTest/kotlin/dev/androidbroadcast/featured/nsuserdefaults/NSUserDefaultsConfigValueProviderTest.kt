@@ -326,7 +326,7 @@ class NSUserDefaultsConfigValueProviderTest {
             }
         }
 
-    // --- index self-heal: direct NSUserDefaults write is readable via get() ---
+    // --- index self-heal: a direct write of the storage identity is readable via get() ---
 
     @Test
     fun keyWrittenDirectlyToSuiteIsReadableViaGet() =
@@ -336,11 +336,21 @@ class NSUserDefaultsConfigValueProviderTest {
             // not from the written-key index.
             val directDefaults = NSUserDefaults(suiteName = suiteName)
             val param = ConfigParam("direct_write_key", "none")
-            directDefaults.setObject("direct_value", forKey = param.key)
+            directDefaults.setObject("direct_value", forKey = param.localStorageKey())
 
             val result = provider.get(param)
             assertEquals("direct_value", result?.value)
             assertEquals(ConfigValue.Source.LOCAL, result?.source)
+        }
+
+    @Test
+    fun bareKeyWrittenDirectlyToSuiteIsNotRead() =
+        runTest {
+            val directDefaults = NSUserDefaults(suiteName = suiteName)
+            val param = ConfigParam("bare_direct_write_key", "none")
+            directDefaults.setObject("bare_value", forKey = param.key)
+
+            assertNull(provider.get(param))
         }
 
     // --- index atomicity ---
