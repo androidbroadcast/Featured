@@ -47,10 +47,11 @@ import kotlin.test.assertTrue
 /**
  * Closes the release-stripping loop the synthetic shrinker tests leave open.
  *
- * The Android fixture compiles the plugin-generated accessor, R8 of `assembleRelease` consumes
- * the generated `-assumevalues` and `-checkdiscard` rules, and a second in-process R8 run uses
- * that compiled method's real JVM name. A hand-written method of the same source name is not
- * enough: a drifted class or signature makes the rule a silent no-op.
+ * The Android fixture compiles the plugin-generated accessor. Its stub boolean is a native
+ * call, so R8 cannot fold it. A class reached only through that stub must survive. A class
+ * reached only through the generated accessor must disappear, which is what shows the
+ * `-assumevalues` rule — not the stub — did the stripping. `discard()` fails the build if
+ * that class is kept. A second R8 run uses the compiled method's real JVM name.
  */
 class ReleaseDceGuaranteeTest {
     @get:Rule
@@ -84,8 +85,18 @@ class ReleaseDceGuaranteeTest {
             mappingText.contains("dev.androidbroadcast.featured.testapp.LiveFeature ->"),
             "LiveFeature must survive so the check is not 'R8 deleted everything'\n${mappingText.take(1500)}",
         )
+        assertTrue(
+            mappingText.contains("dev.androidbroadcast.featured.testapp.UnruledFeature ->"),
+            "UnruledFeature is reached only through the opaque stub. If it is gone, " +
+                "R8 folded the stub and DeadFeature's absence does not prove -assumevalues.\n" +
+                mappingText.take(1500),
+        )
         assertFalse(dexContains(apk, DEAD_FEATURE_INTERNAL), "DeadFeature must be absent from the release APK")
         assertTrue(dexContains(apk, LIVE_FEATURE_INTERNAL), "LiveFeature must remain in the release APK")
+        assertTrue(
+            dexContains(apk, UNRULED_FEATURE_INTERNAL),
+            "UnruledFeature must remain. Its absence would mean the stub was folded, not the plugin rule.",
+        )
 
         val folded = runR8OnCompiledAccessor(classFile.readBytes(), accessor, includeAssumeValues = true)
         assertFalse(jarContains(folded, IF_ONLY_INTERNAL))
@@ -430,6 +441,7 @@ class ReleaseDceGuaranteeTest {
         const val DEAD_FEATURE_FQN = "dev.androidbroadcast.featured.testapp.DeadFeature"
         const val DEAD_FEATURE_INTERNAL = "dev/androidbroadcast/featured/testapp/DeadFeature"
         const val LIVE_FEATURE_INTERNAL = "dev/androidbroadcast/featured/testapp/LiveFeature"
+        const val UNRULED_FEATURE_INTERNAL = "dev/androidbroadcast/featured/testapp/UnruledFeature"
         const val CALLER_INTERNAL = "DceCaller"
         const val CALLER_FQN = "DceCaller"
         const val IF_ONLY_INTERNAL = "IfOnly"

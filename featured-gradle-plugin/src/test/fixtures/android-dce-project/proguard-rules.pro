@@ -9,3 +9,6 @@
 -keepclassmembers class dev.androidbroadcast.featured.testapp.LiveFeature {
     public static int hits;
 }
+-keepclassmembers class dev.androidbroadcast.featured.testapp.UnruledFeature {
+    public static int hits;
+}

@@ -42,5 +42,22 @@ class ConfigValue<T : Any>(
 )
 
 class ConfigValues {
-    fun <T : Any> getValueCached(param: ConfigParam<T>): ConfigValue<T> = ConfigValue(param.defaultValue)
+    /**
+     * Must not return a value R8 can see as a constant. The generated accessor is
+     * `getValueCached(param).value`; if this returns `param.defaultValue`, R8 folds the
+     * flag without the plugin's `-assumevalues` rule and a passing `discard()` proves nothing.
+     * A native call is opaque to R8, so the boolean is unknown unless the rule pins it.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any> getValueCached(param: ConfigParam<T>): ConfigValue<T> {
+        val value =
+            if (param.defaultValue is Boolean && readUnknownBoolean()) {
+                true as T
+            } else {
+                param.defaultValue
+            }
+        return ConfigValue(value)
+    }
+
+    private external fun readUnknownBoolean(): Boolean
 }

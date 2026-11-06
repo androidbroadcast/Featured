@@ -2,6 +2,7 @@ package dev.androidbroadcast.featured.testapp
 
 import android.app.Activity
 import android.os.Bundle
+import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValues
 import dev.androidbroadcast.featured.generated.isDarkModeEnabled
 
@@ -31,16 +32,43 @@ class LiveFeature {
     }
 }
 
+/**
+ * Reached only through [ConfigValues.getValueCached], not the generated accessor.
+ * The stub's boolean is opaque, so this class must survive. If it disappears, R8 folded
+ * the stub and `DeadFeature`'s absence does not prove the plugin rule.
+ */
+class UnruledFeature {
+    fun label(): String {
+        hits++
+        return "unruled"
+    }
+
+    companion object {
+        @JvmField
+        var hits: Int = 0
+    }
+}
+
 /** Framework entry point. Default Android keep rules retain onCreate. */
 class FlagActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val values = ConfigValues()
+        val raw = ConfigParam("raw", false, Boolean::class)
         title =
-            if (values.isDarkModeEnabled()) {
-                DeadFeature().label()
-            } else {
-                LiveFeature().label()
-            }
+            (
+                if (values.isDarkModeEnabled()) {
+                    DeadFeature().label()
+                } else {
+                    LiveFeature().label()
+                }
+            ) +
+            (
+                if (values.getValueCached(raw).value) {
+                    UnruledFeature().label()
+                } else {
+                    "plain"
+                }
+            )
     }
 }
