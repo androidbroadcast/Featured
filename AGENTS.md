@@ -36,7 +36,7 @@ Use `./gradlew spotlessApply` to format Kotlin and Gradle Kotlin DSL changes. Fo
 ./gradlew :core:koverHtmlReport
 ```
 
-Do not treat `./gradlew test` as the complete suite: it selects conventional JVM/Android test tasks, not KMP `jvmTest` tasks, and does not select the included build's tests. Use `:module:allTests` for KMP cross-target verification where the host supports the configured native targets.
+Do not treat `./gradlew test` as the complete suite: it selects conventional JVM/Android test tasks, not KMP `jvmTest` tasks, and does not select the included build's tests. CI runs `:featured-shrinker-tests:test` and `:featured-gradle-plugin:test` explicitly because of that. Use `:module:allTests` for KMP cross-target verification where the host supports the configured native targets.
 
 For Apple-facing changes, run the applicable simulator tests and CI's framework/Xcode checks on macOS:
 

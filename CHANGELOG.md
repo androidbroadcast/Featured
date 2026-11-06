@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Release stripping is now checked as one loop: the compiled generated accessor must match
+  the `-assumevalues` rule, `assembleRelease` must drop a class declared with `discard(...)`,
+  and that release build fails if the class is kept. A hand-written R8 copy of the accessor
+  no longer counts as that guarantee.
 - Gradle plugin markers are published to Maven Central again, so
   `plugins { id("dev.androidbroadcast.featured") version "…" }` and
   `id("dev.androidbroadcast.featured.application")` resolve. The Plugin Portal redirects

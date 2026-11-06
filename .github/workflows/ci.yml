@@ -23,6 +23,8 @@ jobs:
       - uses: ./.github/actions/setup-build-env
       - run: >-
           ./gradlew test
+          :featured-shrinker-tests:test
+          :featured-gradle-plugin:test
           :core:koverVerify
           :providers:datastore:koverVerify
           :providers:sharedpreferences:koverVerify
