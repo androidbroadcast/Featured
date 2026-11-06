@@ -132,4 +132,6 @@ dependencies {
     testPluginClasspath("com.android.tools.build:gradle:9.1.0")
     testImplementation(gradleTestKit())
     testImplementation(libs.kotlin.testJunit)
+    testImplementation(libs.r8)
+    testImplementation(libs.asm)
 }

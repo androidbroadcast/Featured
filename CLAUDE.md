@@ -113,5 +113,5 @@ For non-reactive reads (logging, eager-conditional paths) use `configValues.getV
 - "Find codegen output shape" → `ConfigParamGenerator.kt`, `ExtensionFunctionGenerator.kt`, `ProguardRulesGenerator.kt`, `CheckDiscardRulesGenerator.kt`, `XcconfigGenerator.kt`, `IosConstValGenerator.kt` (all in `featured-gradle-plugin/src/main/kotlin/`).
 - "Find aggregator wiring" → `FeaturedApplicationPlugin.kt` + `aggregation/` subpackage.
 - "Find manifest format" → `manifest/` subpackage (`GenerateFeaturedManifestTask.kt`, `SCHEMA_VERSION`).
-- "Verify R8 DCE behaviour" → `featured-shrinker-tests/` (integration tests over real `assembleRelease`).
+- "Verify R8 DCE behaviour" → `featured-shrinker-tests/` proves R8 on a hand-written accessor shape. `ReleaseDceGuaranteeTest` compiles the plugin-generated accessor and checks the release APK.
 - Sample wiring → `sample/android-app`, `sample/desktop`, `iosApp/`; per-feature flag observers → `sample/feature-*/.../*FlagObservers.kt`.
