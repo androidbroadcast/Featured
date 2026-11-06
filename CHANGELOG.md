@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   so a previously stored bare key is not that slot. A hand-written `ConfigParam` that omits
   `scope`, and already compiled callers of the old constructor, stay `FlagScope.ANY` and still
   resolve `local ?: remote ?: default`. Remote providers still look up the public key. (#294)
+- Documentation: the [Sample App](https://github.com/androidbroadcast/Featured/wiki/Sample-App)
+  wiki page matches the current multi-module sample. Feature modules declare flags,
+  `:sample:shared` aggregates them, and UI observes flags through public bridges. (#214)
 - Dependency updates: Firebase BOM 34.19.0 (latest 34.x; 35.x is a separate major), SKIE 0.10.15,
   Spotless 8.10.4, and Kover 0.9.11.
 - Dependency updates: Kotlin 2.4.20, Compose Multiplatform 1.12.2, Compose Hot Reload 1.2.0,
