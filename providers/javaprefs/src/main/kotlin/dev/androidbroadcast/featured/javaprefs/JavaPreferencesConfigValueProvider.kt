@@ -101,14 +101,14 @@ public class JavaPreferencesConfigValueProvider(
         val klass = param.valueType
         val converter = converters[klass]
         if (converter != null) {
-            val raw = node.get(param.key, null) ?: return null
+            val raw = node.get(param.localStorageKey(), null) ?: return null
             val value = converter.fromString(raw)
             return ConfigValue(value, ConfigValue.Source.LOCAL)
         }
         val reader =
             readers[klass]
                 ?: throw IllegalArgumentException("Unsupported type: $klass. Register a TypeConverter for custom types.")
-        val value = (reader(node, param.key) as T?) ?: return null
+        val value = (reader(node, param.localStorageKey()) as T?) ?: return null
         return ConfigValue(value, ConfigValue.Source.LOCAL)
     }
 
@@ -119,7 +119,7 @@ public class JavaPreferencesConfigValueProvider(
         withContext(coroutineContext) {
             writeValue(param, value)
             node.flush()
-            changedKeysFlow.tryEmit(param.key)
+            changedKeysFlow.tryEmit(param.localStorageKey())
         }
 
     @Suppress("UNCHECKED_CAST")
@@ -130,20 +130,20 @@ public class JavaPreferencesConfigValueProvider(
         val klass = param.valueType
         val converter = converters[klass]
         if (converter != null) {
-            node.put(param.key, converter.toString(value))
+            node.put(param.localStorageKey(), converter.toString(value))
             return
         }
         val writer =
             writers[klass]
                 ?: throw IllegalArgumentException("Unsupported type: $klass. Register a TypeConverter for custom types.")
-        writer(node, param.key, value)
+        writer(node, param.localStorageKey(), value)
     }
 
     override suspend fun <T : Any> resetOverride(param: ConfigParam<T>): Unit =
         withContext(coroutineContext) {
-            node.remove(param.key)
+            node.remove(param.localStorageKey())
             node.flush()
-            changedKeysFlow.tryEmit(param.key)
+            changedKeysFlow.tryEmit(param.localStorageKey())
         }
 
     override suspend fun clear(): Unit =
@@ -162,7 +162,7 @@ public class JavaPreferencesConfigValueProvider(
             emit(get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT))
             emitAll(
                 changedKeysFlow
-                    .filter { it == param.key }
+                    .filter { it == param.localStorageKey() }
                     .map {
                         // Keep the observe stream alive on storage/converter errors; the error is
                         // reported by the consumer's re-resolve via ConfigValues.getValue.

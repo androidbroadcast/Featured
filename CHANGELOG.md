@@ -27,8 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   enable a selected boolean flag only when both the local value and the remote value are
   explicitly `true` (`localValue?.value == true && remoteValue?.value == true`). The combined
   result's source is `ConfigValue.Source.UNKNOWN`, chosen by the strategy; the library does not
-  stamp a combined source. Two generated flags with the same name are not this mechanism.
-  Same-name isolation is a separate task (GitHub #294). (#296)
+  stamp a combined source. Two generated flags with the same name are not this mechanism. (#296)
+- The same name in `localFlags` and `remoteFlags` is no longer one store. Generated local flags
+  are `FlagScope.LOCAL` and generated remote flags are `FlagScope.REMOTE`. Local storage and the
+  snapshot are keyed by scope plus key (`LOCAL:FEATURE_X`, `REMOTE:FEATURE_X`, `ANY:FEATURE_X`),
+  so a previously stored bare key is not that slot. A hand-written `ConfigParam` that omits
+  `scope`, and already compiled callers of the old constructor, stay `FlagScope.ANY` and still
+  resolve `local ?: remote ?: default`. Remote providers still look up the public key. (#294)
 - Dependency updates: Firebase BOM 34.19.0 (latest 34.x; 35.x is a separate major), SKIE 0.10.15,
   Spotless 8.10.4, and Kover 0.9.11.
 - Dependency updates: Kotlin 2.4.20, Compose Multiplatform 1.12.2, Compose Hot Reload 1.2.0,

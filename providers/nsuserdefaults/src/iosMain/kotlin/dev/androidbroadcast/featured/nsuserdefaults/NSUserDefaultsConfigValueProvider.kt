@@ -106,7 +106,7 @@ public class NSUserDefaultsConfigValueProvider(
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T>? {
         requireNotReservedKey(param.key)
-        val key = param.key
+        val key = param.localStorageKey()
         // NSUserDefaults returns a default (0/false/"") when a key is absent, so we must
         // check object(forKey:) to distinguish "not set" from "set to default value".
         val rawObject = defaults.objectForKey(key) ?: return null
@@ -147,7 +147,7 @@ public class NSUserDefaultsConfigValueProvider(
         value: T,
     ) {
         requireNotReservedKey(param.key)
-        val key = param.key
+        val key = param.localStorageKey()
         // Value-write and index-update share the mutex with clear() to prevent a race where
         // a freshly-written key escapes clear()'s index snapshot.
         indexMutex.withLock {
@@ -186,7 +186,7 @@ public class NSUserDefaultsConfigValueProvider(
      */
     override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
         requireNotReservedKey(param.key)
-        val key = param.key
+        val key = param.localStorageKey()
         // Remove and index-update share the mutex with set()/clear() to close the in-process race.
         indexMutex.withLock {
             defaults.removeObjectForKey(key)
@@ -260,7 +260,7 @@ public class NSUserDefaultsConfigValueProvider(
             emit(initial)
             emitAll(
                 changedKeyFlow
-                    .filter { key -> key == param.key }
+                    .filter { key -> key == param.localStorageKey() }
                     .map {
                         // Keep the observe stream alive on storage/converter errors; the error is
                         // reported by the consumer's re-resolve via ConfigValues.getValue.

@@ -7,6 +7,7 @@ import dev.androidbroadcast.featured.gradle.manifest.SCHEMA_VERSION
 import dev.androidbroadcast.featured.gradle.manifest.ValueType
 import kotlin.test.Test
 import kotlin.test.assertContains
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -58,7 +59,7 @@ class GeneratedFeaturedRegistryGeneratorTest {
                 manifests = listOf(manifest(":app", flag(key = "dark_mode", valueType = ValueType.BOOLEAN, defaultValue = "false"))),
                 packageName = FEATURED_REGISTRY_PACKAGE,
             )
-        assertContains(source, "ConfigParam<Boolean>(key = \"dark_mode\", defaultValue = false)")
+        assertContains(source, "ConfigParam<Boolean>(key = \"dark_mode\", defaultValue = false, scope = FlagScope.LOCAL)")
     }
 
     @Test
@@ -389,5 +390,53 @@ class GeneratedFeaturedRegistryGeneratorTest {
                 packageName = FEATURED_REGISTRY_PACKAGE,
             )
         assertContains(source, "category = \"UI\"")
+    }
+
+    @Test
+    fun `same public key in local and remote is emitted with both scopes`() {
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests =
+                    listOf(
+                        manifest(
+                            ":app",
+                            flag(
+                                key = "FEATURE_X",
+                                valueType = ValueType.BOOLEAN,
+                                defaultValue = "false",
+                                kind = FlagKind.LOCAL,
+                            ),
+                            flag(
+                                key = "FEATURE_X",
+                                valueType = ValueType.STRING,
+                                defaultValue = "remote",
+                                kind = FlagKind.REMOTE,
+                            ),
+                        ),
+                    ),
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        assertContains(source, "import dev.androidbroadcast.featured.FlagScope")
+        assertContains(source, "key = \"FEATURE_X\"")
+        assertContains(source, "scope = FlagScope.LOCAL")
+        assertContains(source, "scope = FlagScope.REMOTE")
+        assertContains(source, "ConfigParam<Boolean>(")
+        assertContains(source, "ConfigParam<String>(")
+        assertEquals(2, Regex("key = \"FEATURE_X\"").findAll(source).count())
+    }
+
+    @Test
+    fun `same scope and key across modules is not dropped`() {
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests =
+                    listOf(
+                        manifest(":feature-a", flag(key = "FEATURE_X", valueType = ValueType.BOOLEAN, defaultValue = "false")),
+                        manifest(":feature-b", flag(key = "FEATURE_X", valueType = ValueType.BOOLEAN, defaultValue = "true")),
+                    ),
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        assertEquals(2, Regex("scope = FlagScope.LOCAL").findAll(source).count())
+        assertEquals(2, Regex("key = \"FEATURE_X\"").findAll(source).count())
     }
 }

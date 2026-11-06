@@ -7,7 +7,7 @@ import dev.androidbroadcast.featured.gradle.manifest.SCHEMA_VERSION
 import dev.androidbroadcast.featured.gradle.manifest.ValueType
 import kotlin.test.Test
 import kotlin.test.assertContains
-import kotlin.test.assertFailsWith
+import kotlin.test.assertEquals
 
 class FeaturedAggregationDuplicateKeyTest {
     private fun booleanFlag(
@@ -41,7 +41,7 @@ class FeaturedAggregationDuplicateKeyTest {
     }
 
     @Test
-    fun `duplicate key across two modules throws with both module paths`() {
+    fun `duplicate key across two modules is not an error`() {
         val manifests =
             listOf(
                 FeaturedManifest(
@@ -55,15 +55,17 @@ class FeaturedAggregationDuplicateKeyTest {
                     flags = listOf(booleanFlag("dark_mode")),
                 ),
             )
-        val ex = assertFailsWith<IllegalStateException> { validateUniqueKeys(manifests) }
-        assertContains(ex.message ?: "", "dark_mode", message = "Message must contain the duplicate key")
-        assertContains(ex.message ?: "", ":feature-a", message = "Message must name first module path")
-        assertContains(ex.message ?: "", ":feature-b", message = "Message must name second module path")
+        validateUniqueKeys(manifests)
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests = manifests,
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        assertEquals(2, Regex("key = \"dark_mode\"").findAll(source).count())
     }
 
     @Test
-    fun `same key in LOCAL and REMOTE of same module is a duplicate`() {
-        // A single module declaring the same key in both localFlags and remoteFlags.
+    fun `same key in LOCAL and REMOTE of same module is not an error`() {
         val manifests =
             listOf(
                 FeaturedManifest(
@@ -71,21 +73,25 @@ class FeaturedAggregationDuplicateKeyTest {
                     modulePath = ":feature-checkout",
                     flags =
                         listOf(
-                            booleanFlag(key = "checkout_mode", kind = FlagKind.LOCAL),
-                            booleanFlag(key = "checkout_mode", kind = FlagKind.REMOTE),
+                            booleanFlag(key = "FEATURE_X", kind = FlagKind.LOCAL),
+                            booleanFlag(key = "FEATURE_X", kind = FlagKind.REMOTE),
                         ),
                 ),
             )
-        val ex = assertFailsWith<IllegalStateException> { validateUniqueKeys(manifests) }
-        assertContains(ex.message ?: "", "checkout_mode", message = "Message must contain the duplicate key")
-        // Same-module collision: both LOCAL and REMOTE markers must appear so the origin is distinguishable.
-        assertContains(ex.message ?: "", "LOCAL", message = "Message must name LOCAL kind")
-        assertContains(ex.message ?: "", "REMOTE", message = "Message must name REMOTE kind")
-        assertContains(ex.message ?: "", ":feature-checkout", message = "Message must name module path")
+        validateUniqueKeys(manifests)
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests = manifests,
+                packageName = FEATURED_REGISTRY_PACKAGE,
+            )
+        assertContains(source, "scope = FlagScope.LOCAL")
+        assertContains(source, "scope = FlagScope.REMOTE")
+        assertContains(source, "key = \"FEATURE_X\"")
+        assertEquals(2, Regex("key = \"FEATURE_X\"").findAll(source).count())
     }
 
     @Test
-    fun `three modules colliding on same key all appear in error message`() {
+    fun `same scope duplicate across modules is emitted not rejected`() {
         val manifests =
             listOf(
                 FeaturedManifest(
@@ -104,34 +110,12 @@ class FeaturedAggregationDuplicateKeyTest {
                     flags = listOf(booleanFlag("shared_flag")),
                 ),
             )
-        val ex = assertFailsWith<IllegalStateException> { validateUniqueKeys(manifests) }
-        val msg = ex.message ?: ""
-        assertContains(msg, "shared_flag", message = "Message must contain the duplicate key")
-        assertContains(msg, ":feature-a", message = "Message must name :feature-a")
-        assertContains(msg, ":feature-b", message = "Message must name :feature-b")
-        assertContains(msg, ":feature-c", message = "Message must name :feature-c")
-    }
-
-    @Test
-    fun `same module LOCAL and REMOTE collision shows both LOCAL and REMOTE not just module path twice`() {
-        // Regression guard: before the fix the message read "':feature-checkout' and ':feature-checkout'"
-        // with no kind information — indistinguishable from a cross-module collision with identical names.
-        val manifests =
-            listOf(
-                FeaturedManifest(
-                    schemaVersion = SCHEMA_VERSION,
-                    modulePath = ":feature-checkout",
-                    flags =
-                        listOf(
-                            booleanFlag(key = "show_avatar", kind = FlagKind.LOCAL),
-                            booleanFlag(key = "show_avatar", kind = FlagKind.REMOTE),
-                        ),
-                ),
+        validateUniqueKeys(manifests)
+        val source =
+            GeneratedFeaturedRegistryGenerator.generate(
+                manifests = manifests,
+                packageName = FEATURED_REGISTRY_PACKAGE,
             )
-        val ex = assertFailsWith<IllegalStateException> { validateUniqueKeys(manifests) }
-        val msg = ex.message ?: ""
-        assertContains(msg, "show_avatar", message = "Message must contain the duplicate key")
-        assertContains(msg, "LOCAL", message = "Message must include LOCAL kind marker")
-        assertContains(msg, "REMOTE", message = "Message must include REMOTE kind marker")
+        assertEquals(3, Regex("key = \"shared_flag\"").findAll(source).count())
     }
 }

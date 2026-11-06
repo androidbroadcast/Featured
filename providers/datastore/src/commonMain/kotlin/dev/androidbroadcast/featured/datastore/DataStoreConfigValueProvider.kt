@@ -15,6 +15,7 @@ import dev.androidbroadcast.featured.LocalConfigValueProvider
 import dev.androidbroadcast.featured.TypeConverter
 import dev.androidbroadcast.featured.TypeConverters
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlin.reflect.KClass
@@ -29,8 +30,8 @@ import kotlin.reflect.KClass
  * Attempting to read or write a type with no built-in support and no registered converter
  * throws [IllegalArgumentException].
  *
- * All write operations ([set], [resetOverride]) trigger a DataStore update, which in turn
- * causes any active [observe] flow to re-emit.
+ * All write operations ([set], [resetOverride]) trigger a DataStore update. [observe] re-emits
+ * only when this param's slot changes, so a write to another scope's slot is not a signal.
  *
  * ```kotlin
  * val dataStore: DataStore<Preferences> = context.createDataStore("feature_flags")
@@ -88,7 +89,7 @@ public class DataStoreConfigValueProvider(
         converter: TypeConverter<T>,
     ): ConfigValue<T>? {
         val preferences = dataStore.data.first()
-        val key = stringPreferencesKey(param.key)
+        val key = stringPreferencesKey(param.localStorageKey())
         return preferences[key]?.let { raw ->
             ConfigValue(value = converter.fromString(raw), source = ConfigValue.Source.LOCAL)
         }
@@ -111,7 +112,7 @@ public class DataStoreConfigValueProvider(
         val converter = typeConverters.get(param.valueType)
         if (converter != null) {
             dataStore.edit { preferences ->
-                preferences[stringPreferencesKey(param.key)] = converter.toString(value)
+                preferences[stringPreferencesKey(param.localStorageKey())] = converter.toString(value)
             }
         } else {
             dataStore.edit { preferences ->
@@ -133,7 +134,7 @@ public class DataStoreConfigValueProvider(
         val converter = typeConverters.get(param.valueType)
         if (converter != null) {
             dataStore.edit { preferences ->
-                preferences.remove(stringPreferencesKey(param.key))
+                preferences.remove(stringPreferencesKey(param.localStorageKey()))
             }
         } else {
             dataStore.edit { preferences ->
@@ -157,7 +158,8 @@ public class DataStoreConfigValueProvider(
      * Returns a [Flow] that emits a [ConfigValue] for [param] on every DataStore update.
      *
      * The flow emits immediately with the current persisted value (or [ConfigParam.defaultValue]
-     * when no override is set) and then continues to emit on every subsequent change.
+     * when no override is set) and then emits when this param's slot changes. A write that does
+     * not change this slot, including a write to another scope's slot, is not a signal.
      *
      * @param param The configuration parameter to observe.
      * @return A [Flow] backed by the DataStore; completes when the collector's scope is cancelled.
@@ -166,18 +168,20 @@ public class DataStoreConfigValueProvider(
     override fun <T : Any> observe(param: ConfigParam<T>): Flow<ConfigValue<T>> {
         val converter = typeConverters.get(param.valueType)
         return if (converter != null) {
-            dataStore.data.map { preferences ->
-                preferences[stringPreferencesKey(param.key)]?.let { raw ->
-                    ConfigValue(value = converter.fromString(raw), source = ConfigValue.Source.LOCAL)
-                } ?: ConfigValue(value = param.defaultValue, source = ConfigValue.Source.DEFAULT)
-            }
+            dataStore.data
+                .map { preferences ->
+                    preferences[stringPreferencesKey(param.localStorageKey())]?.let { raw ->
+                        ConfigValue(value = converter.fromString(raw), source = ConfigValue.Source.LOCAL)
+                    } ?: ConfigValue(value = param.defaultValue, source = ConfigValue.Source.DEFAULT)
+                }.distinctUntilChanged()
         } else {
-            dataStore.data.map { preferences ->
-                val key = createPreferencesKey(param)
-                preferences[key]?.let { value ->
-                    ConfigValue(value = value, source = ConfigValue.Source.LOCAL)
-                } ?: ConfigValue(value = param.defaultValue, source = ConfigValue.Source.DEFAULT)
-            }
+            dataStore.data
+                .map { preferences ->
+                    val key = createPreferencesKey(param)
+                    preferences[key]?.let { value ->
+                        ConfigValue(value = value, source = ConfigValue.Source.LOCAL)
+                    } ?: ConfigValue(value = param.defaultValue, source = ConfigValue.Source.DEFAULT)
+                }.distinctUntilChanged()
         }
     }
 
@@ -209,11 +213,11 @@ public inline fun <reified T : Any> DataStoreConfigValueProvider.registerConvert
 @Suppress("UNCHECKED_CAST")
 private fun <T : Any> createPreferencesKey(param: ConfigParam<T>): Preferences.Key<T> =
     when (param.valueType) {
-        String::class -> stringPreferencesKey(param.key)
-        Int::class -> intPreferencesKey(param.key)
-        Long::class -> longPreferencesKey(param.key)
-        Float::class -> floatPreferencesKey(param.key)
-        Double::class -> doublePreferencesKey(param.key)
-        Boolean::class -> booleanPreferencesKey(param.key)
+        String::class -> stringPreferencesKey(param.localStorageKey())
+        Int::class -> intPreferencesKey(param.localStorageKey())
+        Long::class -> longPreferencesKey(param.localStorageKey())
+        Float::class -> floatPreferencesKey(param.localStorageKey())
+        Double::class -> doublePreferencesKey(param.localStorageKey())
+        Boolean::class -> booleanPreferencesKey(param.localStorageKey())
         else -> throw IllegalArgumentException("Unsupported type: ${param.valueType}")
     } as Preferences.Key<T>

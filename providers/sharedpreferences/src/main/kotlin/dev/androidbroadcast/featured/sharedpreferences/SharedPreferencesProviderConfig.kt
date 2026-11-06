@@ -92,7 +92,7 @@ public class SharedPreferencesProviderConfig(
             val valueSaver =
                 savers[param.valueType]
                     ?: throw IllegalArgumentException("Unsupported type: ${param.valueType}")
-            valueSaver.read(sharedPreferences, param.key)?.let { value ->
+            valueSaver.read(sharedPreferences, param.localStorageKey())?.let { value ->
                 ConfigValue(value, ConfigValue.Source.LOCAL)
             }
         }
@@ -115,9 +115,9 @@ public class SharedPreferencesProviderConfig(
                 savers[param.valueType]
                     ?: throw IllegalArgumentException("Unsupported type: ${param.valueType}")
             sharedPreferences.edit(commit = true) {
-                valueSaver.write(this, param.key, value)
+                valueSaver.write(this, param.localStorageKey(), value)
             }
-            changedKeysFlow.tryEmit(param.key)
+            changedKeysFlow.tryEmit(param.localStorageKey())
         }
 
     /**
@@ -128,12 +128,15 @@ public class SharedPreferencesProviderConfig(
      *
      * @param param The configuration parameter whose override should be cleared.
      */
-    override suspend fun <T : Any> resetOverride(param: ConfigParam<T>): Unit = remove(param.key)
+    override suspend fun <T : Any> resetOverride(param: ConfigParam<T>): Unit = remove(param.localStorageKey())
 
     /**
-     * Removes a feature flag from SharedPreferences.
+     * Removes the preference entry for [key] exactly as given. The string is not prefixed.
      *
-     * @param key The feature flag key to remove
+     * [resetOverride] passes [ConfigParam.localStorageKey]. A caller that passes the public
+     * key removes only that raw entry, not the scoped slot.
+     *
+     * @param key The preference key to remove.
      */
     public suspend fun remove(key: String): Unit =
         withContext(context) {
@@ -173,7 +176,7 @@ public class SharedPreferencesProviderConfig(
             emit(get(param) ?: ConfigValue(param.defaultValue, ConfigValue.Source.DEFAULT))
             emitAll(
                 changedKeysFlow
-                    .filter { it == param.key }
+                    .filter { it == param.localStorageKey() }
                     .map {
                         // Keep the observe stream alive on storage/converter errors; the error is
                         // reported by the consumer's re-resolve via ConfigValues.getValue.

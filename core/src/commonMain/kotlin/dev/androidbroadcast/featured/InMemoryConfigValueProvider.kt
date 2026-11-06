@@ -44,7 +44,7 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
      */
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Any> get(param: ConfigParam<T>): ConfigValue<T>? =
-        storageRef.load()[param.key]?.let { value ->
+        storageRef.load()[param.localStorageKey()]?.let { value ->
             ConfigValue(
                 value as T,
                 source = ConfigValue.Source.LOCAL,
@@ -61,8 +61,8 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
         param: ConfigParam<T>,
         value: T,
     ) {
-        storageRef.update { it + (param.key to value) }
-        changedKeyFlow.tryEmit(param.key)
+        storageRef.update { it + (param.localStorageKey() to value) }
+        changedKeyFlow.tryEmit(param.localStorageKey())
     }
 
     /**
@@ -74,8 +74,8 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
      * @param param The configuration parameter whose override should be cleared.
      */
     public override suspend fun <T : Any> resetOverride(param: ConfigParam<T>) {
-        storageRef.update { it - param.key }
-        changedKeyFlow.tryEmit(param.key)
+        storageRef.update { it - param.localStorageKey() }
+        changedKeyFlow.tryEmit(param.localStorageKey())
     }
 
     /**
@@ -119,7 +119,7 @@ public class InMemoryConfigValueProvider : LocalConfigValueProvider {
 
             emitAll(
                 changedKeyFlow
-                    .filter { key -> key == param.key }
+                    .filter { key -> key == param.localStorageKey() }
                     .map {
                         // Keep the observe stream alive on storage/converter errors; the error is
                         // reported by the consumer's re-resolve via ConfigValues.getValue.

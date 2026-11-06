@@ -91,8 +91,8 @@ For code navigation, follow `.claude/rules/ast-index.md`: use `ast-index` before
 
 ### Runtime and provider contracts
 
-- Keep `ConfigParam<T>` a typed descriptor and `ConfigValue<T>` a value plus source. Treat flag keys as shared storage/cache identities; keep them unique across aggregated modules and consistent in type.
-- Use `ConfigValues` to compose providers. The default precedence is **local override, then remote, then declared default**. `ValueResolutionStrategy` can replace selection policy after both providers have been read.
+- Keep `ConfigParam<T>` a typed descriptor and `ConfigValue<T>` a value plus source. Storage and the snapshot are keyed by scope plus key (`LOCAL:FEATURE_X`, `REMOTE:FEATURE_X`, `ANY:FEATURE_X`), not the bare public key. The same name in `localFlags` and `remoteFlags` is no longer one store. Across scopes, the same public key is two slots and may have different types. Within one scope, the same key is still one slot, last-write-wins, including across aggregated modules. A previously stored bare key is not that slot. Remote providers still look up the public key.
+- Use `ConfigValues` to compose providers. For `FlagScope.ANY` (the constructor and factory that omit `scope`), the default precedence is **local override, then remote, then declared default**, and `ValueResolutionStrategy` runs after both providers have been read. `LOCAL` does not read remote (`remoteValue` is null). `REMOTE` does not read local during resolution (`localValue` is null). The strategy stays a pure selection function.
 - Return `null` from a provider read when no stored value exists. Let `ConfigValues` perform fallback; do not turn an absent local value into a stored override.
 - Preserve the read-path error boundary: provider read failures are reported through `onProviderError` and fall back; coroutine cancellation propagates. Explicit fetch/initialization failures and custom resolution-strategy exceptions propagate to the caller.
 - Keep local `observe` flows alive until cancellation. Emit the current local value or DEFAULT immediately, then signal writes/removals; storage/converter failures must not permanently terminate observation.
@@ -131,7 +131,7 @@ For code navigation, follow `.claude/rules/ast-index.md`: use `ast-index` before
 
 ### Add or change a sample feature flag
 
-1. Edit the owning `sample/feature-*/build.gradle.kts` DSL and keep storage keys globally unique.
+1. Edit the owning `sample/feature-*/build.gradle.kts` DSL. The same public name may appear in both `localFlags` and `remoteFlags`. Within one scope the same key is still one slot.
 2. Add/update its public observer/setter bridge and feature ViewModel; consume those from shared UI.
 3. For a new feature module, include it in root settings, add aggregator and normal code dependencies to `sample/shared`, and export it from the sample Apple framework when Swift needs its public types.
 4. Reuse the shell's shared provider; register enum converters before any reads/writes.
