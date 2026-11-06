@@ -32,8 +32,8 @@ package dev.androidbroadcast.featured
  * that provider already stores, or the value written by [ConfigValues.override]. The remote side
  * is the remote provider's value for the same key. Declare the flag once.
  *
- * Two generated flags with the same name are not the AND mechanism. Same-name isolation is a
- * separate task (GitHub #294). Do not declare the key in both `localFlags` and `remoteFlags`:
+ * Two generated flags with the same name are not the AND. Same-name isolation is a separate task
+ * (GitHub #294). Do not declare the key in both `localFlags` and `remoteFlags`:
  * the build rejects that duplicate. Do not AND two accessors. If the guarded client code must
  * remain in release binaries, do not declare that one flag as a `localFlags` boolean with
  * `default = false`: those flags are release-stripped.
