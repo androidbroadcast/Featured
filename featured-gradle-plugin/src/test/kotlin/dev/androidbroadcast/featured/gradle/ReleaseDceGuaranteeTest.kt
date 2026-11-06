@@ -23,7 +23,10 @@ import org.objectweb.asm.Opcodes.ASM9
 import org.objectweb.asm.Opcodes.ASTORE
 import org.objectweb.asm.Opcodes.DUP
 import org.objectweb.asm.Opcodes.GETFIELD
+import org.objectweb.asm.Opcodes.GETSTATIC
 import org.objectweb.asm.Opcodes.GOTO
+import org.objectweb.asm.Opcodes.IADD
+import org.objectweb.asm.Opcodes.ICONST_1
 import org.objectweb.asm.Opcodes.IFEQ
 import org.objectweb.asm.Opcodes.ILOAD
 import org.objectweb.asm.Opcodes.INVOKESPECIAL
@@ -32,6 +35,7 @@ import org.objectweb.asm.Opcodes.INVOKEVIRTUAL
 import org.objectweb.asm.Opcodes.IRETURN
 import org.objectweb.asm.Opcodes.NEW
 import org.objectweb.asm.Opcodes.PUTFIELD
+import org.objectweb.asm.Opcodes.PUTSTATIC
 import org.objectweb.asm.Opcodes.RETURN
 import org.objectweb.asm.Opcodes.V1_8
 import java.io.File
@@ -70,14 +74,18 @@ class ReleaseDceGuaranteeTest {
         assertMethodPresent(classFile.readBytes(), accessor)
 
         val apk = findReleaseApk(projectDir)
+        val mapping = projectDir.resolve("build/outputs/mapping/release/mapping.txt")
+        val mappingText = if (mapping.isFile) mapping.readText() else "<no mapping>"
         assertFalse(
-            dexContains(apk, DEAD_FEATURE_INTERNAL),
-            "DeadFeature must be absent from the release APK",
+            mappingText.contains("dev.androidbroadcast.featured.testapp.DeadFeature ->"),
+            "DeadFeature must be absent from the release mapping\n${mappingText.take(1500)}",
         )
         assertTrue(
-            dexContains(apk, LIVE_FEATURE_INTERNAL),
-            "LiveFeature must survive so the check is not 'R8 deleted everything'",
+            mappingText.contains("dev.androidbroadcast.featured.testapp.LiveFeature ->"),
+            "LiveFeature must survive so the check is not 'R8 deleted everything'\n${mappingText.take(1500)}",
         )
+        assertFalse(dexContains(apk, DEAD_FEATURE_INTERNAL), "DeadFeature must be absent from the release APK")
+        assertTrue(dexContains(apk, LIVE_FEATURE_INTERNAL), "LiveFeature must remain in the release APK")
 
         val folded = runR8OnCompiledAccessor(classFile.readBytes(), accessor, includeAssumeValues = true)
         assertFalse(jarContains(folded, IF_ONLY_INTERNAL))
@@ -245,6 +253,8 @@ class ReleaseDceGuaranteeTest {
         return """
             $assume
             -keep class $CALLER_FQN { *; }
+            -keepclassmembers class $IF_ONLY_INTERNAL { public static int hits; }
+            -keepclassmembers class $ELSE_ONLY_INTERNAL { public static int hits; }
             -dontwarn **
             """.trimIndent()
     }
@@ -305,6 +315,7 @@ class ReleaseDceGuaranteeTest {
         object : ClassWriter(0) {}
             .apply {
                 visit(V1_8, ACC_PUBLIC, internalName, null, "java/lang/Object", null)
+                visitField(ACC_PUBLIC or ACC_STATIC, "hits", "I", null, null).visitEnd()
                 visitMethod(ACC_PUBLIC, "<init>", "()V", null, null).apply {
                     visitCode()
                     visitVarInsn(ALOAD, 0)
@@ -315,8 +326,12 @@ class ReleaseDceGuaranteeTest {
                 }
                 visitMethod(ACC_PUBLIC, "run", "()V", null, null).apply {
                     visitCode()
+                    visitFieldInsn(GETSTATIC, internalName, "hits", "I")
+                    visitInsn(ICONST_1)
+                    visitInsn(IADD)
+                    visitFieldInsn(PUTSTATIC, internalName, "hits", "I")
                     visitInsn(RETURN)
-                    visitMaxs(0, 1)
+                    visitMaxs(2, 1)
                     visitEnd()
                 }
                 visitEnd()
