@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Documentation clarification, no API change: `ValueResolutionStrategy` guidance now shows how to
+  enable a selected boolean flag only when both the local value and the remote value are
+  explicitly `true` (`localValue?.value == true && remoteValue?.value == true`). The combined
+  result's source is `ConfigValue.Source.UNKNOWN`, chosen by the strategy; the library does not
+  stamp a combined source. Two generated flags with the same name are not this mechanism.
+  Same-name isolation is a separate task (GitHub #294). (#296)
 - Dependency updates: Firebase BOM 34.19.0 (latest 34.x; 35.x is a separate major), SKIE 0.10.15,
   Spotless 8.10.4, and Kover 0.9.11.
 - Dependency updates: Kotlin 2.4.20, Compose Multiplatform 1.12.2, Compose Hot Reload 1.2.0,

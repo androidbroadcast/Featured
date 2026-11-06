@@ -17,6 +17,7 @@ import kotlin.test.assertSame
  */
 class ValueResolutionStrategyTest {
     private val boolParam = ConfigParam(key = "flag", defaultValue = false)
+    private val otherBoolParam = ConfigParam(key = "other_flag", defaultValue = false)
     private val stringParam = ConfigParam(key = "title", defaultValue = "default_title")
 
     /** Map-backed remote provider that counts [get] invocations. */
@@ -69,6 +70,35 @@ class ValueResolutionStrategyTest {
                     return ConfigValue((local && remote) as T, ConfigValue.Source.UNKNOWN)
                 }
                 return localValue ?: remoteValue ?: defaultValue
+            }
+        }
+
+    /**
+     * Published fail-closed recipe. Selected boolean keys are true only when both provider
+     * values are explicitly true. The combined result uses [ConfigValue.Source.UNKNOWN].
+     * Other keys delegate to [ValueResolutionStrategy.Default].
+     */
+    private val andGatedKeys = setOf("flag")
+
+    private val requireBothExplicitlyTrue =
+        object : ValueResolutionStrategy {
+            override fun <T : Any> resolve(
+                param: ConfigParam<T>,
+                localValue: ConfigValue<T>?,
+                remoteValue: ConfigValue<T>?,
+                defaultValue: ConfigValue<T>,
+            ): ConfigValue<T> {
+                if (defaultValue.value is Boolean && param.key in andGatedKeys) {
+                    val enabled = localValue?.value == true && remoteValue?.value == true
+                    @Suppress("UNCHECKED_CAST")
+                    return ConfigValue(enabled as T, ConfigValue.Source.UNKNOWN)
+                }
+                return ValueResolutionStrategy.Default.resolve(
+                    param,
+                    localValue,
+                    remoteValue,
+                    defaultValue,
+                )
             }
         }
 
@@ -370,5 +400,153 @@ class ValueResolutionStrategyTest {
         assertSame(localValue, ValueResolutionStrategy.Default.resolve(stringParam, localValue, remoteValue, defaultValue))
         assertSame(remoteValue, ValueResolutionStrategy.Default.resolve(stringParam, null, remoteValue, defaultValue))
         assertSame(defaultValue, ValueResolutionStrategy.Default.resolve(stringParam, null, null, defaultValue))
+    }
+
+    // ---------------------------------------------------------------------------
+    // Published fail-closed recipe (issue #296): both sides must be explicitly true
+    // ---------------------------------------------------------------------------
+
+    @Test
+    fun `fail-closed recipe is true with source UNKNOWN when both sides are true`() =
+        runTest {
+            val configValues = failClosed(local = true, remote = true)
+
+            val result = configValues.getValue(boolParam)
+            assertEquals(true, result.value)
+            assertEquals(ConfigValue.Source.UNKNOWN, result.source)
+
+            val cached = configValues.getValueCached(boolParam)
+            assertEquals(true, cached.value)
+            assertEquals(ConfigValue.Source.UNKNOWN, cached.source)
+        }
+
+    @Test
+    fun `fail-closed recipe is false with source UNKNOWN when remote is false`() =
+        runTest {
+            val configValues = failClosed(local = true, remote = false)
+
+            val result = configValues.getValue(boolParam)
+            assertEquals(false, result.value)
+            assertEquals(ConfigValue.Source.UNKNOWN, result.source)
+            assertEquals(result, configValues.getValueCached(boolParam))
+        }
+
+    @Test
+    fun `fail-closed recipe is false with source UNKNOWN when local is false and remote is true`() =
+        runTest {
+            val configValues = failClosed(local = false, remote = true)
+
+            val result = configValues.getValue(boolParam)
+            assertEquals(false, result.value)
+            assertEquals(ConfigValue.Source.UNKNOWN, result.source)
+            assertEquals(result, configValues.getValueCached(boolParam))
+        }
+
+    @Test
+    fun `fail-closed recipe is false with source UNKNOWN when local is absent and remote is true`() =
+        runTest {
+            val configValues = failClosed(local = null, remote = true)
+
+            val result = configValues.getValue(boolParam)
+            assertEquals(false, result.value)
+            assertEquals(ConfigValue.Source.UNKNOWN, result.source)
+            assertEquals(result, configValues.getValueCached(boolParam))
+        }
+
+    @Test
+    fun `fail-closed recipe is false with source UNKNOWN when local is true and remote is absent`() =
+        runTest {
+            val configValues = failClosed(local = true, remote = null)
+
+            val result = configValues.getValue(boolParam)
+            assertEquals(false, result.value)
+            assertEquals(ConfigValue.Source.UNKNOWN, result.source)
+            assertEquals(result, configValues.getValueCached(boolParam))
+        }
+
+    @Test
+    fun `fail-closed recipe writes combined false UNKNOWN when both sides are absent`() =
+        runTest {
+            val configValues = failClosed(local = null, remote = null)
+
+            val result = configValues.getValue(boolParam)
+            assertEquals(false, result.value)
+            assertEquals(ConfigValue.Source.UNKNOWN, result.source)
+
+            val cached = configValues.getValueCached(boolParam)
+            assertEquals(false, cached.value)
+            assertEquals(ConfigValue.Source.UNKNOWN, cached.source)
+        }
+
+    @Test
+    fun `fail-closed recipe delegates a non-selected string param to Default`() =
+        runTest {
+            val local = InMemoryConfigValueProvider().apply { set(stringParam, "local_title") }
+            val remote = MapRemoteProvider(mapOf("title" to "remote_title", "flag" to true))
+            val configValues =
+                ConfigValues(
+                    localProvider = local,
+                    remoteProvider = remote,
+                    resolutionStrategy = requireBothExplicitlyTrue,
+                )
+
+            val result = configValues.getValue(stringParam)
+            assertEquals("local_title", result.value)
+            assertEquals(ConfigValue.Source.LOCAL, result.source)
+        }
+
+    @Test
+    fun `fail-closed recipe delegates a non-selected boolean with only remote true to Default`() =
+        runTest {
+            val local = InMemoryConfigValueProvider()
+            val remote = MapRemoteProvider(mapOf("other_flag" to true))
+            val configValues =
+                ConfigValues(
+                    localProvider = local,
+                    remoteProvider = remote,
+                    resolutionStrategy = requireBothExplicitlyTrue,
+                )
+
+            val result = configValues.getValue(otherBoolParam)
+            assertEquals(true, result.value)
+            assertEquals(ConfigValue.Source.REMOTE, result.source)
+        }
+
+    @Test
+    fun `Default ConfigValues over the same providers returns remote true when local is absent`() =
+        runTest {
+            val local = InMemoryConfigValueProvider()
+            val remote = MapRemoteProvider(mapOf("flag" to true))
+            val andValues =
+                ConfigValues(
+                    localProvider = local,
+                    remoteProvider = remote,
+                    resolutionStrategy = requireBothExplicitlyTrue,
+                )
+            val defaultValues = ConfigValues(localProvider = local, remoteProvider = remote)
+
+            val andResult = andValues.getValue(boolParam)
+            assertEquals(false, andResult.value)
+            assertEquals(ConfigValue.Source.UNKNOWN, andResult.source)
+
+            val defaultResult = defaultValues.getValue(boolParam)
+            assertEquals(true, defaultResult.value)
+            assertEquals(ConfigValue.Source.REMOTE, defaultResult.source)
+        }
+
+    private suspend fun failClosed(
+        local: Boolean?,
+        remote: Boolean?,
+    ): ConfigValues {
+        val localProvider = InMemoryConfigValueProvider()
+        if (local != null) {
+            localProvider.set(boolParam, local)
+        }
+        val remoteValues = if (remote == null) emptyMap() else mapOf("flag" to remote)
+        return ConfigValues(
+            localProvider = localProvider,
+            remoteProvider = MapRemoteProvider(remoteValues),
+            resolutionStrategy = requireBothExplicitlyTrue,
+        )
     }
 }
