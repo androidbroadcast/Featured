@@ -40,6 +40,7 @@ import org.objectweb.asm.Opcodes.RETURN
 import org.objectweb.asm.Opcodes.V1_8
 import java.io.File
 import java.util.zip.ZipFile
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -120,11 +121,119 @@ class ReleaseDceGuaranteeTest {
                     .withArguments("assembleRelease", "--stacktrace")
                     .build()
             }
+        assertDiscardFailed(failure)
+    }
+
+    @Test
+    fun `dropping assumevalues leaves the discarded class reachable`() {
+        val projectDir = prepareFixture()
+        val failure = failedRelease(projectDir, "-Pfeatured.dce.mutateRules=drop-assumevalues")
+        assertDiscardFailed(failure)
+        val rules = generatedRules(projectDir)
+        assertFalse(
+            rules.contains("-assumevalues"),
+            "The mutation did not remove -assumevalues\n$rules",
+        )
+    }
+
+    @Test
+    fun `renaming the assumevalues method misses the compiled accessor`() {
+        val projectDir = prepareFixture()
+        val failure = failedRelease(projectDir, "-Pfeatured.dce.mutateRules=rename-method")
+        assertDiscardFailed(failure)
+
+        val rules = generatedRules(projectDir)
+        val mutated = parseAssumeValues(rules).single()
+        assertEquals("isDarkModeEnabledMissing", mutated.methodName)
+        val compiled =
+            AssumeValuesRule(
+                className = mutated.className,
+                methodName = "isDarkModeEnabled",
+                parameterType = mutated.parameterType,
+            )
+        assertMethodPresent(findClassFile(projectDir, compiled.classInternalName).readBytes(), compiled)
+        assertFalse(
+            classHasMethod(findClassFile(projectDir, mutated.classInternalName).readBytes(), mutated),
+            "Renamed rule must not match the compiled accessor",
+        )
+    }
+
+    @Test
+    fun `constant stub does not strip the discarded class without assumevalues`() {
+        val projectDir = prepareFixture()
+        val stub =
+            projectDir.resolve(
+                "src/main/kotlin/dev/androidbroadcast/featured/FeaturedRuntimeStub.kt",
+            )
+        val rewritten =
+            stub.readText().replace(
+                "getValueCached(param: ConfigParam<T>): ConfigValue<T> = opaqueValue(param)",
+                "getValueCached(param: ConfigParam<T>): ConfigValue<T> = ConfigValue(param.defaultValue)",
+            )
+        assertTrue(
+            rewritten.contains("= ConfigValue(param.defaultValue)"),
+            "Could not restore the constant stub",
+        )
+        stub.writeText(rewritten)
+
+        // A stub that returns the declared default must not be enough. If this build starts
+        // succeeding, R8 folded the accessor by itself and the happy path no longer proves the rule.
+        val failure = failedRelease(projectDir, "-Pfeatured.dce.mutateRules=drop-assumevalues")
+        assertDiscardFailed(failure)
+    }
+
+    private fun failedRelease(
+        projectDir: File,
+        vararg extraArgs: String,
+    ): UnexpectedBuildFailure =
+        assertFailsWith {
+            gradleRunner(projectDir)
+                .withArguments(listOf("assembleRelease", "--stacktrace") + extraArgs)
+                .build()
+        }
+
+    private fun assertDiscardFailed(failure: UnexpectedBuildFailure) {
+        val output = failure.buildResult.output
         assertTrue(
             failure.message.orEmpty().contains("Discard checks failed") ||
-                failure.buildResult.output.contains("Discard checks failed"),
-            "A kept discarded class must fail release R8\n${failure.buildResult.output}",
+                output.contains("Discard checks failed"),
+            "Release R8 must fail when the discarded class is still reachable\n$output",
         )
+    }
+
+    private fun generatedRules(projectDir: File): String = projectDir.resolve("build/featured/proguard-featured.pro").readText()
+
+    private fun releaseMapping(projectDir: File): String {
+        val mapping = projectDir.resolve("build/outputs/mapping/release/mapping.txt")
+        return if (mapping.isFile) mapping.readText() else "<no mapping>"
+    }
+
+    private fun mappingContains(
+        mapping: String,
+        className: String,
+    ): Boolean = mapping.contains("$className ->")
+
+    private fun classHasMethod(
+        classBytes: ByteArray,
+        rule: AssumeValuesRule,
+    ): Boolean {
+        var found = false
+        ClassReader(classBytes).accept(
+            object : ClassVisitor(ASM9) {
+                override fun visitMethod(
+                    access: Int,
+                    name: String,
+                    descriptor: String,
+                    signature: String?,
+                    exceptions: Array<out String>?,
+                ): MethodVisitor? {
+                    if ("$name$descriptor" == rule.jvmMethod) found = true
+                    return null
+                }
+            },
+            0,
+        )
+        return found
     }
 
     private fun prepareFixture(): File {

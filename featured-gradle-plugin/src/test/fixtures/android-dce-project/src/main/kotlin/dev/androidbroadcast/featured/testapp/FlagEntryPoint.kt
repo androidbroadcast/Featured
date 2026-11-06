@@ -2,8 +2,8 @@ package dev.androidbroadcast.featured.testapp
 
 import android.app.Activity
 import android.os.Bundle
-import dev.androidbroadcast.featured.ConfigParam
 import dev.androidbroadcast.featured.ConfigValues
+import dev.androidbroadcast.featured.generated.GeneratedLocalFlagsRoot
 import dev.androidbroadcast.featured.generated.isDarkModeEnabled
 
 /** Reachable only from the disabled branch of the local flag. Must not survive release R8. */
@@ -54,7 +54,6 @@ class FlagActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val values = ConfigValues()
-        val raw = ConfigParam("raw", false, Boolean::class)
         title =
             (
                 if (values.isDarkModeEnabled()) {
@@ -64,7 +63,7 @@ class FlagActivity : Activity() {
                 }
             ) +
             (
-                if (values.getValueCached(raw).value) {
+                if (values.readUnruledFlag()) {
                     UnruledFeature().label()
                 } else {
                     "plain"
@@ -72,3 +71,10 @@ class FlagActivity : Activity() {
             )
     }
 }
+
+/**
+ * Same call shape as the generated accessor, but no `-assumevalues` rule names this method.
+ * With an opaque stub this stays unknown. With a constant stub R8 folds it and deletes
+ * [UnruledFeature].
+ */
+private fun ConfigValues.readUnruledFlag(): Boolean = getValueCached(GeneratedLocalFlagsRoot.darkMode).value
