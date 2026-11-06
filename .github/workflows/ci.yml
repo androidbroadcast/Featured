@@ -77,6 +77,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
+      - name: Verify Swift flag stripping
+        run: ./gradlew :featured-swift-dce-tests:test -PrequireSwiftDce=true
+
       - name: Cache SwiftLint
         id: cache-swiftlint
         uses: actions/cache@v6

@@ -53,6 +53,7 @@ include(":featured-bom")
 include(":featured-detekt-rules")
 include(":featured-lint-rules")
 include(":featured-shrinker-tests")
+include(":featured-swift-dce-tests")
 
 include(":providers:configcat")
 include(":providers:datastore")
