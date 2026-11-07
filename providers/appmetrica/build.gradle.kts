@@ -76,6 +76,7 @@ mavenPublishing {
 dependencies {
     implementation(project(":core"))
     implementation(libs.varioqub.config)
+    implementation(libs.okhttp)
     implementation(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.kotlin.testJunit)
