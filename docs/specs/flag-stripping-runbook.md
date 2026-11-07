@@ -7,7 +7,7 @@ platform: [android, ios, jvm]
 surfaces: [sample, docs]
 risk_areas: [compatibility]
 non_functional: []
-acceptance_criteria_ids: [AC-1, AC-2, AC-3, AC-4, AC-5, AC-6]
+acceptance_criteria_ids: [AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8]
 design:
 ---
 
@@ -25,7 +25,7 @@ A reader cannot yet follow a written path that shows a disabled local flag was s
 
 The current sample does not give Android or Desktop an absence that proves stripping. `:sample:feature-checkout` declares `new_checkout` with `default = false`, but the interactive UI calls `newCheckoutFlow()` / `observe()`, not `isNewCheckoutEnabled()`. Release R8 therefore keeps that UI. `:sample:desktop`'s default distribution task does not run ProGuard. iOS already has a guarded Swift banner and needs no UI rewrite.
 
-The chosen behavior is the smallest sample change that makes a real absence on all three apps, plus a runbook that names the command, the artifact, and what absence means. Library runtime does not change. The runbook must not say Android or Desktop cannot prove stripping, and it must not narrow the check to `iosApp`.
+The chosen behavior is the smallest sample change that makes a real absence on all three apps, plus a runbook that names the command, the artifact, and what absence means. For Android and Desktop the same disabled class must also be present in a named artifact built without folding `isNewCheckoutEnabled()`. A sibling class in the release artifact is not that control. Library runtime does not change. The runbook must not say Android or Desktop cannot prove stripping, and it must not narrow the check to `iosApp`.
 
 The GitHub wiki repository is not available. The page lives in this repo so the issue can be closed from it.
 
@@ -33,21 +33,17 @@ The GitHub wiki repository is not available. The page lives in this repo so the 
 
 `docs/flag-stripping-runbook.md` is the page a person follows. It names every Gradle or Xcode command below. A reader does not invent a task name, an artifact path, or an inspection command.
 
-The interactive `observe()` checkout UI stays. `NewCheckoutBanner` in `iosApp/iosApp/ContentView.swift` stays. The new proof is a pair of sample classes for Android and Desktop, and the existing Swift string for iOS.
+The interactive `observe()` checkout UI stays. `NewCheckoutBanner` in `iosApp/iosApp/ContentView.swift` stays. Android and Desktop prove stripping with one class, not a surviving sibling. iOS proves it with the existing Swift string.
 
-Both classes live in the sample, not in a published library module:
+`dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch` is `internal` in `:sample:feature-checkout`. It is not a published library type. Its only reference is inside the true branch of a public bridge in that same module:
 
-- `dev.androidbroadcast.featured.sample.NewCheckoutDisabledBranch`
-- `dev.androidbroadcast.featured.sample.NewCheckoutLiveBranch`
+`public fun ConfigValues.reachNewCheckoutDisabledBranch(): Int` in `CheckoutFlagObservers.kt`.
 
-A kept shell entry calls both the same way: it consumes the result of a method on the class. The only difference is the predicate.
+The bridge calls `isNewCheckoutEnabled()` — the internal accessor generated for `new_checkout` — and, only in that true branch, consumes a method result from `NewCheckoutDisabledBranch`. The false branch returns a constant and does not reference the class. The accessor call is not inside `NewCheckoutDisabledBranch`. Putting it there would keep the class, and the release mapping and jar checks would fail.
 
-- The disabled branch is reached only through `configValues.isNewCheckoutEnabled()`, the accessor generated for `:sample:feature-checkout` `new_checkout`.
-- The live branch is reached through a read that the generated `-assumevalues` rule does not name. It must not call `isNewCheckoutEnabled()`.
+`isNewCheckoutEnabled()` stays `internal`. The sample does not set `generation { visibility }` to public and does not add a manual import of the generated declaration from another module. `MainActivity` and `MainDesktop.main` call `reachNewCheckoutDisabledBranch()` on their checkout `ConfigValues` and use the returned `Int`. They do not call `isNewCheckoutEnabled()` and do not reference `NewCheckoutDisabledBranch`. Existing `newCheckoutFlow()`, `checkoutVariantFlow()`, and `setNewCheckout()` stay. `FeaturedSample` and the checkout ViewModel stay.
 
-Android reaches that entry from `MainActivity`. Desktop reaches it from `dev.androidbroadcast.featured.MainDesktop.main`. Neither call rewrites `FeaturedSample`, `CheckoutFlagObservers`, or the checkout ViewModel.
-
-`:sample:feature-checkout` declares `discard("dev.androidbroadcast.featured.sample.NewCheckoutDisabledBranch")` on `new_checkout`. It does not discard the live branch.
+`:sample:feature-checkout` declares `discard("dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch")` on `new_checkout`. It discards no other class.
 
 ### iOS
 
@@ -78,7 +74,11 @@ Absence of the string `New checkout is enabled` from the Release executable, whi
 
 ### Android
 
-`./gradlew :sample:android-app:assembleRelease`
+Absence:
+
+```bash
+./gradlew :sample:android-app:assembleRelease
+```
 
 Artifacts:
 
@@ -87,7 +87,21 @@ Artifacts:
 
 The module has no signing config, so the unsigned APK is the release artifact. The generated `-assumevalues` and `-checkdiscard` files reach that R8 run through the existing consumer ProGuard wiring from `:sample:feature-checkout`. The sample does not paste a hand-written `-assumevalues` rule.
 
-`assembleRelease` succeeds. `mapping.txt` does not contain `dev.androidbroadcast.featured.sample.NewCheckoutDisabledBranch`. It does contain `dev.androidbroadcast.featured.sample.NewCheckoutLiveBranch`. That absence means `new_checkout` was stripped. The live class shows R8 did not delete the sample. This is not `ReleaseDceGuaranteeTest` and not `:featured-shrinker-tests:test`.
+`assembleRelease` succeeds. `mapping.txt` does not contain `dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch`. That absence means `new_checkout` was stripped. This is not `ReleaseDceGuaranteeTest` and not `:featured-shrinker-tests:test`.
+
+`assembleDebug` is not the control. Debug does not run R8, so a present class there does not mean the accessor was not folded. A second minified app variant is not the control either: every `:sample:feature-checkout` Android variant publishes the generated rules as consumer ProGuard files, so a minified app variant still folds the accessor and still applies `-checkdiscard`.
+
+Control, registered by `:sample:android-app` under this exact name:
+
+```bash
+./gradlew :sample:android-app:r8UnfoldedMarker
+```
+
+Artifact: `sample/android-app/build/featured/r8-unfolded-marker.jar`
+
+The task runs R8 `com.android.tools:r8:9.1.31` from the version catalog, class-file output. Its program input is the release compilation of `:sample:android-app` and the runtime classpath that contains the feature-checkout bridge and `NewCheckoutDisabledBranch`. It keeps `dev.androidbroadcast.featured.sample.MainActivity`. It uses `proguard-android-optimize.txt`. It does not take `proguard-featured.pro` or `proguard-featured-checkdiscard.pro`, and it does not keep `NewCheckoutDisabledBranch`.
+
+`jar tf` of that jar lists `dev/androidbroadcast/featured/sample/checkout/NewCheckoutDisabledBranch.class`. That presence means `isNewCheckoutEnabled()` was not folded. If the class is missing here, the release mapping absence does not prove `-assumevalues`.
 
 ### Desktop
 
@@ -106,9 +120,21 @@ The sample adds the output of `:sample:feature-checkout:generateFeaturedProguard
 
 The artifact is the jar that task writes under `sample/desktop/build/compose/jars/`, the file whose name ends in `-release.jar`. The task log line `The jar is written to` is that path.
 
-`jar tf` of that jar does not list `dev/androidbroadcast/featured/sample/NewCheckoutDisabledBranch.class` and does list `dev/androidbroadcast/featured/sample/NewCheckoutLiveBranch.class`. That absence means the flag was stripped. This is not `JvmFlagStrippingTest`.
+`jar tf` of that jar does not list `dev/androidbroadcast/featured/sample/checkout/NewCheckoutDisabledBranch.class`. That absence means the flag was stripped. This is not `JvmFlagStrippingTest`.
 
-If that ProGuard run keeps the disabled branch while the live branch is present, the slice is not done. The fix stays in the sample wiring of the generated rules file. It does not change the plugin rule text and does not substitute the library JVM test.
+`packageDistributionForCurrentOS` and `packageUberJarForCurrentOS` are not the control. Those default tasks do not run ProGuard, so a present class there does not mean the accessor was not folded. Compose 1.12.2 has no third build type to register, and release ProGuard cannot omit the rules file once `configurationFiles` includes it.
+
+Control, registered by `:sample:desktop` under this exact name:
+
+```bash
+./gradlew :sample:desktop:proguardUnfoldedMarker
+```
+
+Artifact: `sample/desktop/build/featured/proguard-unfolded-marker.jar`
+
+The task runs ProGuard 7.8.0, the Compose 1.12.2 release default, on the same input jars as `:sample:desktop:proguardReleaseJars`. Optimization is on and obfuscation is off. It keeps `dev.androidbroadcast.featured.MainDesktop`. It does not take `proguard-featured.pro` or `proguard-featured-checkdiscard.pro`, and it does not keep `NewCheckoutDisabledBranch`.
+
+`jar tf` of that jar lists `dev/androidbroadcast/featured/sample/checkout/NewCheckoutDisabledBranch.class`. That presence means `isNewCheckoutEnabled()` was not folded. If the class is missing here, the release jar absence does not prove `-assumevalues`. The fix for a failed release absence stays in the sample wiring of the generated rules file. It does not change the plugin rule text and does not substitute the library JVM test.
 
 ## Public contract
 
@@ -118,27 +144,31 @@ The sample contract this page checks is:
 
 | Check | Name |
 |---|---|
-| Disabled class | `dev.androidbroadcast.featured.sample.NewCheckoutDisabledBranch` |
-| Live class | `dev.androidbroadcast.featured.sample.NewCheckoutLiveBranch` |
-| Accessor | `isNewCheckoutEnabled()` on `ConfigValues`, generated for `new_checkout` |
+| Disabled class | `internal` `dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch` in `:sample:feature-checkout` |
+| Bridge | `public fun ConfigValues.reachNewCheckoutDisabledBranch(): Int` in `CheckoutFlagObservers.kt` |
+| Accessor | `internal` `isNewCheckoutEnabled()` on `ConfigValues`, called only from that bridge |
 | iOS string | `New checkout is enabled` |
-| Discard spec | `discard("dev.androidbroadcast.featured.sample.NewCheckoutDisabledBranch")` on `new_checkout` only |
+| Discard spec | `discard("dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch")` on `new_checkout` only |
+| Android control task | `:sample:android-app:r8UnfoldedMarker` |
+| Desktop control task | `:sample:desktop:proguardUnfoldedMarker` |
 
 ## Compatibility
 
 Library versioning is unchanged. This is not an Android public-API change and does not move the API-compat baseline.
 
-Debug behavior of the interactive sample stays. iOS Debug without `DISABLE_NEW_CHECKOUT` still contains the banner string. Android release minification stays enabled. Desktop `packageDistributionForCurrentOS` stays unshrunk; only the release uber-jar task is the proof.
+Debug behavior of the interactive sample stays. iOS Debug without `DISABLE_NEW_CHECKOUT` still contains the banner string. Android release minification stays enabled. Desktop `packageDistributionForCurrentOS` stays unshrunk; the release uber-jar task is the Desktop absence proof.
 
-`-checkdiscard` is used only on the Android R8 path, through the existing `discard(...)` DSL. It is not fed to Compose ProGuard.
+Generated accessors stay `internal`, as `AGENTS.md` requires. Shells call the feature module's public bridge. They do not reach into `:sample:feature-checkout`'s generated declarations.
+
+`-checkdiscard` is used only on the Android release R8 path, through the existing `discard(...)` DSL. It is not an input of either unfolded control task, and it is not fed to Compose ProGuard. A present class in an unfolded jar must not fail `assembleRelease`.
 
 ## Check
 
 The check is a person following `docs/flag-stripping-runbook.md` and seeing:
 
-1. iOS Release executable lacks `New checkout is enabled`; the Debug executable without the generated token still has it.
-2. `:sample:android-app:assembleRelease` succeeds; `mapping.txt` lacks the disabled class and contains the live class.
-3. `:sample:desktop:packageReleaseUberJarForCurrentOS` writes a `-release.jar` that lacks the disabled class file and contains the live class file.
+1. iOS Release executable lacks `New checkout is enabled`; the Debug executable without the generated token still has that same string.
+2. `:sample:android-app:assembleRelease` succeeds; `mapping.txt` lacks `NewCheckoutDisabledBranch`. `:sample:android-app:r8UnfoldedMarker` writes a jar that contains that same class. Presence there means `isNewCheckoutEnabled()` was not folded.
+3. `:sample:desktop:packageReleaseUberJarForCurrentOS` writes a `-release.jar` that lacks `NewCheckoutDisabledBranch.class`. `:sample:desktop:proguardUnfoldedMarker` writes a jar that contains that same class file. Presence there means `isNewCheckoutEnabled()` was not folded.
 
 Issue #213 is closed from that page, not from this spec and not from a library test.
 
@@ -146,6 +176,8 @@ Issue #213 is closed from that page, not from this spec and not from a library t
 
 - `ReleaseDceGuaranteeTest`, `JvmFlagStrippingTest`, `SwiftFlagStrippingTest`, or `:featured-shrinker-tests:test` described as the sample-app check.
 - Absence of an unused accessor. That is unused-code elimination, not proof of `-assumevalues`.
+- A sibling class in the same release artifact. That shows shrinking did not delete the sample. It does not show `NewCheckoutDisabledBranch` present when the accessor was not folded.
+- `assembleDebug`, `packageDistributionForCurrentOS`, or `packageUberJarForCurrentOS` as the control. Those builds do not fold or not-fold the accessor; they do not run the release shrinker.
 - A page that says the Android or Desktop artifact does not prove stripping.
 - `packageDistributionForCurrentOS`, `minifyRelease`, or a hand-run R8 process outside `:sample:desktop:proguardReleaseJars`.
 - `:shared:generateXcconfig` or `:sample:shared:generateXcconfig`.
@@ -153,18 +185,22 @@ Issue #213 is closed from that page, not from this spec and not from a library t
 
 ## Acceptance criteria
 
-- [ ] **AC-1.** `docs/flag-stripping-runbook.md` contains the three procedures above, including the commands, artifact paths, inspection commands, and what absence means. It does not rename those tasks.
+- [ ] **AC-1.** `docs/flag-stripping-runbook.md` contains the absence procedures and the unfolded controls above, including the commands, artifact paths, inspection commands, and what absence and presence mean. It does not rename those tasks.
 - [ ] **AC-2.** iOS source for `NewCheckoutBanner` is unchanged. The Release executable lacks `New checkout is enabled` when built with the tokens from `:sample:feature-checkout:generateXcconfig`. The Debug executable built without `DISABLE_NEW_CHECKOUT` still contains that string.
-- [ ] **AC-3.** The observe-based checkout UI is unchanged. `MainActivity` and `MainDesktop.main` reach the disabled class only through `isNewCheckoutEnabled()`, and reach the live class without that accessor.
-- [ ] **AC-4.** `:sample:android-app:assembleRelease` succeeds. `mapping.txt` lacks `NewCheckoutDisabledBranch` and contains `NewCheckoutLiveBranch`. `new_checkout` discards only the disabled class.
-- [ ] **AC-5.** `:sample:desktop:packageReleaseUberJarForCurrentOS` produces a `-release.jar` that lacks `NewCheckoutDisabledBranch.class` and contains `NewCheckoutLiveBranch.class`. Its ProGuard configuration includes `proguard-featured.pro` and does not include `proguard-featured-checkdiscard.pro`.
-- [ ] **AC-6.** No published library module, generated rule text, or runtime flag-resolution behavior changes. `CHANGELOG.md` records a sample verification path, not a library behavior change.
+- [ ] **AC-3.** `newCheckoutFlow()`, `checkoutVariantFlow()`, `setNewCheckout()`, `FeaturedSample`, and the checkout ViewModel are unchanged. `reachNewCheckoutDisabledBranch()` is the only new public bridge. It is the only caller of `isNewCheckoutEnabled()`. `NewCheckoutDisabledBranch` is referenced only from that function's true branch. `MainActivity` and `MainDesktop.main` call the bridge and do not call the generated accessor.
+- [ ] **AC-4.** `:sample:android-app:assembleRelease` succeeds. `mapping.txt` lacks `NewCheckoutDisabledBranch`. `new_checkout` discards only that class.
+- [ ] **AC-5.** `:sample:desktop:packageReleaseUberJarForCurrentOS` produces a `-release.jar` that lacks `NewCheckoutDisabledBranch.class`. Its ProGuard configuration includes `proguard-featured.pro` and does not include `proguard-featured-checkdiscard.pro`.
+- [ ] **AC-6.** `:sample:android-app:r8UnfoldedMarker` writes `sample/android-app/build/featured/r8-unfolded-marker.jar`, and that jar contains `NewCheckoutDisabledBranch.class`. The task does not take the generated rules files.
+- [ ] **AC-7.** `:sample:desktop:proguardUnfoldedMarker` writes `sample/desktop/build/featured/proguard-unfolded-marker.jar`, and that jar contains `NewCheckoutDisabledBranch.class`. The task does not take the generated rules files.
+- [ ] **AC-8.** No published library module, generated rule text, generated accessor visibility, or runtime flag-resolution behavior changes. `CHANGELOG.md` records a sample verification path, not a library behavior change.
 
 ## Decisions
 
 - All three apps stay in the runbook. The promise is not narrowed to iOS.
 - The absence must be real. A disclaimer that Android or Desktop cannot prove stripping is not this spec.
-- Library runtime stays unchanged. The sample may gain the marker, the live control, the `discard(...)` declaration, and Desktop release ProGuard configuration.
+- Library runtime stays unchanged. The sample may gain the disabled class, the feature-module bridge, the `discard(...)` declaration, Desktop release ProGuard configuration, and the two unfolded control tasks.
+- The control is the same disabled class, present when the accessor is not folded. A sibling class in the release artifact is not that control.
+- The accessor call stays in `:sample:feature-checkout`. Shells call the public bridge. That is the `AGENTS.md` ownership rule, not a published accessor.
 - The page is `docs/flag-stripping-runbook.md` because the wiki repository is not available.
 - Commands and paths above are closed. Implementation does not substitute a different Gradle task.
 
