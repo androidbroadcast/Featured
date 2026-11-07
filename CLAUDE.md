@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Featured** is a Kotlin Multiplatform feature-flag / configuration management library (Android, iOS via SKIE, JVM / Compose Desktop). Two things make it more than a typed wrapper around shared-prefs:
 
 1. **A Gradle plugin family** generates typed `ConfigParam` objects + ergonomic `ConfigValues` extensions from a `featured { localFlags { … } }` DSL — no hand-written keys.
-2. **Release-time dead-code elimination.** Flags with `default = false` emit per-function R8 `-assumevalues` rules (Android/JVM) and an xcconfig with `DISABLE_<FLAG>` Swift conditions (iOS). Disabled branches are physically stripped from release binaries.
+2. **Release-time dead-code elimination.** Android release R8 strips a local flag when its release effective default is the disabling value (the `defaultFor("release", ...)` override if one exists, otherwise the base `default`). A debug build-type default is not that constant. iOS `DISABLE_<FLAG>` conditions follow the base default.
 
 `develop` is the integration branch; PRs target `develop`, not `main`.
 
@@ -66,7 +66,7 @@ Sample build / install:
 
 - `generateConfigParam` — typed `ConfigParam` objects + `ConfigValues` extensions
 - `generateFeaturedProguardRules` — R8 `-assumevalues` rules for local flags
-- `generateFeaturedCheckDiscardRules` — R8 `-checkdiscard` rules that *verify* flag-guarded code was stripped (opt-in via `discard(...)` on a local boolean default-`false` flag; fails the build if a "disabled" feature survives)
+- `generateFeaturedCheckDiscardRules` — R8 `-checkdiscard` rules that *verify* flag-guarded code was stripped (opt-in via `discard(...)` on a local boolean whose release effective default is `false`; fails the build if a "disabled" feature survives)
 - `generateIosConstVal` / `generateXcconfig` — Swift DCE inputs
 - `generateFeaturedManifest` — emits `featured-manifest.json` consumed by the aggregator
 - `generateFeaturedRegistry` (aggregator-only) — produces `GeneratedFeaturedRegistry.kt`

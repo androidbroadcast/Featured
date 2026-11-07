@@ -72,14 +72,13 @@ public class FeaturedPlugin : Plugin<Project> {
         // DirectoryProperty). srcDir(Provider) records generateConfigParam as the dir's builder, so
         // Gradle auto-infers the dependency for EVERY consumer — compileAndroidMain,
         // compileKotlinJvm, jvmSourcesJar, sourcesJar, metadata, lint — without a name-matched
-        // dependsOn. AGP additionally needs a resolved File because its source set rejects providers
-        // at configuration time, so it keeps the explicit dependsOn path.
+        // dependsOn.
+        //
+        // Android application and library compilations do not consume that commonMain directory.
+        // Each build type gets its own producer under build/generated/featured/buildType/<name>,
+        // wired with addStaticSourceDirectory. Leaving generateConfigParam on the Android compile
+        // graph would put the base-default sources back on every variant.
         val generatedSrcDir = configParamTask.flatMap { it.outputDir }
-        val generatedDirFile =
-            target.layout.buildDirectory
-                .dir("generated/featured/commonMain")
-                .get()
-                .asFile
         target.plugins.withId("org.jetbrains.kotlin.multiplatform") {
             wireGeneratedSourcesToKmp(target, generatedSrcDir)
         }
@@ -87,11 +86,16 @@ public class FeaturedPlugin : Plugin<Project> {
             wireGeneratedSourcesToKotlinJvm(target, generatedSrcDir)
         }
         target.plugins.withId("com.android.application") {
-            wireGeneratedSourcesToAndroid(target, generatedDirFile, configParamTask)
+            wireApplicationBuildTypeConfigParams(target, extension) { buildType ->
+                registerBuildTypeConfigParamTask(target, extension, resolveTask, verifyTask, buildType)
+            }
         }
         target.plugins.withId("com.android.library") {
-            wireGeneratedSourcesToAndroid(target, generatedDirFile, configParamTask)
+            wireLibraryBuildTypeConfigParams(target, extension) { buildType ->
+                registerBuildTypeConfigParamTask(target, extension, resolveTask, verifyTask, buildType)
+            }
         }
+        registerBuildTypeDefaultChecks(target, extension)
     }
 
     private fun registerResolveFlagsTask(
@@ -149,6 +153,61 @@ public class FeaturedPlugin : Plugin<Project> {
             task.dependsOn(verifyTask)
         }
 
+    /**
+     * One ConfigParam producer per Android build type. Not a dependency of the shared
+     * [GENERATE_CONFIG_PARAM_TASK_NAME] task, and that shared task is not a dependency of this one.
+     */
+    private fun registerBuildTypeConfigParamTask(
+        target: Project,
+        extension: FeaturedExtension,
+        resolveTask: TaskProvider<ResolveFlagsTask>,
+        verifyTask: TaskProvider<VerifyExpiredFlagsTask>,
+        buildType: String,
+    ): TaskProvider<GenerateConfigParamTask> =
+        target.tasks.register(BuildTypeDefaults.taskName(buildType), GenerateConfigParamTask::class.java) { task ->
+            task.group = "featured"
+            task.description =
+                "Generates ConfigParam objects for the '$buildType' build type in '${target.path}'."
+            task.flagsFile.set(resolveTask.flatMap { it.outputFile })
+            task.modulePath.set(target.path)
+            task.localPackageName.set(target.provider { extension.localPackageName() })
+            task.localClassName.set(target.provider { extension.localClassName() })
+            task.localVisibility.set(target.provider { extension.localVisibility() })
+            task.remotePackageName.set(target.provider { extension.remotePackageName() })
+            task.remoteClassName.set(target.provider { extension.remoteClassName() })
+            task.remoteVisibility.set(target.provider { extension.remoteVisibility() })
+            task.outputDir.set(target.buildTypeConfigParamDirectory(buildType))
+            task.buildType.set(buildType)
+            task.buildTypeDefaultOverrides.set(target.provider { extension.localFlags.buildTypeDefaultDescriptors() })
+            task.dependsOn(resolveTask)
+            task.dependsOn(verifyTask)
+        }
+
+    /**
+     * Runs once the featured DSL has been evaluated, including when Android [finalizeDsl][com.android.build.api.variant.AndroidComponentsExtension.finalizeDsl]
+     * never runs. The discard check is not nested under the Android name check.
+     */
+    private fun registerBuildTypeDefaultChecks(
+        target: Project,
+        extension: FeaturedExtension,
+    ) {
+        target.afterEvaluate {
+            val discard = BuildTypeDefaultValidation.discardErrors(extension.localFlags.flags)
+            val missing =
+                if (target.hasAndroidBuildTypes()) {
+                    emptyList()
+                } else {
+                    BuildTypeDefaultValidation.missingAndroidBuildTypesErrors(
+                        extension.localFlags.flags + extension.remoteFlags.flags,
+                    )
+                }
+            BuildTypeDefaultValidation.failIf(discard + missing)
+        }
+    }
+
+    private fun Project.hasAndroidBuildTypes(): Boolean =
+        plugins.hasPlugin("com.android.application") || plugins.hasPlugin("com.android.library")
+
     private fun registerProguardTask(
         target: Project,
         extension: FeaturedExtension,
@@ -162,6 +221,7 @@ public class FeaturedPlugin : Plugin<Project> {
             task.modulePath.set(target.path)
             // Rules target the local extensions file, so the local section's package applies.
             task.packageName.set(target.provider { extension.localPackageName() })
+            task.buildTypeDefaultOverrides.set(target.provider { extension.localFlags.buildTypeDefaultDescriptors() })
             task.outputFile.set(target.layout.buildDirectory.file("featured/proguard-featured.pro"))
             task.dependsOn(resolveTask)
             task.dependsOn(verifyTask)
@@ -178,7 +238,17 @@ public class FeaturedPlugin : Plugin<Project> {
             task.description = "Generates R8 -checkdiscard rules for local flag discard(...) targets in '${target.path}'."
             // Read straight from the DSL (not the resolved-flags report) so discard targets and
             // the remote-flag guard participate in the @Input fingerprint and invalidate caching.
-            task.discardDescriptors.set(target.provider { extension.localFlags.discardDescriptors() })
+            // Only discards whose release effective default is false. Validation fails the build
+            // when that value is not false, so an accepted call is the only one that reaches here.
+            task.discardDescriptors.set(
+                target.provider {
+                    extension.localFlags.flags
+                        .filter { flag ->
+                            flag.discards.isNotEmpty() &&
+                                flag.effectiveDefault(RELEASE_BUILD_TYPE) == "false"
+                        }.flatMap { flag -> flag.discards.map { spec -> "${flag.key}|$spec" } }
+                },
+            )
             task.remoteFlagsWithDiscards.set(
                 target.provider {
                     extension.remoteFlags.flags

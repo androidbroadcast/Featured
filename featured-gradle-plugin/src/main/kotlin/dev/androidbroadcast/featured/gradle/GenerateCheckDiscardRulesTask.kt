@@ -11,12 +11,14 @@ import org.gradle.api.tasks.TaskAction
 
 /**
  * Gradle task that generates R8 `-checkdiscard` rules for every `discard(...)` target declared
- * on a local boolean flag (see [FlagSpec.discard]).
+ * on a local boolean flag whose release effective default is `false` (see [FlagSpec.discard]).
  *
  * The rules are the verification companion to the `-assumevalues` rules from
- * [GenerateProguardRulesTask]: where `-assumevalues` *forces* a flag to its default and lets R8
- * drop the disabled branch, `-checkdiscard` *asserts* the guarded classes are gone from the
- * optimized output and fails the build otherwise.
+ * [GenerateProguardRulesTask]: where `-assumevalues` *forces* a flag to its release effective
+ * default and lets R8 drop the disabled branch, `-checkdiscard` *asserts* the guarded classes
+ * are gone from the optimized output and fails the build otherwise. A class spec is emitted
+ * only when `discard` was called and that release check accepted it. A debug override of
+ * `false` does not emit a rule.
  *
  * For Android application modules the generated file is wired into every variant's R8 run; for
  * library modules it is exported as a consumer ProGuard file so the check runs in the consuming

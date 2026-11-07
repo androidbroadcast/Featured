@@ -2,6 +2,7 @@ package dev.androidbroadcast.featured.gradle
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
@@ -16,8 +17,8 @@ import org.gradle.api.tasks.TaskAction
  * ProGuard/R8 `-assumevalues` rules for all local flags in this module.
  *
  * Each local flag gets its own rule targeting the generated extension function from
- * [ExtensionFunctionGenerator], so R8 can propagate the exact constant and eliminate
- * dead branches in release builds.
+ * [ExtensionFunctionGenerator], so R8 can propagate the release effective default and
+ * eliminate dead branches in release builds. A debug build-type default is not that literal.
  *
  * For Android projects the generated file is automatically wired into all variants via the
  * AGP Variant API — no manual ProGuard configuration is required.
@@ -48,13 +49,22 @@ public abstract class GenerateProguardRulesTask : DefaultTask() {
     @get:OutputFile
     public abstract val outputFile: RegularFileProperty
 
+    /**
+     * Build-type overrides applied as the release effective default before rule generation.
+     * One `key|buildType|serializedValue` line per [FlagSpec.defaultFor]. Empty means the
+     * release rule uses the base default from [scanResultFile].
+     */
+    @get:Input
+    public abstract val buildTypeDefaultOverrides: ListProperty<String>
+
     init {
         packageName.convention(ConfigParamGenerator.DEFAULT_PACKAGE)
+        buildTypeDefaultOverrides.convention(emptyList())
     }
 
     @TaskAction
     public fun generate() {
-        val entries = scanResultFile.parseLocalFlagEntries()
+        val entries = scanResultFile.parseLocalFlagEntries().withReleaseEffectiveDefaults(buildTypeDefaultOverrides.get())
         val rules = ProguardRulesGenerator.generate(entries, modulePath.get(), packageName.get())
 
         val out = outputFile.get().asFile

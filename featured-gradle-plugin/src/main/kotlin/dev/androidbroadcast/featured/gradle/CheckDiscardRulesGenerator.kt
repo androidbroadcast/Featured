@@ -4,8 +4,8 @@ package dev.androidbroadcast.featured.gradle
  * A single `-checkdiscard` target: a class specification that must be absent from the
  * optimized release binary, together with the flag that guards it.
  *
- * @property flagKey The local boolean flag (default `false`) that guards [classSpec]. Used only
- *   for the generated comment so a failing check points at the responsible flag.
+ * @property flagKey The local boolean flag (release effective default `false`) that guards
+ *   [classSpec]. Used only for the generated comment so a failing check points at the flag.
  * @property classSpec An R8/ProGuard class specification (e.g. `com.example.featurex.**`).
  */
 public data class CheckDiscardEntry(
@@ -18,7 +18,8 @@ public data class CheckDiscardEntry(
  * from the optimized release binary.
  *
  * This is the verification half of the dead-code-elimination story. [ProguardRulesGenerator]
- * emits `-assumevalues` rules that *cause* R8 to fold a local flag to its default and drop the
+ * emits `-assumevalues` rules that *cause* R8 to fold a local flag to its release effective
+ * default and drop the
  * disabled branch; `-checkdiscard` then *asserts* the result — if any listed class survives,
  * R8 fails the build with `Discard checks failed` and prints the retention path (diagnose with
  * `-whyareyoukeeping`).
@@ -28,8 +29,8 @@ public data class CheckDiscardEntry(
  * reference, a manifest entry, or reflection that keeps the feature alive is caught at build
  * time instead of shipping dead code (or worse, a still-reachable disabled feature).
  *
- * Each target is declared via `discard(...)` on a local boolean flag whose default is `false`
- * (see [FlagSpec.discard]); the matching `-assumevalues` rule is what makes the discard
+ * Each target is declared via `discard(...)` on a local boolean flag whose release effective
+ * default is `false` (see [FlagSpec.discard]); the matching `-assumevalues` rule is what makes the discard
  * guaranteed to hold in release builds.
  *
  * Example output for `boolean("new_checkout", default = false) { discard("com.example.checkout.newflow.**") }`:
