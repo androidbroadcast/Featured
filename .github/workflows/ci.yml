@@ -64,6 +64,15 @@ jobs:
       - uses: ./.github/actions/setup-build-env
       - run: ./gradlew spotlessCheck
 
+  android-api-compat:
+    name: Android API compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-build-env
+      - name: Check Android public API
+        run: ./gradlew checkAndroidApi :android-api-compat:test
+
   build-ios:
     name: Build iOS
     runs-on: macos-latest

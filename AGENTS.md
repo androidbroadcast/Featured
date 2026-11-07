@@ -174,7 +174,7 @@ For local artifact testing, root `./gradlew publishToMavenLocal` also forwards t
 ## PR and Git instructions
 
 - Branch from and target `develop` for feature, fix, and documentation PRs; keep each PR focused. Use squash merges into `develop`.
-- Use the checklist in `.github/pull_request_template.md`: tests, documentation/KDoc, changelog, and Spotless. Review public API changes explicitly; compatibility is reviewed manually.
+- Use the checklist in `.github/pull_request_template.md`: tests, documentation/KDoc, changelog, and Spotless. Review public API changes explicitly. Android signatures are checked by `checkAndroidApi` (module list in `docs/specs/api-compat-gate.md`). The gate does not compute the version bump. iOS and JVM public API may change in a minor release without a major bump.
 - Follow `CONTRIBUTING.md` for versioning: stable Android breaking changes require a major version; preview iOS/JVM APIs may change in minor releases. Do not invent a deprecation/migration window.
 - Keep release branch operations distinct: release `develop` into `main` with a real merge, not a squash; synchronize back through the documented squash-PR procedure.
 

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Android public signatures are dump-and-checked by `checkAndroidApi`. A difference in a gated
+  module's committed Android dump fails CI until that baseline is updated in the same change.
+  The module list is in `docs/specs/api-compat-gate.md`. Preview iOS and JVM are not in the gate,
+  and the gate does not compute the version bump. (#225)
 - Gradle plugin: `dev.androidbroadcast.featured` and `dev.androidbroadcast.featured.application`
   add generated Kotlin to compilation automatically (KMP `commonMain`, Kotlin/JVM `main`, or the
   AGP `main` source set). Manual `srcDir` / `dependsOn` wiring is no longer required.
