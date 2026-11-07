@@ -20,6 +20,10 @@ internal object AndroidApiGate {
             AndroidApiModule(":featured-debug-ui", "featured-debug-ui/api/android/featured-debug-ui.api"),
             AndroidApiModule(":featured-platform", "featured-platform/api/android/featured-platform.api"),
             AndroidApiModule(":featured-testing", "featured-testing/api/android/featured-testing.api"),
+            AndroidApiModule(
+                ":providers:appmetrica",
+                "providers/appmetrica/api/android/featured-appmetrica-provider.api",
+            ),
             AndroidApiModule(":providers:configcat", "providers/configcat/api/android/featured-configcat-provider.api"),
             AndroidApiModule(":providers:datastore", "providers/datastore/api/android/featured-datastore-provider.api"),
             AndroidApiModule(":providers:firebase", "providers/firebase/api/android/featured-firebase-provider.api"),

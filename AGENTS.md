@@ -21,6 +21,7 @@ Run these checks before submitting code changes:
   :providers:datastore:koverVerify \
   :providers:sharedpreferences:koverVerify \
   :providers:firebase:koverVerify \
+  :providers:appmetrica:koverVerify \
   :featured-compose:koverVerify \
   :featured-testing:koverVerify
 ```
@@ -63,7 +64,7 @@ xcodebuild build -project iosApp/iosApp.xcodeproj -scheme iosApp \
 - Preserve configuration-cache reuse, build-cache invalidation after DSL changes, and Project Isolation regression coverage when changing plugin inputs or wiring.
 - Ensure `ANDROID_HOME` or `ANDROID_SDK_ROOT` is present when validating Android TestKit fixtures. Those tests use assumptions to skip without an SDK; a passing plugin test task alone does not prove Android integration ran.
 - Run `featured-shrinker-tests` for changes to generated accessor signatures or R8 rules. These tests synthesize bytecode with ASM, run R8 directly, and inspect output classes/references; plugin TestKit tests separately cover Android app/AAR wiring.
-- Preserve the configured line-coverage floors: core 90%, DataStore 70%, SharedPreferences 80%, Compose 65%, and testing helpers 80%. Coverage exclusions and rules live in each module's `build.gradle.kts`.
+- Preserve the configured line-coverage floors: core 90%, DataStore 70%, SharedPreferences 80%, AppMetrica 70%, Compose 65%, and testing helpers 80%. Coverage exclusions and rules live in each module's `build.gradle.kts`.
 
 CI is defined in `.github/workflows/ci.yml`: test/coverage, Android assemble/lint, Spotless, and macOS framework/Xcode checks are separate jobs. CodeQL and dependency review have separate workflows under `.github/workflows/`.
 
