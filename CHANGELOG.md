@@ -14,16 +14,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The module list is in `docs/specs/api-compat-gate.md`. Preview iOS and JVM are not in the gate,
   and the gate does not compute the version bump. (#225)
 - Gradle plugin: `dev.androidbroadcast.featured` and `dev.androidbroadcast.featured.application`
-  add generated Kotlin to compilation automatically (KMP `commonMain`, Kotlin/JVM `main`, or the
-  AGP `main` source set). Manual `srcDir` / `dependsOn` wiring is no longer required.
+  add generated Kotlin to compilation automatically (KMP `commonMain`, Kotlin/JVM `main`, or, for
+  the aggregator registry, the AGP `main` source set). Android application and library flag
+  compilations use `build/generated/featured/buildType/<buildType>` instead of AGP `main`.
+  Manual `srcDir` / `dependsOn` wiring is no longer required.
   `generateFeaturedRegistry` writes to `build/generated/featured/registry`, separate from
   `generateConfigParam`'s `build/generated/featured/commonMain`. (#249)
-- Gradle plugin: `discard(classSpec)` on a local boolean flag with `default = false` emits an R8
-  `-checkdiscard` rule for that class specification. The rule runs in the same R8 pass as the
-  generated `-assumevalues` rules (application variants directly, library modules through consumer
-  rules). A release build fails if those classes are kept. Flags that do not call `discard(...)`
-  are unchanged; the generated file is empty and is a no-op. `discard(...)` on a remote flag fails
-  the build.
+- Gradle plugin: `discard(classSpec)` on a local boolean flag whose release effective default
+  is `false` emits an R8 `-checkdiscard` rule for that class specification. The rule runs in the
+  same R8 pass as the generated `-assumevalues` rules (application variants directly, library
+  modules through consumer rules). A release build fails if those classes are kept. Flags that
+  do not call `discard(...)` are unchanged; the generated file is empty and is a no-op.
+  `discard(...)` on a remote flag fails the build.
+- Gradle plugin: a local flag keeps its `default` as the base default. `defaultFor(buildType, value)`
+  sets a different default for that Android build type. A build type with no `defaultFor` uses the
+  base default. R8 `-assumevalues` and `-checkdiscard` use the release build type's effective
+  default. A debug build-type default is not the release rule. Product flavors are not supported.
+  iOS `DISABLE_` conditions, generated iOS constants, and non-Android compilations use the base
+  default. `defaultFor` does not write a stored override. A stored local value still wins.
+  `default = true` plus `defaultFor("release", false)` keeps iOS on `true` while Android release
+  R8 assumes `false`.
 
 ### Changed
 

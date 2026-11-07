@@ -106,7 +106,7 @@ For code navigation, follow `.claude/rules/ast-index.md`: use `ast-index` before
 - Construct a `ConfigValues` per feature and share provider instances across them. Give a cross-feature debug surface its own container over the same providers and `GeneratedFeaturedRegistry.all`.
 - Apply `dev.androidbroadcast.featured` to flag-producing modules; apply `dev.androidbroadcast.featured.application` to the aggregator. Add producers through `featuredAggregation(project(...))`.
 - Keep aggregation declarative through manifest artifacts and schema attributes. Do not inspect or mutate other projects from plugin configuration.
-- The producer and aggregator plugins add generated Kotlin to compilation themselves (KMP `commonMain`, Kotlin/JVM `main`, or the AGP `main` source set). Do not add a manual `srcDir` for `generateConfigParam` or `generateFeaturedRegistry`. The registry is written to `build/generated/featured/registry`, separate from `generateConfigParam`'s `build/generated/featured/commonMain`.
+- The producer and aggregator plugins add generated Kotlin to compilation themselves. KMP `commonMain` and Kotlin/JVM `main` receive `generateConfigParam` (base default). Android application and library compilations receive `build/generated/featured/buildType/<buildType>`, not the AGP `main` source set; the aggregator's `generateFeaturedRegistry` is still wired into AGP `main`. Do not add a manual `srcDir` for `generateConfigParam` or `generateFeaturedRegistry`. The registry is written to `build/generated/featured/registry`, separate from `generateConfigParam`'s `build/generated/featured/commonMain`.
 
 - Add a normal `implementation`/`api` dependency as well as `featuredAggregation` when a manifest references an enum defined in the producer. The manifest dependency does not expose that enum on the compile classpath.
 - Keep plugin task state provider-backed and serializable. Snapshot project metadata during configuration; avoid execution-time `Project` access. Keep DSL descriptors lazy so default/package/visibility changes invalidate generated outputs and caches.
@@ -114,10 +114,10 @@ For code navigation, follow `.claude/rules/ast-index.md`: use `ast-index` before
 ### Release optimization
 
 - Keep generated synchronous accessors synchronous: they use `getValueCached`, and R8 rules target their exact JVM signatures. Local Boolean accessors return `Boolean`; other local accessors return the raw type; remote accessors return `ConfigValue<T>`.
-- Treat local defaults as release-build constants when generated R8 rules apply. Use remote flags for behavior that must remain runtime-controlled in release builds.
+- Treat the release effective default as the release-build constant when generated R8 rules apply: the `defaultFor("release", ...)` override if one exists, otherwise the base default. A debug build-type default is not that constant. Use remote flags for behavior that must remain runtime-controlled in release builds.
 - Keep generator output names and R8 targets aligned. Extension-file JVM names derive from the module path; changing generated object names does not rename extension files.
 - Preserve AGP-specific consumer-rule wiring for both ordinary and KMP Android libraries. Library rules must reach the consuming app's R8 through the AAR, and explicit generator task dependencies are required in addition to variant file providers.
-- Keep Swift `DISABLE_<FLAG>` compilation conditions and generated iOS constants aligned with their consumers. Include generated xcconfig in the appropriate Release configuration; merely generating a file does not configure Xcode.
+- Keep Swift `DISABLE_<FLAG>` compilation conditions and generated iOS constants aligned with the base default, not a release build-type override. Include generated xcconfig in the appropriate Release configuration; merely generating a file does not configure Xcode.
 
 ## Code style and build conventions
 

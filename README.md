@@ -9,7 +9,7 @@ Featured is a type-safe, reactive feature-flag and configuration management libr
 ## Highlights
 
 - **Type-safe flags** — declared in the Gradle DSL, accessed via generated typed extensions on `ConfigValues`. No string keys, no unchecked casts.
-- **Dead-code elimination in release builds** — a flag with `default = false` makes the guarded code unreachable. The Gradle plugin emits R8 `-assumevalues` rules (Android/JVM) and an xcconfig with `DISABLE_<FLAG>` Swift compilation conditions (iOS), so the respective compilers physically strip disabled branches from release binaries.
+- **Dead-code elimination in release builds** — Android release R8 assumes a local flag's release effective default (the `defaultFor("release", ...)` override if one exists, otherwise the base `default`). A debug build-type default is not that constant. The Gradle plugin emits R8 `-assumevalues` rules from that release value, and an xcconfig with `DISABLE_<FLAG>` Swift compilation conditions from the base default, so the respective compilers strip disabled branches.
 - **Reactive** — every value is observable via `Flow`; Compose and SwiftUI/Combine integrations included.
 - **Multiple providers** — DataStore, SharedPreferences, NSUserDefaults, JavaPreferences, Firebase Remote Config, ConfigCat, or a custom one.
 - **Debug UI** — a ready-made Compose screen for overriding flags at runtime.

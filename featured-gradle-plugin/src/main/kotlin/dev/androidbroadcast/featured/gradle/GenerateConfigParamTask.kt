@@ -3,6 +3,7 @@ package dev.androidbroadcast.featured.gradle
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
@@ -27,9 +28,11 @@ import org.gradle.api.tasks.TaskAction
  * carried by the `local*` / `remote*` properties; [FeaturedPlugin] resolves the section /
  * module-wide fallback chain before wiring them.
  *
- * All files are written to [outputDir] (`build/generated/featured/commonMain/`). [FeaturedPlugin]
- * auto-wires this directory into the consumer module's compilation (KMP `commonMain`, Kotlin/JVM
- * `main`, or the AGP `main` Kotlin source set) — no manual `srcDir` / `dependsOn` is needed.
+ * All files are written to [outputDir]. The shared task writes the base default to
+ * `build/generated/featured/commonMain/` and is wired into KMP `commonMain` and Kotlin/JVM
+ * `main`. Android application and library compilations do not consume that directory: each
+ * build type has its own task writing `build/generated/featured/buildType/<buildType>/`, with
+ * local [LocalFlagEntry.defaultValue] replaced by that build type's effective default.
  */
 @CacheableTask
 public abstract class GenerateConfigParamTask : DefaultTask() {
@@ -72,6 +75,22 @@ public abstract class GenerateConfigParamTask : DefaultTask() {
     @get:OutputDirectory
     public abstract val outputDir: DirectoryProperty
 
+    /**
+     * Android build type whose effective default replaces each local entry's base default.
+     * Absent on the shared task, which always emits the base default.
+     */
+    @get:Input
+    @get:Optional
+    public abstract val buildType: Property<String>
+
+    /**
+     * Build-type overrides, one `key|buildType|serializedValue` line per [FlagSpec.defaultFor].
+     * Empty means every build type uses the base. A change here invalidates this task even when
+     * the base default in [flagsFile] did not change.
+     */
+    @get:Input
+    public abstract val buildTypeDefaultOverrides: ListProperty<String>
+
     init {
         // Conventions cover direct task usage; FeaturedPlugin always wires the resolved
         // DSL values explicitly.
@@ -79,11 +98,16 @@ public abstract class GenerateConfigParamTask : DefaultTask() {
         remotePackageName.convention(ConfigParamGenerator.DEFAULT_PACKAGE)
         localVisibility.convention(FeaturedVisibility.INTERNAL)
         remoteVisibility.convention(FeaturedVisibility.INTERNAL)
+        buildTypeDefaultOverrides.convention(emptyList())
     }
 
     @TaskAction
     public fun generate() {
-        val entries = flagsFile.parseLocalFlagEntries()
+        val parsed = flagsFile.parseLocalFlagEntries()
+        val entries =
+            buildType.orNull?.let { name ->
+                parsed.withEffectiveDefaults(name, buildTypeDefaultOverrides.get())
+            } ?: parsed
         val dir = outputDir.get().asFile
         // Clean before writing — custom class names change the output file names between
         // runs, so stale files from previous runs must be removed to avoid duplicate-class

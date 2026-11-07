@@ -22,9 +22,13 @@ featured {
         }
         boolean("dark_mode", default = false) { category = "UI" }
         int("max_retries", default = 3)
-        enum("checkout_variant", typeFqn = "com.example.CheckoutVariant", default = "LEGACY")
         boolean("new_checkout", default = false) {
-            // assert the guarded code is gone from release binaries (R8 -checkdiscard)
+            defaultFor("debug", true)
+        }
+        enum("checkout_variant", typeFqn = "com.example.CheckoutVariant", default = "LEGACY")
+        boolean("legacy_path", default = true) {
+            defaultFor("release", false)
+            // discard follows the release effective default, not the base and not the debug override
             discard("com.example.checkout.newflow.**")
         }
     }
@@ -43,7 +47,11 @@ featured {
 - ProGuard rules and the iOS const-val files follow the **local** section's effective package.
 - The iOS expect/actual `const val` declarations stay `public` regardless of `visibility`.
 
-`discard(...)` notes (per local boolean flag, default `false` only):
+`defaultFor(buildType, value)` sets a different declared default for that Android build type.
+Unspecified build types use the base `default`. It is local-only and does not write a stored override.
+Product flavors are not a selector. JVM, KMP, and iOS keep the base default.
+
+`discard(...)` notes (per local boolean flag, release effective default `false`):
 
 - Emits an R8 `-checkdiscard class <spec> { *; }` rule that **verifies** the flag-guarded code
   was actually dead-code-eliminated in release builds — the companion check to the `-assumevalues`
@@ -52,15 +60,17 @@ featured {
   failed`; diagnose with `-whyareyoukeeping`.
 - Wired like `-assumevalues`: into the app's own R8 for application modules, and as a consumer
   ProGuard file for library modules so the check runs in the consuming app's R8.
-- Rejected on non-boolean flags, on `default = true` flags, and on remote flags (a runtime-resolved
-  value is never pinned at build time). Covers **code only** — resource shrinking is not verified.
+- Rejected on non-boolean flags, when the release effective default is `true` (a debug override
+  of `false` does not satisfy it), and on remote flags (a runtime-resolved value is never pinned
+  at build time). Covers **code only** — resource shrinking is not verified.
 
 ## Tasks registered per module
 
 | Task | Output |
 |------|--------|
 | `resolveFeatureFlags` | `build/featured/flags.txt` |
-| `generateConfigParam` | `build/generated/featured/commonMain/Generated{Local,Remote}Flags.kt` + `Generated{Local,Remote}FlagExtensions.kt` (file names follow custom `className`s) |
+| `generateConfigParam` | `build/generated/featured/commonMain/` — base default. JVM and KMP compilations read this directory. Android application/library compilations do not. |
+| `generateConfigParam<BuildType>` | `build/generated/featured/buildType/<buildType>/` — that build type's effective default. `generateConfigParamDebug` feeds `compileDebugKotlin`; flavors of one build type share the directory. |
 | `generateFeaturedProguardRules` | `build/featured/proguard-featured.pro` |
 | `generateFeaturedCheckDiscardRules` | `build/featured/proguard-featured-checkdiscard.pro` |
 | `generateIosConstVal` | iOS constant value files |
@@ -76,7 +86,8 @@ The plugin holds no `rootProject` access and is compatible with Gradle Project I
 `dev.androidbroadcast.featured.application` aggregator) auto-wire their generated output into the
 consumer module's compilation — consumers write **zero** manual `srcDir` / `dependsOn`. They write to
 **distinct** directories so the two outputs never overlap when a module applies both plugins:
-`generateConfigParam` → `build/generated/featured/commonMain`, `generateFeaturedRegistry` →
+`generateConfigParam` → `build/generated/featured/commonMain` (JVM and KMP; Android app/library
+compilations use `build/generated/featured/buildType/<buildType>` instead), `generateFeaturedRegistry` →
 `build/generated/featured/registry`.
 The plugin reacts to the applied Kotlin/Android plugin and picks the right source set
 (`GeneratedSourceWiring.kt`):
@@ -84,9 +95,11 @@ The plugin reacts to the applied Kotlin/Android plugin and picks the right sourc
 - KMP `org.jetbrains.kotlin.multiplatform` → `commonMain` via `srcDir(Provider)`; Gradle auto-infers the
   task dependency. Covers `com.android.kotlin.multiplatform.library` (it co-requires the KMP plugin).
 - Kotlin/JVM `org.jetbrains.kotlin.jvm` → `main` via `srcDir(Provider)`.
-- Plain AGP `com.android.application` / `com.android.library` → `sourceSets["main"].kotlin.directories.add(<resolved File path>)`
-  plus an explicit `dependsOn` on every `compile*Kotlin` / `ksp*` task. AGP's `AndroidSourceDirectorySet`
-  rejects a `Provider` at configuration time, so a resolved path is used and ordering is wired by hand.
+- Plain AGP `com.android.application` / `com.android.library` → one `generateConfigParam<BuildType>`
+  directory per build type, added with `variant.sources.kotlin.addStaticSourceDirectory`, plus an
+  explicit `dependsOn` on that variant's `compile*Kotlin` / `ksp*` / `extract*Annotations` tasks.
+  The shared `generateConfigParam` task is not on that compile graph. The aggregator still wires
+  `generateFeaturedRegistry` into the AGP `main` source set.
 
 The three branches are mutually exclusive in AGP 9, so exactly one fires per module.
 

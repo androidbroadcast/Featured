@@ -24,6 +24,12 @@ package dev.androidbroadcast.featured.gradle
 public class FlagContainer {
     private val _flags = mutableListOf<FlagSpec>()
 
+    /**
+     * Whether flags declared here are local. [FeaturedExtension] marks the remote container
+     * before any configure block, so [FlagSpec.defaultFor] can reject remote flags.
+     */
+    internal var localSection: Boolean = true
+
     /** All flags declared in this container. */
     public val flags: List<FlagSpec> get() = _flags.toList()
 
@@ -43,7 +49,7 @@ public class FlagContainer {
         default: Boolean,
         configure: FlagSpec.() -> Unit = {},
     ) {
-        _flags += FlagSpec(key, default.toString(), "Boolean").apply(configure)
+        addFlag(FlagSpec(key, default.toString(), "Boolean"), configure)
     }
 
     /** Declares an [Int] feature flag. */
@@ -52,7 +58,7 @@ public class FlagContainer {
         default: Int,
         configure: FlagSpec.() -> Unit = {},
     ) {
-        _flags += FlagSpec(key, default.toString(), "Int").apply(configure)
+        addFlag(FlagSpec(key, default.toString(), "Int"), configure)
     }
 
     /** Declares a [Long] feature flag. */
@@ -61,7 +67,7 @@ public class FlagContainer {
         default: Long,
         configure: FlagSpec.() -> Unit = {},
     ) {
-        _flags += FlagSpec(key, default.toString(), "Long").apply(configure)
+        addFlag(FlagSpec(key, default.toString(), "Long"), configure)
     }
 
     /** Declares a [Float] feature flag. */
@@ -70,7 +76,7 @@ public class FlagContainer {
         default: Float,
         configure: FlagSpec.() -> Unit = {},
     ) {
-        _flags += FlagSpec(key, default.toString(), "Float").apply(configure)
+        addFlag(FlagSpec(key, default.toString(), "Float"), configure)
     }
 
     /** Declares a [Double] feature flag. */
@@ -79,7 +85,7 @@ public class FlagContainer {
         default: Double,
         configure: FlagSpec.() -> Unit = {},
     ) {
-        _flags += FlagSpec(key, default.toString(), "Double").apply(configure)
+        addFlag(FlagSpec(key, default.toString(), "Double"), configure)
     }
 
     /** Declares a [String] feature flag. */
@@ -88,7 +94,7 @@ public class FlagContainer {
         default: String,
         configure: FlagSpec.() -> Unit = {},
     ) {
-        _flags += FlagSpec(key, "\"$default\"", "String").apply(configure)
+        addFlag(FlagSpec(key, "\"$default\"", "String"), configure)
     }
 
     /**
@@ -149,7 +155,20 @@ public class FlagContainer {
         require('.' in typeFqn) {
             "typeFqn must be a fully-qualified class name (e.g. \"com.example.MyEnum\"), got \"$typeFqn\""
         }
-        _flags += FlagSpec(key = key, defaultValue = default, type = typeFqn).apply(configure)
+        addFlag(FlagSpec(key = key, defaultValue = default, type = typeFqn), configure)
+    }
+
+    /**
+     * Marks the spec with this container's local/remote section, then applies [configure].
+     * The mark is visible to [FlagSpec.defaultFor] inside the block.
+     */
+    private fun addFlag(
+        spec: FlagSpec,
+        configure: FlagSpec.() -> Unit,
+    ) {
+        spec.declaredInLocalSection = localSection
+        spec.configure()
+        _flags += spec
     }
 
     /** Serialises all flags to pipe-delimited descriptors for [ResolveFlagsTask] inputs. */
@@ -160,4 +179,15 @@ public class FlagContainer {
      * [GenerateCheckDiscardRulesTask] inputs. Flags without discard targets contribute nothing.
      */
     internal fun discardDescriptors(): List<String> = _flags.flatMap { flag -> flag.discards.map { spec -> "${flag.key}|$spec" } }
+
+    /**
+     * One `key|buildType|serializedValue` line per [FlagSpec.defaultFor] override. The value is
+     * the remainder after the second pipe. Empty means every build type uses the base default.
+     */
+    internal fun buildTypeDefaultDescriptors(): List<String> =
+        _flags.flatMap { flag ->
+            flag.buildTypeDefaults.map { (buildType, value) ->
+                BuildTypeDefaults.descriptor(flag.key, buildType, value)
+            }
+        }
 }

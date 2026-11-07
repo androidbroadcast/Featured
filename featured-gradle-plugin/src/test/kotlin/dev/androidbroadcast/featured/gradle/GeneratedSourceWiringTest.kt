@@ -29,10 +29,10 @@ import kotlin.test.assertTrue
  * never actually compiled.
  *
  * The generated directory depends on the plugin: `build/generated/featured/commonMain` for
- * `generateConfigParam` (per-module, see [GenerateConfigParamTask]) and
- * `build/generated/featured/registry` for `generateFeaturedRegistry` (the aggregator, see
- * GenerateFeaturedRegistryTask) — distinct directories so the two outputs never overlap when a
- * module applies both plugins.
+ * `generateConfigParam` on JVM and KMP, `build/generated/featured/buildType/debug` for
+ * `generateConfigParamDebug` on Android application and library, and
+ * `build/generated/featured/registry` for `generateFeaturedRegistry` (the aggregator). The
+ * Android compile graph must not include the shared `generateConfigParam` task.
  *
  * AGP-based cases skip when `ANDROID_HOME` / `ANDROID_SDK_ROOT` is unset, matching the rest of the
  * integration suite.
@@ -83,7 +83,8 @@ class GeneratedSourceWiringTest {
                 .withArguments("compileDebugKotlin", "--stacktrace", "--no-build-cache")
                 .build()
 
-        assertGeneratedSourceTaskRan(result, ":$GENERATE_CONFIG_PARAM_TASK_NAME")
+        assertGeneratedSourceTaskRan(result, ":${BuildTypeDefaults.taskName("debug")}")
+        assertTaskAbsent(result, ":$GENERATE_CONFIG_PARAM_TASK_NAME")
         assertTaskSucceeded(result, ":compileDebugKotlin")
     }
 
@@ -99,7 +100,8 @@ class GeneratedSourceWiringTest {
                 .withArguments("compileDebugKotlin", "--stacktrace", "--no-build-cache")
                 .build()
 
-        assertGeneratedSourceTaskRan(result, ":$GENERATE_CONFIG_PARAM_TASK_NAME")
+        assertGeneratedSourceTaskRan(result, ":${BuildTypeDefaults.taskName("debug")}")
+        assertTaskAbsent(result, ":$GENERATE_CONFIG_PARAM_TASK_NAME")
         assertTaskSucceeded(result, ":compileDebugKotlin")
     }
 
@@ -168,6 +170,18 @@ class GeneratedSourceWiringTest {
      * stub. A failed or absent compile means the generated directory was not wired into the
      * compilation.
      */
+    private fun assertTaskAbsent(
+        result: BuildResult,
+        taskPath: String,
+    ) {
+        val outcome = result.task(taskPath)?.outcome
+        assertTrue(
+            outcome == null,
+            "Expected $taskPath to be absent from the compile graph (got $outcome). " +
+                "The shared base-default producer must not be scheduled for an Android variant compile.\n${result.output}",
+        )
+    }
+
     private fun assertTaskSucceeded(
         result: BuildResult,
         taskPath: String,

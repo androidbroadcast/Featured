@@ -66,14 +66,15 @@ class FlagDiscardDslTest {
     // ── validation ───────────────────────────────────────────────────────────
 
     @Test
-    fun `discard on a boolean true flag is rejected`() {
-        val error =
-            assertFailsWith<IllegalArgumentException> {
-                FlagContainer().apply {
-                    boolean("legacy_path", default = true) { discard("com.example.Foo") }
-                }
+    fun `discard on a boolean true flag is recorded for the later release check`() {
+        // The release effective default is not known until defaultFor in the same block has
+        // run. A true base no longer throws inside discard(); the JVM build fails instead.
+        val container =
+            FlagContainer().apply {
+                boolean("legacy_path", default = true) { discard("com.example.Foo") }
             }
-        assertContains(error.message!!, "default = false")
+        assertEquals(listOf("com.example.Foo"), container.flags.single().discards)
+        assertEquals(listOf("legacy_path|com.example.Foo"), container.discardDescriptors())
     }
 
     @Test

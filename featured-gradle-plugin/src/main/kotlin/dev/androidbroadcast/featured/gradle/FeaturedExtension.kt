@@ -52,7 +52,7 @@ public open class FeaturedExtension {
     public val localFlags: FlagContainer = FlagContainer()
 
     /** Container for flags controlled by a remote config service. */
-    public val remoteFlags: FlagContainer = FlagContainer()
+    public val remoteFlags: FlagContainer = FlagContainer().apply { localSection = false }
 
     /**
      * Controls how [VerifyExpiredFlagsTask] reacts to flags whose `expiresAt` date is in the past.
