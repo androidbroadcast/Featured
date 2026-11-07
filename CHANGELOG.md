@@ -68,6 +68,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Published `featured-firebase-provider` now requires Guava `33.8.0-android`, and published
+  `featured-appmetrica-provider` now requires OkHttp `4.12.0`, so those consumer runtime edges
+  no longer resolve the vulnerable Guava and OkHttp/Okio coordinates. (#224)
 - Release stripping is now checked as one loop: the compiled generated accessor must match
   the `-assumevalues` rule, `assembleRelease` must drop a class declared with `discard(...)`,
   and that release build fails if the class is kept. A hand-written R8 copy of the accessor

@@ -118,7 +118,7 @@ If `activateConfig` throws `CancellationException`, it propagates. Any other exc
 
 `:providers:appmetrica` is `com.android.library`, included from `settings.gradle.kts`. Namespace `dev.androidbroadcast.featured.appmetrica`. `minSdk` and `compileSdk` come from the catalog (`minSdk` 24). Java 17. Main source sets compile with `-Xexplicit-api=strict`. It applies `mavenPublish`, Dokka, Kover, and `dev.androidbroadcast.featured.internal.android-api-compat`, same as `:providers:firebase`.
 
-The provider's implementation dependency is `com.yandex.varioqub:config:0.10.0` plus `:core`. It does not depend on `appmetrica-adapter` or `io.appmetrica.analytics:analytics`, because the provider class does not reference them.
+The provider's implementation dependency is `com.yandex.varioqub:config:0.10.0` plus `:core`. It also publishes `implementation` `com.squareup.okhttp3:okhttp:4.12.0` so the consumer runtime classpath does not keep Varioqub's okhttp `3.12.0`. It does not depend on `appmetrica-adapter` or `io.appmetrica.analytics:analytics`, because the provider class does not reference them.
 
 POM coordinates, license, developer, and SCM match the other providers. Artifact id `featured-appmetrica-provider`. Name `Featured AppMetrica Provider`. Description says it reads remote flags through Varioqub for AppMetrica. `featured-bom` constrains the project.
 
