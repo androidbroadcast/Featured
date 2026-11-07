@@ -87,7 +87,7 @@ Artifacts:
 
 The module has no signing config, so the unsigned APK is the release artifact. The generated `-assumevalues` and `-checkdiscard` files reach that R8 run through the existing consumer ProGuard wiring from `:sample:feature-checkout`. The sample does not paste a hand-written `-assumevalues` rule.
 
-`assembleRelease` succeeds. `mapping.txt` does not contain `dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch`. That absence means `new_checkout` was stripped. This is not `ReleaseDceGuaranteeTest` and not `:featured-shrinker-tests:test`.
+`assembleRelease` succeeds. `mapping.txt` does not contain `dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch`. That absence means `new_checkout` was stripped. The simple name `NewCheckoutDisabledBranch` remains inside `reachNewCheckoutDisabledBranch` in the `onCreate` line mapping. That hit is the inlined bridge, not the class, and is not the absence check. This is not `ReleaseDceGuaranteeTest` and not `:featured-shrinker-tests:test`.
 
 `assembleDebug` is not the control. Debug does not run R8, so a present class there does not mean the accessor was not folded. A second minified app variant is not the control either: every `:sample:feature-checkout` Android variant publishes the generated rules as consumer ProGuard files, so a minified app variant still folds the accessor and still applies `-checkdiscard`.
 
@@ -167,7 +167,7 @@ Generated accessors stay `internal`, as `AGENTS.md` requires. Shells call the fe
 The check is a person following `docs/flag-stripping-runbook.md` and seeing:
 
 1. iOS Release executable lacks `New checkout is enabled`; the Debug executable without the generated token still has that same string.
-2. `:sample:android-app:assembleRelease` succeeds; `mapping.txt` lacks `NewCheckoutDisabledBranch`. `:sample:android-app:r8UnfoldedMarker` writes a jar that contains that same class. Presence there means `isNewCheckoutEnabled()` was not folded.
+2. `:sample:android-app:assembleRelease` succeeds; `mapping.txt` lacks `dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch`. The simple name inside `reachNewCheckoutDisabledBranch` is the inlined bridge, not that class, and remains in the line mapping. `:sample:android-app:r8UnfoldedMarker` writes a jar that contains that same class. Presence there means `isNewCheckoutEnabled()` was not folded.
 3. `:sample:desktop:packageReleaseUberJarForCurrentOS` writes a `-release.jar` that lacks `NewCheckoutDisabledBranch.class`. `:sample:desktop:proguardUnfoldedMarker` writes a jar that contains that same class file. Presence there means `isNewCheckoutEnabled()` was not folded.
 
 Issue #213 is closed from that page, not from this spec and not from a library test.
@@ -188,7 +188,7 @@ Issue #213 is closed from that page, not from this spec and not from a library t
 - [ ] **AC-1.** `docs/flag-stripping-runbook.md` contains the absence procedures and the unfolded controls above, including the commands, artifact paths, inspection commands, and what absence and presence mean. It does not rename those tasks.
 - [ ] **AC-2.** iOS source for `NewCheckoutBanner` is unchanged. The Release executable lacks `New checkout is enabled` when built with the tokens from `:sample:feature-checkout:generateXcconfig`. The Debug executable built without `DISABLE_NEW_CHECKOUT` still contains that string.
 - [ ] **AC-3.** `newCheckoutFlow()`, `checkoutVariantFlow()`, `setNewCheckout()`, `FeaturedSample`, and the checkout ViewModel are unchanged. `reachNewCheckoutDisabledBranch()` is the only new public bridge. It is the only caller of `isNewCheckoutEnabled()`. `NewCheckoutDisabledBranch` is referenced only from that function's true branch. `MainActivity` and `MainDesktop.main` call the bridge and do not call the generated accessor.
-- [ ] **AC-4.** `:sample:android-app:assembleRelease` succeeds. `mapping.txt` lacks `NewCheckoutDisabledBranch`. `new_checkout` discards only that class.
+- [ ] **AC-4.** `:sample:android-app:assembleRelease` succeeds. `mapping.txt` does not contain `dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch`. A simple-name hit inside `reachNewCheckoutDisabledBranch` is the inlined bridge, not that class. `new_checkout` discards only that class.
 - [ ] **AC-5.** `:sample:desktop:packageReleaseUberJarForCurrentOS` produces a `-release.jar` that lacks `NewCheckoutDisabledBranch.class`. Its ProGuard configuration includes `proguard-featured.pro` and does not include `proguard-featured-checkdiscard.pro`.
 - [ ] **AC-6.** `:sample:android-app:r8UnfoldedMarker` writes `sample/android-app/build/featured/r8-unfolded-marker.jar`, and that jar contains `NewCheckoutDisabledBranch.class`. The task does not take the generated rules files.
 - [ ] **AC-7.** `:sample:desktop:proguardUnfoldedMarker` writes `sample/desktop/build/featured/proguard-unfolded-marker.jar`, and that jar contains `NewCheckoutDisabledBranch.class`. The task does not take the generated rules files.

@@ -11,10 +11,12 @@ Issue: https://github.com/androidbroadcast/Featured/issues/213
 | App | Absence | Control |
 |---|---|---|
 | iOS | Release `Featured` executable lacks `New checkout is enabled` | Debug executable, built without `DISABLE_NEW_CHECKOUT`, still contains that string |
-| Android | `assembleRelease` succeeds and `mapping.txt` lacks `NewCheckoutDisabledBranch` | `:sample:android-app:r8UnfoldedMarker` writes a jar that contains that class |
+| Android | `assembleRelease` succeeds and `mapping.txt` lacks `dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch` | `:sample:android-app:r8UnfoldedMarker` writes a jar that contains that class file |
 | Desktop | The `-release.jar` lacks `NewCheckoutDisabledBranch.class` | `:sample:desktop:proguardUnfoldedMarker` writes a jar that contains that class |
 
 Android and Desktop absence means `new_checkout` was stripped. Presence in the unfolded jar means `isNewCheckoutEnabled()` was not folded. If that class is missing from the unfolded jar, the release absence does not prove `-assumevalues`.
+
+The Android mapping check is that fully qualified class name. Do not grep `mapping.txt` for the simple name `NewCheckoutDisabledBranch`. The bridge `reachNewCheckoutDisabledBranch` contains that simple name and remains in the `onCreate` line mapping after the class is gone. That hit is not the class.
 
 The disabled class is `internal` `dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch` in `:sample:feature-checkout`. The only caller of the generated accessor is `ConfigValues.reachNewCheckoutDisabledBranch()` in that module. `MainActivity.onCreate` and `MainDesktop.main` call that bridge and use the returned `Int`. They do not call `isNewCheckoutEnabled()`.
 
@@ -91,7 +93,7 @@ grep 'dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch' \
   sample/android-app/build/outputs/mapping/release/mapping.txt
 ```
 
-`assembleRelease` succeeds, and that `grep` prints nothing, means `new_checkout` was stripped. Search the class name, not the simple name alone: the bridge method `reachNewCheckoutDisabledBranch` contains that simple name and can remain in the line mapping after the class is gone. This is not `ReleaseDceGuaranteeTest` and not `:featured-shrinker-tests:test`.
+`assembleRelease` succeeds, and that `grep` prints nothing, means `new_checkout` was stripped. That command searches the fully qualified class name from the table above. A search for the simple name `NewCheckoutDisabledBranch` is not the check: `reachNewCheckoutDisabledBranch` contains it and remains in the `onCreate` line mapping after the class is gone. This is not `ReleaseDceGuaranteeTest` and not `:featured-shrinker-tests:test`.
 
 `assembleDebug` is not the control. Debug does not run R8.
 
