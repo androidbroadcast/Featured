@@ -22,6 +22,11 @@ kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
+        // AGP 9 KMP libraries do not export consumer ProGuard rules unless this is set.
+        // The featured plugin already adds the generated files; this publishes them to the app R8.
+        optimization {
+            consumerKeepRules.publish = true
+        }
     }
 
     iosArm64()
@@ -44,6 +49,7 @@ featured {
         boolean("new_checkout", default = false) {
             description = "Enable the redesigned checkout flow"
             category = "checkout"
+            discard("dev.androidbroadcast.featured.sample.checkout.NewCheckoutDisabledBranch")
         }
         enum(
             key = "checkout_variant",

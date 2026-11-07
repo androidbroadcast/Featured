@@ -129,6 +129,7 @@ Full documentation lives in the [Wiki](https://github.com/AndroidBroadcast/Featu
 - [Installation](https://github.com/AndroidBroadcast/Featured/wiki/Installation)
 - [Providers](https://github.com/AndroidBroadcast/Featured/wiki/Providers)
 - [Release Optimization (DCE)](https://github.com/AndroidBroadcast/Featured/wiki/Release-Optimization) — how flags get stripped from release binaries
+- [Sample flag-stripping runbook](docs/flag-stripping-runbook.md) — commands that show a disabled local flag absent from the sample apps
 - [iOS Usage](https://github.com/AndroidBroadcast/Featured/wiki/iOS-Usage)
 - [Best Practices](https://github.com/AndroidBroadcast/Featured/wiki/Best-Practices)
 

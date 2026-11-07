@@ -21,6 +21,7 @@ import dev.androidbroadcast.featured.generated.GeneratedFeaturedRegistry
 import dev.androidbroadcast.featured.platform.defaultLocalProvider
 import dev.androidbroadcast.featured.sample.checkout.CheckoutFlagsViewModel
 import dev.androidbroadcast.featured.sample.checkout.CheckoutVariant
+import dev.androidbroadcast.featured.sample.checkout.reachNewCheckoutDisabledBranch
 import dev.androidbroadcast.featured.sample.promotions.PromotionsFlagsViewModel
 import dev.androidbroadcast.featured.sample.ui.UiFlagsViewModel
 
@@ -61,6 +62,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Keeps the disabled-branch bridge reachable until release shrinking folds the accessor.
+        if (checkoutConfigValues.reachNewCheckoutDisabledBranch() < 0) error("unreachable")
         enableEdgeToEdge()
         setContent {
             // ViewModels are created here so they are scoped to the Activity's ViewModelStore

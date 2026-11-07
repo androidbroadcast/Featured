@@ -5,6 +5,7 @@ package dev.androidbroadcast.featured
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import dev.androidbroadcast.featured.sample.checkout.CheckoutFlagsViewModel
+import dev.androidbroadcast.featured.sample.checkout.reachNewCheckoutDisabledBranch
 import dev.androidbroadcast.featured.sample.promotions.PromotionsFlagsViewModel
 import dev.androidbroadcast.featured.sample.ui.UiFlagsViewModel
 
@@ -25,6 +26,9 @@ fun main() {
     val checkoutViewModel = CheckoutFlagsViewModel(checkoutConfigValues)
     val promotionsViewModel = PromotionsFlagsViewModel(promotionsConfigValues)
     val uiViewModel = UiFlagsViewModel(uiConfigValues)
+
+    // Keeps the disabled-branch bridge reachable until release shrinking folds the accessor.
+    if (checkoutConfigValues.reachNewCheckoutDisabledBranch() < 0) error("unreachable")
 
     application {
         Window(
