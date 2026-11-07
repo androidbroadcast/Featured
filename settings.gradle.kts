@@ -3,6 +3,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     includeBuild("featured-gradle-plugin")
+    includeBuild("gradle/android-api-compat")
 
     @Suppress("UnstableApiUsage")
     repositories {

@@ -63,14 +63,19 @@ Featured follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`
 - Changing a function signature in a way that requires call-site updates
 - Changing the behavior of an existing API in a way that requires migration
 
-Public API changes are reviewed manually during code review — there is no automated Binary Compatibility Validator gate. Reviewers verify that any public-surface change is intentional and that the version bump reflects it.
+Android public signatures are dump-and-checked by `checkAndroidApi`. The modules in that gate are listed in [docs/specs/api-compat-gate.md](docs/specs/api-compat-gate.md). The gate does not compute the version bump.
+
+- A breaking Android signature (removed, renamed, or a signature that requires a call-site update) still requires a `MAJOR` bump.
+- An additive Android signature still requires a `MINOR` bump and a baseline update (`updateAndroidApi`). CI does not run that task.
+- A change that does not appear in a gated Android dump does not fail this gate and does not require a major bump.
+- A behavioral break with unchanged signatures is still a breaking Android change under the policy above. This gate does not detect it.
 
 ## API Stability and Breaking Changes
 
 Featured has **no deprecation or migration window**. Breaking changes are made directly; the version number reflects the impact per the Versioning table above.
 
 - **Android (Stable):** a breaking public-API change (removed/renamed symbol, changed signature) requires a `MAJOR` version bump.
-- **iOS (Preview) and JVM (Preview):** public API may change in `MINOR` releases without a major bump; no migration window is provided.
+- **iOS (Preview) and JVM (Preview):** iOS and JVM public API may change in a minor release without a major bump; no migration window is provided. Those surfaces are not in the Android dump-and-check.
 
 ## Branching Model
 

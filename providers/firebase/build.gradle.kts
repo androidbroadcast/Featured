@@ -1,4 +1,5 @@
 plugins {
+    id("dev.androidbroadcast.featured.internal.android-api-compat")
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kover)
     alias(libs.plugins.mavenPublish)
