@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Android-only `featured-appmetrica-provider` reads remote flags through Varioqub. Maven Central
   publication waits for the release process. (#204)
+- Sample verification path for a disabled local flag, not a library behavior change.
+  [docs/flag-stripping-runbook.md](docs/flag-stripping-runbook.md) names the Gradle and Xcode
+  commands that show `new_checkout` stripped from the Android, Desktop, and iOS sample apps.
+  The sample gains a class reached only through that flag, and two unfolded control tasks that
+  keep the class when the accessor is not folded. (#213)
 - Android public signatures are dump-and-checked by `checkAndroidApi`. A difference in a gated
   module's committed Android dump fails CI until that baseline is updated in the same change.
   The module list is in `docs/specs/api-compat-gate.md`. Preview iOS and JVM are not in the gate,

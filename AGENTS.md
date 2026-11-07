@@ -146,6 +146,8 @@ Use these sample entry points:
 ./gradlew :sample:android-app:assembleRelease
 ```
 
+The commands that show a disabled local flag stripped from the sample apps are in [docs/flag-stripping-runbook.md](docs/flag-stripping-runbook.md).
+
 Build the Swift sample with the Xcode command above; its build phase invokes `:sample:shared:embedAndSignAppleFrameworkForXcode`. The sample framework is `FeaturedSampleApp`; the distributable core framework is `FeaturedCore`.
 
 ### Inspect or change code generation
