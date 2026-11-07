@@ -30,7 +30,7 @@ featured-platform ─── platform metadata module
 featured-bom ──────── Maven BOM
 featured-detekt-rules / featured-lint-rules ── static checks for flag misuse
 featured-shrinker-tests ── R8 DCE integration tests
-providers/{configcat,datastore,firebase,javaprefs,nsuserdefaults,sharedpreferences}
+providers/{appmetrica,configcat,datastore,firebase,javaprefs,nsuserdefaults,sharedpreferences}
 featured-gradle-plugin/ ── published Gradle plugin (included build, dogfooded on :sample:feature-*)
 sample/{shared,feature-checkout,feature-promotions,feature-ui,android-app,desktop}
 iosApp/   Swift consumer of FeaturedSampleApp.framework

@@ -56,6 +56,7 @@ include(":featured-lint-rules")
 include(":featured-shrinker-tests")
 include(":featured-swift-dce-tests")
 
+include(":providers:appmetrica")
 include(":providers:configcat")
 include(":providers:datastore")
 include(":providers:firebase")

@@ -6,7 +6,7 @@ import kotlin.test.assertTrue
 
 class AndroidApiGateTest {
     @Test
-    fun `module table equals the nine spec paths and nothing else`() {
+    fun `module table equals the ten spec paths and nothing else`() {
         val expected =
             listOf(
                 ":core" to "core/api/android/featured-core.api",
@@ -14,6 +14,8 @@ class AndroidApiGateTest {
                 ":featured-debug-ui" to "featured-debug-ui/api/android/featured-debug-ui.api",
                 ":featured-platform" to "featured-platform/api/android/featured-platform.api",
                 ":featured-testing" to "featured-testing/api/android/featured-testing.api",
+                ":providers:appmetrica" to
+                    "providers/appmetrica/api/android/featured-appmetrica-provider.api",
                 ":providers:configcat" to "providers/configcat/api/android/featured-configcat-provider.api",
                 ":providers:datastore" to "providers/datastore/api/android/featured-datastore-provider.api",
                 ":providers:firebase" to "providers/firebase/api/android/featured-firebase-provider.api",

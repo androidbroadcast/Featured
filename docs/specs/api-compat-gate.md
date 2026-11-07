@@ -64,6 +64,7 @@ These published modules ship an artifact Android application or Android test cod
 | `:featured-debug-ui` | `dev.androidbroadcast.featured:featured-debug-ui` | KMP `android` |
 | `:featured-platform` | `dev.androidbroadcast.featured:featured-platform` | KMP `android` |
 | `:featured-testing` | `dev.androidbroadcast.featured:featured-testing` | KMP `android` |
+| `:providers:appmetrica` | `dev.androidbroadcast.featured:featured-appmetrica-provider` | Android library main source set |
 | `:providers:configcat` | `dev.androidbroadcast.featured:featured-configcat-provider` | KMP `android` |
 | `:providers:datastore` | `dev.androidbroadcast.featured:featured-datastore-provider` | KMP `android` |
 | `:providers:firebase` | `dev.androidbroadcast.featured:featured-firebase-provider` | Android library main source set |
@@ -80,6 +81,7 @@ Committed baseline, one file per gated module. CI compares that file and no othe
 | `:featured-debug-ui` | `featured-debug-ui/api/android/featured-debug-ui.api` |
 | `:featured-platform` | `featured-platform/api/android/featured-platform.api` |
 | `:featured-testing` | `featured-testing/api/android/featured-testing.api` |
+| `:providers:appmetrica` | `providers/appmetrica/api/android/featured-appmetrica-provider.api` |
 | `:providers:configcat` | `providers/configcat/api/android/featured-configcat-provider.api` |
 | `:providers:datastore` | `providers/datastore/api/android/featured-datastore-provider.api` |
 | `:providers:firebase` | `providers/firebase/api/android/featured-firebase-provider.api` |
@@ -117,7 +119,7 @@ The gate does not freeze preview surfaces. A later slice may add a non-blocking 
 
 ## Check
 
-The check is a dump-and-check of the nine baseline files above.
+The check is a dump-and-check of the ten baseline files above.
 
 1. Build the public JVM signatures of each gated module's Android compilation.
 2. Compare that dump to the committed baseline.
@@ -130,21 +132,21 @@ A public signature change in a gated module fails that CI job until the matching
 
 ### What is not an acceptable check
 
-Stock `apiCheck` from `org.jetbrains.kotlinx.binary-compatibility-validator` 0.18.x is not this gate. That plugin does not register API tasks for an Android target created by `com.android.kotlin.multiplatform.library` (Kotlin/binary-compatibility-validator#315). A green `apiCheck` can mean the Android compilation was skipped. Seven of the nine gated modules use that plugin.
+Stock `apiCheck` from `org.jetbrains.kotlinx.binary-compatibility-validator` 0.18.x is not this gate. That plugin does not register API tasks for an Android target created by `com.android.kotlin.multiplatform.library` (Kotlin/binary-compatibility-validator#315). A green `apiCheck` can mean the Android compilation was skipped. Seven of the ten gated modules use that plugin.
 
 Unmodified `checkKotlinAbi` on a KMP module is not this gate. Kotlin Gradle plugin 2.4.20, the version on `develop`, does see the Android-KMP compilation (KT-85950), but the same task also dumps the `jvm` target and klib targets, including iOS. `checkKotlinAbi` fails when any of those reference dumps is missing or different. Wiring that task into CI as-is would put preview iOS and JVM under this gate.
 
 `binariesSource = MAVEN_PUBLICATIONS` is not required. Kotlin 2.4.20 reports that Android publications are not supported as an ABI input. The dump input is the Android compilation output, which is the bytecode Android consumers link.
 
-The dumper may be Kotlin Gradle plugin ABI validation of the Android compilation, or another dumper of the same public JVM signatures. The CI failure condition is a difference in the nine Android baseline files. JVM and klib dumps, if a tool writes them, are not baselines and must not fail CI.
+The dumper may be Kotlin Gradle plugin ABI validation of the Android compilation, or another dumper of the same public JVM signatures. The CI failure condition is a difference in the ten Android baseline files. JVM and klib dumps, if a tool writes them, are not baselines and must not fail CI.
 
 Do not take a third-party bridge plugin as a requirement of this spec.
 
-`:providers:firebase` and `:providers:sharedpreferences` apply `com.android.library` and compile Kotlin with AGP's built-in Kotlin. Their check must read that main compilation. Skipping them because they do not apply `kotlin-android` explicitly does not satisfy the gate.
+`:providers:appmetrica`, `:providers:firebase`, and `:providers:sharedpreferences` apply `com.android.library` and compile Kotlin with AGP's built-in Kotlin. Their check must read that main compilation. Skipping them because they do not apply `kotlin-android` explicitly does not satisfy the gate.
 
 ## Acceptance criteria
 
-- [ ] **AC-1.** The failing check covers exactly the nine modules and nine baseline paths in "Modules in the gate". No other module fails this check.
+- [ ] **AC-1.** The failing check covers exactly the ten modules and ten baseline paths in "Modules in the gate". No other module fails this check.
 - [ ] **AC-2.** Each baseline is a generated dump of that module's current Android public JVM signatures and is committed. `core/api/android/featured-core.api` is non-empty. A missing or empty baseline fails the check.
 - [ ] **AC-3.** CI on pull requests to `develop` and `main` runs the check on a Linux runner. The check does not compile Apple targets.
 - [ ] **AC-4.** On an unmodified tree the check passes. Adding a public function to `:core` `commonMain` without updating `core/api/android/featured-core.api` makes the check fail. Updating that baseline, or restoring the source, makes it pass. The temporary source change is not left in the tree.

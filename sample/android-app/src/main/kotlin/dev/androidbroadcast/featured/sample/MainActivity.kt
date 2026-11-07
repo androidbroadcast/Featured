@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.androidbroadcast.featured.ConfigValues
 import dev.androidbroadcast.featured.SampleApp
+import dev.androidbroadcast.featured.appmetrica.AppMetricaConfigValueProvider
 import dev.androidbroadcast.featured.datastore.DataStoreConfigValueProvider
 import dev.androidbroadcast.featured.datastore.registerConverter
 import dev.androidbroadcast.featured.debugui.FeatureFlagsDebugScreen
@@ -36,15 +37,27 @@ class MainActivity : ComponentActivity() {
         provider
     }
 
-    // Each feature module gets its own ConfigValues instance backed by the same provider.
+    // One remote provider is shared. Vendor startup lives in SampleApplication and is skipped
+    // when local.properties has no AppMetrica key. This instance is still constructed.
+    private val appMetricaProvider by lazy { AppMetricaConfigValueProvider() }
+
+    // Each feature module gets its own ConfigValues instance backed by the same providers.
     // Per-module ConfigValues is the pattern Featured is designed around: flags are scoped
     // to the module that declared them.
-    private val checkoutConfigValues by lazy { ConfigValues(localProvider = sharedLocalProvider) }
-    private val promotionsConfigValues by lazy { ConfigValues(localProvider = sharedLocalProvider) }
-    private val uiConfigValues by lazy { ConfigValues(localProvider = sharedLocalProvider) }
+    private val checkoutConfigValues by lazy {
+        ConfigValues(localProvider = sharedLocalProvider, remoteProvider = appMetricaProvider)
+    }
+    private val promotionsConfigValues by lazy {
+        ConfigValues(localProvider = sharedLocalProvider, remoteProvider = appMetricaProvider)
+    }
+    private val uiConfigValues by lazy {
+        ConfigValues(localProvider = sharedLocalProvider, remoteProvider = appMetricaProvider)
+    }
 
     // Aggregated ConfigValues for the debug screen — observes all flags across all modules.
-    private val debugConfigValues by lazy { ConfigValues(localProvider = sharedLocalProvider) }
+    private val debugConfigValues by lazy {
+        ConfigValues(localProvider = sharedLocalProvider, remoteProvider = appMetricaProvider)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

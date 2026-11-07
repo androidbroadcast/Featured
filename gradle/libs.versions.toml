@@ -33,6 +33,8 @@ pluginPublish = "2.2.1"
 dokka = "2.2.0"
 detekt = "1.23.8"
 configcat = "5.1.0"
+varioqub = "0.10.0"
+appmetrica = "8.6.0"
 lint = "32.2.1" # Must equal AGP version + 23.0.0 (e.g., AGP 9.2.1 → Lint 32.2.1)
 r8 = "9.1.31"
 asm = "9.10.1"
@@ -75,6 +77,9 @@ detekt-api = { module = "io.gitlab.arturbosch.detekt:detekt-api", version.ref = 
 detekt-test = { module = "io.gitlab.arturbosch.detekt:detekt-test", version.ref = "detekt" }
 
 configcat-kotlinSdk = { module = "com.configcat:configcat-kotlin-client", version.ref = "configcat" }
+varioqub-config = { module = "com.yandex.varioqub:config", version.ref = "varioqub" }
+varioqub-appmetrica-adapter = { module = "com.yandex.varioqub:appmetrica-adapter", version.ref = "varioqub" }
+appmetrica-analytics = { module = "io.appmetrica.analytics:analytics", version.ref = "appmetrica" }
 
 lint-api = { module = "com.android.tools.lint:lint-api", version.ref = "lint" }
 lint-tests = { module = "com.android.tools.lint:lint-tests", version.ref = "lint" }

@@ -15,6 +15,7 @@ dependencies {
         api(project(":providers:sharedpreferences"))
         api(project(":providers:javaprefs"))
         api(project(":providers:nsuserdefaults"))
+        api(project(":providers:appmetrica"))
         api(project(":providers:configcat"))
 
         api(project(":featured-compose"))

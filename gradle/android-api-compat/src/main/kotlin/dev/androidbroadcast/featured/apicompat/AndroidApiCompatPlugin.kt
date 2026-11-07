@@ -44,7 +44,7 @@ public class AndroidApiCompatPlugin : Plugin<Project> {
         project.tasks.register(UPDATE_TASK) {
             it.group = VERIFICATION
             it.description =
-                "Writes the nine Android API baselines. Not a dependency of check or CI."
+                "Writes the ten Android API baselines. Not a dependency of check or CI."
             it.dependsOn(AndroidApiGate.modules.map { module -> "${module.projectPath}:$UPDATE_TASK" })
         }
     }

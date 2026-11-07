@@ -1,0 +1,25 @@
+public final class dev/androidbroadcast/featured/appmetrica/AppMetricaConfigException : java/lang/Exception {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
+public final class dev/androidbroadcast/featured/appmetrica/AppMetricaConfigValueProvider : dev/androidbroadcast/featured/InitializableConfigValueProvider, dev/androidbroadcast/featured/RemoteConfigValueProvider {
+	public fun <init> ()V
+	public fun <init> (Lcom/yandex/varioqub/config/VarioqubApi;)V
+	public synthetic fun <init> (Lcom/yandex/varioqub/config/VarioqubApi;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun fetch (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun get (Ldev/androidbroadcast/featured/ConfigParam;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getConverters ()Ldev/androidbroadcast/featured/appmetrica/Converters;
+	public fun initialize (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class dev/androidbroadcast/featured/appmetrica/Converter {
+	public abstract fun convert (Lcom/yandex/varioqub/config/model/ConfigValue;)Ljava/lang/Object;
+}
+
+public final class dev/androidbroadcast/featured/appmetrica/Converters {
+	public final fun contains (Lkotlin/reflect/KClass;)Z
+	public final fun get (Lkotlin/reflect/KClass;)Ldev/androidbroadcast/featured/appmetrica/Converter;
+	public final fun getValue (Lkotlin/reflect/KClass;)Ldev/androidbroadcast/featured/appmetrica/Converter;
+	public final fun set (Lkotlin/reflect/KClass;Ldev/androidbroadcast/featured/appmetrica/Converter;)V
+}
+

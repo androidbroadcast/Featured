@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Android-only `featured-appmetrica-provider` reads remote flags through Varioqub. Maven Central
+  publication waits for the release process. (#204)
 - Android public signatures are dump-and-checked by `checkAndroidApi`. A difference in a gated
   module's committed Android dump fails CI until that baseline is updated in the same change.
   The module list is in `docs/specs/api-compat-gate.md`. Preview iOS and JVM are not in the gate,
